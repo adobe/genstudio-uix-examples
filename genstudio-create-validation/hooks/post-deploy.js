@@ -17,8 +17,9 @@ module.exports = (config) => {
     };
 
     // buid the preview URL
-    //const base64EncodedData = Buffer.from(JSON.stringify(previewData)).toString('base64');
-    console.log(chalk.magenta(chalk.bold('For a developer preview of your UI extension in the AEM environment, follow the URL:')));
+    const base64EncodedData = Buffer.from(JSON.stringify(previewData)).toString('base64');
+    console.log(chalk.green(chalk.bold(`base64EncodedData: ${base64EncodedData}`)));
+    console.log(chalk.magenta(chalk.bold('For a developer preview of your UI extension in the GenStudio environment, follow the URL:')));
 
     // check if the environment is stage, if so, we need to add the -stage suffix to the URL
     const env = process.env.AIO_CLI_ENV === 'stage' ? '-stage' : '';
