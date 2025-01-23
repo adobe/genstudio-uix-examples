@@ -44,7 +44,6 @@
       "type-check:watch": "tsc --noEmit --watch",
       "build": "tsc"
     },
-    "type": "module",
     "description": "GS Create UIX Reference App",
     "aio-app-builder-templates": [
       "@adobe/aem-cf-editor-ui-ext-tpl"

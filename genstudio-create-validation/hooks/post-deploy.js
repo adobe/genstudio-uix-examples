@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+const chalk = require('chalk');
 const fs = require('fs');
 const yaml = require('js-yaml');
 
@@ -17,7 +17,7 @@ module.exports = (config) => {
     };
 
     // buid the preview URL
-    const base64EncodedData = Buffer.from(JSON.stringify(previewData)).toString('base64');
+    //const base64EncodedData = Buffer.from(JSON.stringify(previewData)).toString('base64');
     console.log(chalk.magenta(chalk.bold('For a developer preview of your UI extension in the AEM environment, follow the URL:')));
 
     // check if the environment is stage, if so, we need to add the -stage suffix to the URL
