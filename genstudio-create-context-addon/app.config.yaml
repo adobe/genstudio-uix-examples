@@ -1,0 +1,4 @@
+extensions:
+  dx_genstudio/genstudiopem/1:
+    $include: src/genstudiopem/ext.config.yaml
+    
