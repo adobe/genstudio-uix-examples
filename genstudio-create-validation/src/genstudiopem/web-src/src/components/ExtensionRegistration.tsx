@@ -5,11 +5,11 @@
 import { Text } from "@adobe/react-spectrum";
 import { register } from "@adobe/uix-guest";
 import { extensionId, ICON_DATA_URI, extensionLabel } from "../Constants";
-import { AppMetadata } from "@adobe/genstudio-uix-sdk"
+import { AppMetaData } from "@adobe/genstudio-uix-sdk"
 import React from 'react';
 
 interface ToggleItem {
-  appMetaData: AppMetadata;
+  appMetaData: AppMetaData;
   onClick: () => Promise<void>;
 }
 
@@ -19,7 +19,7 @@ interface PanelItem {
   extensionId: string;
 }
 
-const getAppMetadata = (appExtensionId: string): AppMetadata => ({
+const getAppMetadata = (appExtensionId: string): AppMetaData => ({
   id: extensionId,
   label: extensionLabel,
   iconDataUri: ICON_DATA_URI,
