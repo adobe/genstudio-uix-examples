@@ -6,7 +6,7 @@
       "@adobe/aem-cf-editor-ui-ext-tpl": "^2.1.0",
       "@adobe/aio-sdk": "^3.0.0",
       "@adobe/exc-app": "^0.2.21",
-      "@adobe/genstudio-uix-sdk": "^1.0.5",
+      "@adobe/genstudio-uix-sdk": "^1.5.0",
       "@adobe/react-spectrum": "^3.4.0",
       "@adobe/uix-guest": "^0.8.0",
       "@react-spectrum/list": "^3.0.0-rc.0",
