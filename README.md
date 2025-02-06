@@ -1,4 +1,4 @@
-# GenStudio for Perfornce Marketing UI Extensibility Examples
+# GenStudio for Performance Marketing UI Extensibility Examples
 
 This repository contains working examples of the usage of UI Extensibility in GenStudio for Performance Marketing.
 
