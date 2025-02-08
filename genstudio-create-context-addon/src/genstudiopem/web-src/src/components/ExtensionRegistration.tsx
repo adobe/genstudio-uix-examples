@@ -42,7 +42,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
                 appMetaData: getAppMetadata(appExtensionId),
                 onClick: async () => {
                   // @ts-ignore - RPC Post Message between IFrames
-                  await guestConnection.host.api.dialogs.open(`${appExtensionId}`);
+                  await guestConnection.host.api.create.dialogs.open(`${appExtensionId}`);
                 },
               }]
           }
@@ -66,4 +66,4 @@ const ExtensionRegistration = (): React.JSX.Element => {
   return <Text>IFrame for integration with Host (GenStudio for Performance Marketing App)...</Text>;
 };
 
-export default ExtensionRegistration; 
+export default ExtensionRegistration;
