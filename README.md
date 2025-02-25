@@ -16,8 +16,15 @@ In addition to git clone and/or forking this repo, you can generate an app from 
 ## Examples
 
 Here is the list of examples:
-- [GenStudio Create Validation/Compliance Reference App](./genstudio-create-validation/)
-- [GenStudio Create Additonal Context Reference App](./genstudio-create-context-addon/)
+- [GenStudio MLR Claims App](./genstudio-mlr-claims-app/)
+
+## Usage
+1. Clone the repository
+2. Install dependencies
+3. Connect to your App Builder Project using the AIO CLI: `aio app use <path-to-downloaded-project-details>`
+4. Run the app: `aio app run`
+5. Deploy the app: `aio app deploy`
+6. Go to the GenStudio workspace and see the extension point
 
 
 ## Deployment
