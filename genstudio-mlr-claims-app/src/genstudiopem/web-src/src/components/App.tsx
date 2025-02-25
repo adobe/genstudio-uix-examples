@@ -16,7 +16,7 @@ import ErrorBoundary from 'react-error-boundary';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import ExtensionRegistration from './ExtensionRegistration';
 import RightPanel from './RightPanel';
-
+import AdditionalContextDialog from './AdditionalContextDialog';
 const ErrorFallback = () => (
   <Heading level={1}>Something went wrong!</Heading>
 );
@@ -29,6 +29,7 @@ const App = (): React.JSX.Element => {
           <Routes>
             <Route path="/" element={<ExtensionRegistration />} />
             <Route path="/right-panel" element={<RightPanel />} />
+            <Route path="/additional-context-dialog" element={<AdditionalContextDialog />} />
           </Routes>
         </Router>
       </Provider>

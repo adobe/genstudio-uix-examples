@@ -27,6 +27,13 @@ interface PanelItem {
   extensionId: string;
 }
 
+interface DialogItem {
+  id: string;
+  url: string;
+  extensionId: string;
+}
+
+
 const getAppMetadata = (appExtensionId: string): AppMetaData => ({
   id: extensionId,
   label: extensionLabel,
@@ -61,6 +68,28 @@ const ExtensionRegistration = (): React.JSX.Element => {
               {
                 id: `${appExtensionId}`,
                 url: '#/right-panel',
+                extensionId: appExtensionId
+              }];
+          }
+        },
+        createContextAddOns: {
+          addContextAddOn: async (appExtensionId: string): Promise<ToggleItem[]> => {
+            return [
+              {
+                appMetaData: getAppMetadata(appExtensionId),
+                onClick: async () => {
+                  // @ts-ignore - RPC Post Message between IFrames
+                  await guestConnection.host.api.dialogs_context.open(`${appExtensionId}`);
+                },
+              }]
+          }
+        },
+        createCanvasDialog: {
+          addDialog(appExtensionId: string): DialogItem[] {
+            return [
+              {
+                id: `${appExtensionId}`,
+                url: '#/additional-context-dialog',
                 extensionId: appExtensionId
               }];
           }

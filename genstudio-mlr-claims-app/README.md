@@ -1,4 +1,6 @@
-# GenStudio Create Validation
+# GenStudio MLR Claims App
+
+This is an App Builder application that creates an extension point in GenStudio to add context via claims and validate experiences with claims.
 
 Welcome to my Adobe I/O Application!
 
