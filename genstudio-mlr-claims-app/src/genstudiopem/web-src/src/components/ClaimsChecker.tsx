@@ -11,63 +11,70 @@ governing permissions and limitations under the License.
 */
 
 import React from 'react';
-import { Flex, Heading, Text, View, InlineAlert, Badge } from "@adobe/react-spectrum";
+import { Flex, Heading, Text, View, Button, InlineAlert, Badge } from "@adobe/react-spectrum";
 import Alert from "@spectrum-icons/workflow/Alert";
 import { claimStatus } from '../utils/claimsValidation';
+import { copyToClipboard } from '../utils/copyToClipboard';
 
 interface ClaimsCheckerProps {
     claims: any;  // or define a more specific type
     experienceNumber: number;
-  }  
+  } 
 
   const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber }) => {
-    // Count total issues
-    const totalIssues = Object.values(claims).flat().filter((claim: any) => 
-      claim.claimStatus === claimStatus.Violated
+  // Count total issues
+  const totalIssues = Object.values(claims).flat().filter((claim: any) => 
+    claim.claimStatus === claimStatus.Violated
+  ).length;
+  
+  const renderSection = (title: string, items: Array<{ claimStatus: string; claimViolation?: string }>) => {
+    const issueCount = items?.filter(item => 
+      item.claimStatus === 'violated'
     ).length;
   
-    const renderSection = (title: string, items: Array<{ claimStatus: string; claimViolation?: string }>) => {
-      const issueCount = items?.filter(item => 
-        item.claimStatus === 'violated'
-      ).length;
-  
-      return (
-        <View marginY="size-200">
-          <Flex justifyContent="space-between" alignItems="center" marginBottom="size-200">
-            <Heading level={4}>{title}</Heading>
-            {issueCount > 0 ? (
-              <Badge variant="negative">{issueCount} issue{issueCount > 1 ? 's' : ''}</Badge>
-            ) : (
-              <Badge variant="positive">No issues</Badge>
-            )}
-          </Flex>
-  
-          {issueCount > 0 && items.map((item, index) => (
-            item.claimStatus === 'violated' && item.claimViolation && (
-              <View key={index} marginY="size-100">
-                <Flex gap="size-100" alignItems="start">
-                  <Alert size="S" />
-                  <View>
-                    <Text>{item.claimViolation}</Text>
-                  </View>
-                </Flex>
-              </View>
-            )
-          ))}
-        </View>
-      );
-    };
+    return (
+      <View marginY="size-200">
+        <Flex justifyContent="space-between" alignItems="center" marginBottom="size-200">
+          <Heading level={4}>{title}</Heading>
+          {issueCount > 0 ? (
+            <Badge variant="negative">{issueCount} issue{issueCount > 1 ? 's' : ''}</Badge>
+          ) : (
+            <Badge variant="positive">No issues</Badge>
+          )}
+        </Flex>
 
-    const message = (totalIssues: number) =>  {
-      switch (totalIssues) {
-        case 0:
-          return <InlineAlert variant="positive" width="100%"><Heading>No issues on Email {experienceNumber + 1}</Heading></InlineAlert>
-        case 1:
-          return <InlineAlert variant="notice"  width="100%"><Heading>1 issue needs attention on Email {experienceNumber + 1}</Heading></InlineAlert>
-        default:
-          return <InlineAlert variant="notice" width="100%"><Heading>{totalIssues} issues need attention on Email {experienceNumber + 1}</Heading></InlineAlert>
-      }
-   }
+        {issueCount > 0 && items.map((item, index) => (
+          item.claimStatus === 'violated' && item.claimViolation && (
+            <View key={index} marginY="size-100">
+              <Flex gap="size-100" alignItems="start">
+                <Alert size="S" />
+                <View>
+                  <Text>{item.claimViolation}</Text>
+                    {/* Copy Claim Button */}
+                    <View marginTop="size-100">
+                    <Button variant="secondary" style="fill" onPress={() => copyToClipboard(item.claimViolation!)}
+                    >
+                      Copy Claim
+                    </Button>
+                    </View>
+                </View>
+              </Flex>
+            </View>
+          )
+        ))}
+      </View>
+    );
+  };
+  const message = (totalIssues: number) =>  {
+    switch (totalIssues) {
+      case 0:
+        return <InlineAlert variant="positive" width="100%"><Heading>No issues on Email {experienceNumber + 1}</Heading></InlineAlert>
+      case 1:
+        return <InlineAlert variant="notice"  width="100%"><Heading>1 issue needs attention on Email {experienceNumber + 1}</Heading></InlineAlert>
+      default:
+        return <InlineAlert variant="notice" width="100%"><Heading>{totalIssues} issues need attention on Email {experienceNumber + 1}</Heading></InlineAlert>
+    }
+  }
   
     return (
       <View padding="size-200">
