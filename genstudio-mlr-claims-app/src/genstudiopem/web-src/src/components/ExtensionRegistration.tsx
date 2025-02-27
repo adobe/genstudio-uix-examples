@@ -56,7 +56,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
               {
                 appMetaData: getAppMetadata(appExtensionId),
                 onClick: async () => {
-                  await ExtensionRegistrationService.openAddContextAddOnBar(guestConnection, appExtensionId);
+                  await ExtensionRegistrationService.openCreateAddOnBar(guestConnection, appExtensionId);
                 },
               }]
           }
@@ -77,7 +77,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
               {
                 appMetaData: getAppMetadata(appExtensionId),
                 onClick: async () => {
-                  await ExtensionRegistrationService.openCreateAddOnBar(guestConnection, appExtensionId);
+                  await ExtensionRegistrationService.openAddContextAddOnBar(guestConnection, appExtensionId);
                 },
               }]
           }
