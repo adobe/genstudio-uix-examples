@@ -1,4 +1,4 @@
-# GenStudio Create Additional Context
+# GenStudio Create Validation
 
 Welcome to my Adobe I/O Application!
 
