@@ -5,7 +5,7 @@
 import { Text } from "@adobe/react-spectrum";
 import { register } from "@adobe/uix-guest";
 import { extensionId, ICON_DATA_URI, extensionLabel } from "../Constants";
-import { AppMetaData } from "@adobe/genstudio-uix-sdk"
+import { AppMetaData, ExtensionRegistrationService } from "@adobe/genstudio-uix-sdk"
 import React from 'react';
 
 interface ToggleItem {
@@ -41,8 +41,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
               {
                 appMetaData: getAppMetadata(appExtensionId),
                 onClick: async () => {
-                  // @ts-ignore - RPC Post Message between IFrames
-                  await guestConnection.host.api.dialogs.open(`${appExtensionId}`);
+                  await ExtensionRegistrationService.openAddContextAddOnBar(guestConnection, appExtensionId);
                 },
               }]
           }
