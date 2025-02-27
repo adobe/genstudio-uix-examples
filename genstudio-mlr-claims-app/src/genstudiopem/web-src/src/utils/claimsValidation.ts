@@ -1,11 +1,21 @@
-    // function that validate claims
+/*
+Copyright 2025 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+
+// function that validate claims
 // takes in a string, list of claims
 // loop through list of claims
 // fuzzy match the claim with the string
 // check if claim present matches or does not match
 // return the result
-
-// hardcoded validation for summit
 
 import { Experience } from '@adobe/genstudio-uix-sdk';
 import { TEST_CLAIMS } from '../Constants';
@@ -66,69 +76,4 @@ export const validateClaims = (experience: Experience, experienceNumber: number,
     }
 
     return result;
-    // // hardcoded validation for summit
-    // switch (experienceNumber) {
-    //     case 0:
-    //         return {
-    //             "pre_header": [
-    //                 {
-    //                     claimStatus: claimStatus.Valid
-    //                 }
-    //             ],
-    //             "header": [
-    //                 {
-    //                     claimStatus: claimStatus.Valid
-    //                 }
-    //             ],
-    //             "body": [
-    //                 {
-    //                     claimStatus: claimStatus.Violated,
-    //                     claimViolation: 'The claim "Improved joint mobility within just 2 weeks" is violated, as clinical trials show significant improvements in joint mobility at 8 weeks, not 2. '
-    //                 },
-    //                 {
-    //                     claimStatus: claimStatus.PartiallyViolated,
-    //                     claimViolation: 'The claim "Minimal risk of side effects, with fewer than 2% of patients reporting any issues" is partially violated, as actual trial data indicates side effects occurred in up to 5% of patients.'
-    //                 }
-    //             ]
-    //         }
-    //     case 1:
-    //         return {
-    //             "pre_header": [
-    //                 {
-    //                     claimStatus: claimStatus.Valid
-    //                 }
-    //             ],
-    //             "header": [
-    //                 {
-    //                     claimStatus: claimStatus.Violated,
-    //                     claimViolation: 'The claim "70% reduction in flare-ups" is violated, as the actual documented reduction in flare-ups was 45%.',
-    //                 },
-    //                 {
-    //                     claimStatus: claimStatus.PartiallyViolated,
-    //                     claimViolation: 'The claim "Minimal gastrointestinal side effects, with reports in less than 3% of patients" is partially violated, as clinical data indicates side effects occurred in up to 5% of patients.'
-    //                 }
-    //             ]
-    //         }
-    //     case 2:
-    //         return {
-    //             "pre_header": [
-    //                 {
-    //                     claimStatus: claimStatus.Valid
-    //                 }
-    //             ],
-    //             "header": [
-    //                 {
-    //                     claimStatus: claimStatus.Violated,
-    //                     claimViolation: "The claim “No significant impact on sleep patterns or energy levels” is violated, as trial data showed mild fatigue in up to 8% of patients."
-    //                 },
-    //                 {
-    //                     claimStatus: claimStatus.PartiallyViolated,
-    //                     claimViolation: "The claim “65% reduction in systemic inflammation markers” is partially violated. While reductions were observed, the documented number was closer to 60% in long-term studies."
-    //                 }
-    //             ]
-    //         }
-    //     default:
-    //         return {};
-    // }
-};
-
+}
