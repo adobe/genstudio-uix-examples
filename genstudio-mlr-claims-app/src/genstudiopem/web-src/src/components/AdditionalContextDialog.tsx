@@ -76,7 +76,7 @@ export default function AdditionalContextDialog(): JSX.Element {
           columns={['1fr']}
           rows={['auto', 'auto', 'auto', '2fr', 'auto']}
           height="100%"
-          gap="size-200"
+          gap="size-300"
         >
           <View gridArea="library">
             <Picker
