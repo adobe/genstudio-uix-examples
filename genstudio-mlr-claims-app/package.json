@@ -1,12 +1,11 @@
 {
-  "name": "genstudio-create-validation",
+  "name": "genstudio-mlr-claims-app",
   "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@adobe/aem-cf-editor-ui-ext-tpl": "^2.1.0",
-    "@adobe/aio-sdk": "^6",
+    "@adobe/aio-sdk": "^6.0.0",
     "@adobe/exc-app": "^0.2.21",
-    "@adobe/generator-add-action-generic": "^1.0.1",
     "@adobe/genstudio-uix-sdk": "^1.6.5",
     "@adobe/react-spectrum": "^3.4.0",
     "@adobe/uix-guest": "^1.0.0",
@@ -47,10 +46,6 @@
   },
   "description": "GS Create UIX Reference App",
   "aio-app-builder-templates": [
-    "@adobe/aem-cf-editor-ui-ext-tpl",
-    "@adobe/generator-add-action-generic"
-  ],
-  "engines": {
-    "node": ">=18"
-  }
+    "@adobe/aem-cf-editor-ui-ext-tpl"
+  ]
 }
