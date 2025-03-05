@@ -95,9 +95,7 @@ export default function RightPanel(): JSX.Element {
               {selectedExperience && (
                 <View 
                   padding="size-200" 
-                  overflow="auto hidden"
                   flex="1"
-                  maxHeight="calc(100vh - 200px)"
                 >
                   <Flex direction="column" width="100%">
                     {renderExperienceDetails(selectedExperience)}
