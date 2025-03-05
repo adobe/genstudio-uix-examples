@@ -15,7 +15,7 @@ import React, { useEffect, useState } from 'react';
 import { attach } from "@adobe/uix-guest";
 import { extensionId, TEST_CLAIMS } from "../Constants";
 import { Provider, defaultTheme, Flex, Item, Divider, SearchField, Checkbox, Key, Button, Picker, View, Grid } from '@adobe/react-spectrum';
-import { Claim, AdditionalContextTypes, GenerationContextService, AdditionalContext } from '@adobe/genstudio-uix-sdk';
+import { Claim, AdditionalContextTypes, GenerationContextService, AdditionalContext, ExtensionRegistrationService } from '@adobe/genstudio-uix-sdk';
 
 export default function AdditionalContextDialog(): JSX.Element {
   const [guestConnection, setGuestConnection] = useState<any>(null);
@@ -120,7 +120,7 @@ export default function AdditionalContextDialog(): JSX.Element {
           <Flex direction="row" gap="size-100" justifyContent="end" gridArea="actions">
             <Button
               variant="secondary"
-              onPress={() => window.close()}
+              onPress={() => ExtensionRegistrationService.closeAddContextAddOnBar(guestConnection)}
             >
               Cancel
             </Button>
