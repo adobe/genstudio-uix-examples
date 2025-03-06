@@ -38,10 +38,9 @@ export default function RightPanel(): JSX.Element {
     try {
       const remoteExperiences = await ExperienceService.getExperiences(guestConnection);
       // Add a minimum loading time of 0.5 seconds
-      setTimeout(() => {
-        setExperiences(remoteExperiences);
-        setIsLoading(false);
-      }, 500);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setExperiences(remoteExperiences);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching experiences:", error);
       setIsLoading(false);
