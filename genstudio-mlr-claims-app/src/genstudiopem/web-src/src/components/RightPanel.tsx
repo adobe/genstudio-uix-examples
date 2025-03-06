@@ -13,7 +13,7 @@ governing permissions and limitations under the License.
 import React, { Key, useEffect, useState } from 'react';
 import { attach } from "@adobe/uix-guest";
 import { extensionId, TEST_CLAIMS } from "../Constants";
-import { View, Provider, defaultTheme, Button, ComboBox, Item, Flex, Divider, Picker, Text, Heading } from '@adobe/react-spectrum';
+import { View, Provider, defaultTheme, Button, ComboBox, Item, Flex, Divider, Picker, Text, Heading, ProgressCircle } from '@adobe/react-spectrum';
 import { Experience, ExperienceService } from '@adobe/genstudio-uix-sdk';
 import { validateClaims } from '../utils/claimsValidation';
 import ClaimsChecker from './ClaimsChecker';
@@ -27,6 +27,7 @@ export default function RightPanel(): JSX.Element {
   const [claimsResult, setClaimsResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPolling, setIsPolling] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -42,13 +43,18 @@ export default function RightPanel(): JSX.Element {
 
   const getExperience = async (): Promise<boolean> => {
     if (!guestConnection) return false;
-    const remoteExperiences = await ExperienceService.getExperiences(guestConnection);
-    
-    if (remoteExperiences && remoteExperiences.length > 0) {
-      setExperiences(remoteExperiences);
-      return true;
+    setIsSyncing(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const remoteExperiences = await ExperienceService.getExperiences(guestConnection);
+      if (remoteExperiences && remoteExperiences.length > 0) {
+        setExperiences(remoteExperiences);
+        return true;
+      }
+      return false;
+    } finally {
+      setIsSyncing(false);
     }
-    return false;
   };
 
   const runClaimsCheck = async (experience: Experience, selectedExperienceIndex: number, selectedClaimLibrary: any): Promise<void> => {
@@ -104,7 +110,9 @@ export default function RightPanel(): JSX.Element {
                   variant="secondary"
                   onPress={getExperience}
                   UNSAFE_style={{ minWidth: 'auto' }}
+                  isDisabled={isSyncing}
                 >
+                  {isSyncing && <ProgressCircle aria-label="Syncing" isIndeterminate size="S" marginBottom="size-50" />}
                   Sync
                 </Button>
               </Flex>

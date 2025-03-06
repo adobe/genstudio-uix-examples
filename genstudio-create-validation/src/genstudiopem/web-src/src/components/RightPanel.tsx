@@ -15,12 +15,14 @@ import { attach } from "@adobe/uix-guest";
 import { extensionId } from "../Constants";
 import { View, Provider, defaultTheme, Button, ComboBox, Item, Heading, Text, Flex, Divider } from '@adobe/react-spectrum';
 import { Experience, ExperienceService } from '@adobe/genstudio-uix-sdk';
+import Spinner from './Spinner';
 
 export default function RightPanel(): JSX.Element {
   const [guestConnection, setGuestConnection] = useState<any>(null);
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<number | null>(null);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
@@ -31,8 +33,19 @@ export default function RightPanel(): JSX.Element {
 
   const getExperience = async (): Promise<void> => {
     if (!guestConnection) return;
-    const remoteExperiences = await ExperienceService.getExperiences(guestConnection);
-    setExperiences(remoteExperiences);
+    setIsLoading(true);
+    
+    try {
+      const remoteExperiences = await ExperienceService.getExperiences(guestConnection);
+      // Add a minimum loading time of 0.5 seconds
+      setTimeout(() => {
+        setExperiences(remoteExperiences);
+        setIsLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error("Error fetching experiences:", error);
+      setIsLoading(false);
+    }
   };
 
   const renderExperienceDetails = (experience: Experience) => (
@@ -55,66 +68,87 @@ export default function RightPanel(): JSX.Element {
   return (
     <Provider theme={defaultTheme}>
       <View backgroundColor="static-white" height="100vh">
-        <Flex direction="column" height="100%">
-          {experiences && experiences.length > 0 ? (
-            <Flex direction="column" gap="size-200">
-              <View paddingX="size-200" paddingY="size-100">
-                <ComboBox 
-                  label="Select Experience to Run Claims Check" 
-                  align="start"
-                  onSelectionChange={(key: React.Key | null) => { 
-                    if (key !== null) {
-                      const index = experiences.findIndex(exp => exp.id === key);
-                      if (index !== -1) {
-                        setSelectedExperienceIndex(index);
-                      }
-                    }
-                  }}
-                >
-                  {experiences.map((experience, index) => (
-                    <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
-                  ))}
-                </ComboBox>
-              </View>
-
-              {selectedExperienceIndex !== null && (
+        {isLoading ? (
+          <Spinner message="Loading experiences..." />
+        ) : (
+          <Flex direction="column" height="100%">
+            {experiences && experiences.length > 0 ? (
+              <Flex direction="column" gap="size-200">
+                <View paddingX="size-200" paddingTop="size-200">
+                  <Flex direction="row" justifyContent="space-between" alignItems="center" marginBottom="size-100">
+                    <Heading level={3}>Experiences</Heading>
+                    <Button 
+                      variant="secondary"
+                      onPress={getExperience}
+                      UNSAFE_style={{ minWidth: 'auto' }}
+                    >
+                      
+                      Sync
+                    </Button>
+                  </Flex>
+                  <Divider size="S" marginY="size-100" />
+                </View>
                 <View paddingX="size-200">
-                  <Button 
-                    variant="primary"
-                    width="100%"
-                    onPress={() => {
-                      const experience = experiences[selectedExperienceIndex];
-                      setSelectedExperience(experience);
+                  <Heading level={3}>Claims Libraries</Heading>
+                  <ComboBox 
+                    label="Select Experience to Run Claims Check" 
+                    align="start"
+                    onSelectionChange={(key: React.Key | null) => { 
+                      if (key !== null) {
+                        const index = experiences.findIndex(exp => exp.id === key);
+                        if (index !== -1) {
+                          setSelectedExperienceIndex(index);
+                        }
+                      }
                     }}
                   >
-                    Run Claims Check
-                  </Button>
+                    {experiences.map((experience, index) => (
+                      <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
+                    ))}
+                  </ComboBox>
                 </View>
-              )}
 
-              {selectedExperience && (
-                <View 
-                  padding="size-200" 
-                  flex="1"
+                {selectedExperienceIndex !== null && (
+                  <View paddingX="size-200" paddingTop="size-100">
+                    <Button 
+                      variant="primary"
+                      width="100%"
+                      onPress={() => {
+                        const experience = experiences[selectedExperienceIndex];
+                        setSelectedExperience(experience);
+                      }}
+                    >
+                      Run Claims Check
+                    </Button>
+                  </View>
+                )}
+
+                {selectedExperience && (
+                  <View 
+                    paddingX="size-200" 
+                    paddingTop="size-200"
+                    flex="1"
+                  >
+                    <Divider size="S" marginBottom="size-200" />
+                    <Flex direction="column" width="100%">
+                      {renderExperienceDetails(selectedExperience)}
+                    </Flex>
+                  </View>
+                )}
+              </Flex>
+            ) : (
+              <View padding="size-200">
+                <Button 
+                  variant="primary"
+                  width="100%"
+                  onPress={getExperience}
                 >
-                  <Flex direction="column" width="100%">
-                    {renderExperienceDetails(selectedExperience)}
-                  </Flex>
-                </View>
-              )}
-            </Flex>
-          ) : (
-            <View padding="size-200">
-              <Button 
-                variant="primary"
-                width="100%"
-                onPress={getExperience}
-              >
-                Get Experiences
-              </Button>
-            </View>
-          )}
-        </Flex>
+                  Get Experiences
+                </Button>
+              </View>
+            )}
+          </Flex>
+        )}
       </View>
     </Provider>
   );
