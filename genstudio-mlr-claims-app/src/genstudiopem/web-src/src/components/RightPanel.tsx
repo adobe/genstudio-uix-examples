@@ -60,9 +60,9 @@ export default function RightPanel(): JSX.Element {
   const runClaimsCheck = async (experience: Experience, selectedExperienceIndex: number, selectedClaimLibrary: any): Promise<void> => {
     setIsLoading(true);
     try {
-      // Add artificial delay if needed for UX
-      await new Promise(resolve => setTimeout(resolve, 1500));
       const result = validateClaims(experience, selectedExperienceIndex, selectedClaimLibrary);
+        // Add a minimum loading time of 0.5 seconds
+        await new Promise(resolve => setTimeout(resolve, 500));
         // Update state with results
         setClaimsResult(result);
     } catch (error) {
