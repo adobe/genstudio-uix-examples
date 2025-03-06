@@ -13,7 +13,7 @@ governing permissions and limitations under the License.
 import React, { Key, useEffect, useState } from 'react';
 import { attach } from "@adobe/uix-guest";
 import { extensionId, TEST_CLAIMS } from "../Constants";
-import { View, Provider, defaultTheme, Button, ComboBox, Item, Flex, Divider, Picker, Text } from '@adobe/react-spectrum';
+import { View, Provider, defaultTheme, Button, ComboBox, Item, Flex, Divider, Picker, Text, Heading } from '@adobe/react-spectrum';
 import { Experience, ExperienceService } from '@adobe/genstudio-uix-sdk';
 import { validateClaims } from '../utils/claimsValidation';
 import ClaimsChecker from './ClaimsChecker';
@@ -34,14 +34,6 @@ export default function RightPanel(): JSX.Element {
       setGuestConnection(connection as any);
     })();
   }, []);
-
-  useEffect(() => {
-    (async () => {
-      if (guestConnection) {
-        await getExperience();
-      }
-    })();
-  }, [guestConnection]);
 
   const handleClaimsLibrarySelection = (library: Key | null) => {
     if (library === null) return;
@@ -106,15 +98,29 @@ export default function RightPanel(): JSX.Element {
           {experiences && experiences.length > 0 ? (
             <Flex direction="column" gap="size-200">
               <View paddingX="size-200" paddingY="size-100">
-              <Picker
-                label="Select a claim library"
-                width="100%"
-                onSelectionChange={handleClaimsLibrarySelection}
-              >
-                {TEST_CLAIMS.map(library => (
-                  <Item key={library.id}>{library.name}</Item>
-                ))}
-              </Picker>
+              <Flex direction="row" justifyContent="space-between" alignItems="center" marginBottom="size-100">
+              <Heading level={4}>Experiences</Heading>
+                <Button 
+                  variant="secondary"
+                  onPress={getExperience}
+                  UNSAFE_style={{ minWidth: 'auto' }}
+                >
+                  Sync
+                </Button>
+              </Flex>
+              <Divider size="S" />
+              <View marginTop="size-200">
+                <Heading level={4}>Claim Libraries</Heading>
+                <Picker
+                  label="Select a claim library"
+                  width="100%"
+                  onSelectionChange={handleClaimsLibrarySelection}
+                >
+                  {TEST_CLAIMS.map(library => (
+                    <Item key={library.id}>{library.name}</Item>
+                  ))}
+                </Picker>
+              </View>
               <Divider size="S" />
                 <ComboBox 
                   label="Select Experience to Run Claims Check" 
@@ -154,7 +160,13 @@ export default function RightPanel(): JSX.Element {
                   <Spinner />
                 </View>
               ) : claimsResult && (
-                <ClaimsChecker claims={claimsResult} experienceNumber={selectedExperienceIndex || 0} />
+                <View>
+                  <Divider size="S" />
+                  <View paddingX="size-200" paddingTop="size-200">
+                    <Heading level={4}>Claims Results</Heading>
+                  </View>
+                  <ClaimsChecker claims={claimsResult} experienceNumber={selectedExperienceIndex || 0} />
+                </View>
               )}
 
             </Flex>
