@@ -29,7 +29,7 @@ interface ClaimsCheckerProps {
   
   const renderSection = (title: string, items: Array<{ claimStatus: string; claimViolation?: string }>) => {
     const issueCount = items?.filter(item => 
-      item.claimStatus === 'violated'
+      item.claimStatus === claimStatus.Violated
     ).length;
   
     return (
@@ -44,7 +44,7 @@ interface ClaimsCheckerProps {
         </Flex>
 
         {issueCount > 0 && items.map((item, index) => (
-          item.claimStatus === 'violated' && item.claimViolation && (
+          item.claimStatus === claimStatus.Violated && item.claimViolation && (
             <View key={index} marginY="size-100">
               <Flex gap="size-100" alignItems="start">
                 <Alert size="S" />

@@ -21,19 +21,32 @@ import { Experience } from '@adobe/genstudio-uix-sdk';
 import { TEST_CLAIMS } from '../Constants';
 import { Key } from 'react';
 
-
 export const claimStatus = {
     Valid: 'valid',
     Violated: 'violated',
     N_A: 'n/a'
+};
+
+const maxCharacterLimits = {
+    header: 80,
+    pre_header: 100,
+    body: 150,
 }
 
-function checkClaim(text: string, claim: string, threshold: number = 0.2): "valid" | "violated" | "n/a" {
+function checkClaim(fieldName: string, text: string, claim: string): typeof claimStatus[keyof typeof claimStatus] {
+    // Check if field has a character limit and if text exceeds it
+    const extractedFieldName = fieldName.replace(/pod\d+_/, '')
+    const hasLimit = extractedFieldName in maxCharacterLimits;
+    const limit = hasLimit ? maxCharacterLimits[extractedFieldName as keyof typeof maxCharacterLimits] : 0;
+    if (hasLimit && text.length > limit) {
+        return claimStatus.Violated;
+    }
+
     const textLower = text.toLowerCase();
     const claimLower = claim.toLowerCase();
 
     if (textLower.includes(claimLower)) {
-        return "valid";
+        return claimStatus.Valid;
     }
 
     // remove numbers from text and claim
@@ -42,10 +55,10 @@ function checkClaim(text: string, claim: string, threshold: number = 0.2): "vali
     const claimWithoutNumbers = claimLower.replace(/[0-9]/g, '');
 
     if (textWithoutNumbers.includes(claimWithoutNumbers)) {
-        return "violated";
+        return claimStatus.Violated;
     }
 
-    return "n/a";
+    return claimStatus.N_A;
 }
 
 // a poor man's claims validation
@@ -60,14 +73,15 @@ export const validateClaims = (experience: Experience, experienceNumber: number,
     }
 
     const result: Record<string, any[]> = {};
-    
+    const experienceFields = experience.experienceFields;
+
     // Use for...of instead of forEach for better control flow
-    for (const [fieldName, entry] of Object.entries(experience.experienceFields)) {
+    for (const [fieldName, entry] of Object.entries(experienceFields)) {
         if (typeof entry.fieldValue === 'string') {
             result[fieldName] = [];
             for (const claim of filteredClaims) {
                 const fieldClaim = {
-                    claimStatus: checkClaim(entry.fieldValue, claim.description),
+                    claimStatus: checkClaim(fieldName, entry.fieldValue, claim.description),
                     claimViolation: `Violated claim: ${claim.description}`
                 };
                 result[fieldName].push(fieldClaim);
@@ -75,5 +89,6 @@ export const validateClaims = (experience: Experience, experienceNumber: number,
         }
     }
 
+    console.log(result);
     return result;
 }
