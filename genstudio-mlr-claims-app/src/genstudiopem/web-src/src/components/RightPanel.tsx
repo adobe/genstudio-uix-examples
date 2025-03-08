@@ -61,10 +61,10 @@ export default function RightPanel(): JSX.Element {
     setIsLoading(true);
     try {
       const result = validateClaims(experience, selectedExperienceIndex, selectedClaimLibrary);
-        // Add a minimum loading time of 0.5 seconds
-        await new Promise(resolve => setTimeout(resolve, 500));
-        // Update state with results
-        setClaimsResult(result);
+      // Add a minimum loading time of 0.5 seconds
+      await new Promise(resolve => setTimeout(resolve, 500));
+      // Update state with results
+      setClaimsResult(result);
     } catch (error) {
         console.error('Error in claims validation:', error);
     } finally {
@@ -104,32 +104,32 @@ export default function RightPanel(): JSX.Element {
           {experiences && experiences.length > 0 ? (
             <Flex direction="column" gap="size-200">
               <View paddingX="size-200" paddingY="size-100">
-              <Flex direction="row" justifyContent="space-between" alignItems="center" marginBottom="size-100">
-              <Heading level={4}>Experiences</Heading>
-                <Button 
-                  variant="secondary"
-                  onPress={getExperience}
-                  UNSAFE_style={{ minWidth: 'auto' }}
-                  isDisabled={isSyncing}
-                >
-                  {isSyncing && <ProgressCircle aria-label="Syncing" isIndeterminate size="S" marginBottom="size-50" />}
-                  Sync
-                </Button>
-              </Flex>
-              <Divider size="S" />
-              <View marginTop="size-200">
-                <Heading level={4}>Claim Libraries</Heading>
-                <Picker
-                  label="Select a claim library"
-                  width="100%"
-                  onSelectionChange={handleClaimsLibrarySelection}
-                >
-                  {TEST_CLAIMS.map(library => (
-                    <Item key={library.id}>{library.name}</Item>
-                  ))}
-                </Picker>
-              </View>
-              <Divider size="S" />
+                <Flex direction="row" justifyContent="space-between" alignItems="center" marginBottom="size-100">
+                  <Heading level={4}>Experiences</Heading>
+                  <Button 
+                    variant="secondary"
+                    onPress={getExperience}
+                    UNSAFE_style={{ minWidth: 'auto' }}
+                    isDisabled={isSyncing}
+                  >
+                    {isSyncing && <ProgressCircle aria-label="Syncing" isIndeterminate size="S" marginBottom="size-50" />}
+                    Sync
+                  </Button>
+                </Flex>
+                <Divider size="S" />
+                <View marginTop="size-200">
+                  <Heading level={4}>Claim Libraries</Heading>
+                  <Picker
+                    label="Select a claim library"
+                    width="100%"
+                    onSelectionChange={handleClaimsLibrarySelection}
+                  >
+                    {TEST_CLAIMS.map(library => (
+                      <Item key={library.id}>{library.name}</Item>
+                    ))}
+                  </Picker>
+                </View>
+                <Divider size="S" />
                 <ComboBox 
                   label="Select Experience to Run Claims Check" 
                   align="start"
