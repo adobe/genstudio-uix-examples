@@ -24,7 +24,7 @@ export default function AdditionalContextDialog(): JSX.Element {
   const [claimsList, setClaimsList] = useState<Claim[]>([]);
   const [filteredClaimsList, setFilteredClaimsList] = useState<Claim[]>([]);
   const [selectedClaims, setSelectedClaims] = useState<Claim[]>([]);
-  const [showSearch, setShowSearch] = useState<Boolean>(false);
+  const [disableSearch, setDisableSearch] = useState<boolean>(true);
 
   useEffect(() => {
     (async () => {
@@ -54,7 +54,7 @@ export default function AdditionalContextDialog(): JSX.Element {
     ) || [];
     setClaimsList(filteredClaims);
     setFilteredClaimsList(filteredClaims);
-    setShowSearch(!!selectedClaimLibrary);
+    setDisableSearch(!selectedClaimLibrary);
   }, [selectedClaimLibrary]);
 
   useEffect(() => {
@@ -96,17 +96,15 @@ export default function AdditionalContextDialog(): JSX.Element {
             <Divider size="S" />
           </View>
           
-          { 
-            showSearch && 
-            <View gridArea="search">
-              <SearchField
-                label="Search Claims"
-                width="100%"
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-            </View>
-          }
+          <View gridArea="search">
+            <SearchField
+              label="Search Claims"
+              width="100%"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              isDisabled={disableSearch}
+            />
+          </View>
           
           <View gridArea="claims" overflow="auto">
             <Flex direction="column" gap="size-100">
