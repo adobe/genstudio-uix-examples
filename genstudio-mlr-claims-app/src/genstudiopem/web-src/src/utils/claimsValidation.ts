@@ -89,6 +89,5 @@ export const validateClaims = (experience: Experience, experienceNumber: number,
         }
     }
 
-    console.log(result);
     return result;
 }
