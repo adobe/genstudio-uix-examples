@@ -90,7 +90,7 @@ export default function RightPanel(): JSX.Element {
                 <View paddingX="size-200">
                   <Heading level={3}>Claims Libraries</Heading>
                   <ComboBox 
-                    label="Select Experience to Run Claims Check" 
+                    label="Select an experience to run claims check" 
                     align="start"
                     onSelectionChange={(key: React.Key | null) => { 
                       if (key !== null) {

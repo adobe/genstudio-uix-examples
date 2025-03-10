@@ -131,7 +131,7 @@ export default function RightPanel(): JSX.Element {
                 </View>
                 <Divider size="S" />
                 <ComboBox 
-                  label="Select Experience to Run Claims Check" 
+                  label="Select an experience to run claims check" 
                   align="start"
                   isDisabled={!selectedClaimLibrary}
                   onSelectionChange={(key: React.Key | null) => { 
