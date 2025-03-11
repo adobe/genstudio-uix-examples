@@ -27,26 +27,35 @@ export const claimStatus = {
     N_A: 'n/a'
 };
 
+export type ClaimStatus = typeof claimStatus[keyof typeof claimStatus];
+export type FieldClaim = {
+    claimStatus: ClaimStatus;
+    claimViolation?: string;
+}
+
 const maxCharacterLimits = {
     header: 80,
     pre_header: 100,
     body: 150,
 }
 
-function checkClaim(fieldName: string, text: string, claim: string): typeof claimStatus[keyof typeof claimStatus] {
+function checkClaim(fieldName: string, text: string, claim: string): FieldClaim {
     // Check if field has a character limit and if text exceeds it
     const extractedFieldName = fieldName.replace(/pod\d+_/, '')
     const hasLimit = extractedFieldName in maxCharacterLimits;
     const limit = hasLimit ? maxCharacterLimits[extractedFieldName as keyof typeof maxCharacterLimits] : 0;
     if (hasLimit && text.length > limit) {
-        return claimStatus.Violated;
+        return {
+            claimStatus: claimStatus.Violated,
+            claimViolation: `Violated: Max character limit for ${fieldName} is ${limit}`
+        }
     }
 
     const textLower = text.toLowerCase();
     const claimLower = claim.toLowerCase();
 
     if (textLower.includes(claimLower)) {
-        return claimStatus.Valid;
+        return { claimStatus: claimStatus.Valid }
     }
 
     // remove numbers from text and claim
@@ -55,17 +64,20 @@ function checkClaim(fieldName: string, text: string, claim: string): typeof clai
     const claimWithoutNumbers = claimLower.replace(/[0-9]/g, '');
 
     if (textWithoutNumbers.includes(claimWithoutNumbers)) {
-        return claimStatus.Violated;
+        return {
+            claimStatus: claimStatus.Violated,
+            claimViolation: `Violated: ${claim}`
+        }
     }
 
-    return claimStatus.N_A;
+    return { claimStatus: claimStatus.N_A }
 }
 
 // a poor man's claims validation
 // if contains exact match, return valid
 // if contains exact match without numbers, return violated
 // otherwise return n/a
-export const validateClaims = (experience: Experience, experienceNumber: number, selectedClaimLibrary: Key) => {
+export const validateClaims = (experience: Experience, selectedClaimLibrary: Key) => {
     const filteredClaims = TEST_CLAIMS.find(library => library.id === selectedClaimLibrary)?.claims;
 
     if (!filteredClaims) {
@@ -80,11 +92,7 @@ export const validateClaims = (experience: Experience, experienceNumber: number,
         if (typeof entry.fieldValue === 'string') {
             result[fieldName] = [];
             for (const claim of filteredClaims) {
-                const fieldClaim = {
-                    claimStatus: checkClaim(fieldName, entry.fieldValue, claim.description),
-                    claimViolation: `Violated claim: ${claim.description}`
-                };
-                result[fieldName].push(fieldClaim);
+                result[fieldName].push(checkClaim(fieldName, entry.fieldValue, claim.description));
             }
         }
     }

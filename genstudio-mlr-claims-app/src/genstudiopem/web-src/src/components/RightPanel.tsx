@@ -57,10 +57,10 @@ export default function RightPanel(): JSX.Element {
     }
   };
 
-  const runClaimsCheck = async (experience: Experience, selectedExperienceIndex: number, selectedClaimLibrary: any): Promise<void> => {
+  const runClaimsCheck = async (experience: Experience, selectedClaimLibrary: any): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = validateClaims(experience, selectedExperienceIndex, selectedClaimLibrary);
+      const result = validateClaims(experience, selectedClaimLibrary);
       // Add a minimum loading time of 0.5 seconds
       await new Promise(resolve => setTimeout(resolve, 500));
       // Update state with results
@@ -156,7 +156,7 @@ export default function RightPanel(): JSX.Element {
                     width="100%"
                     onPress={() => {
                       const experience = experiences[selectedExperienceIndex];
-                      runClaimsCheck(experience, selectedExperienceIndex, selectedClaimLibrary);
+                      runClaimsCheck(experience, selectedClaimLibrary);
                     }}
                   >
                     Run Claims Check
