@@ -33,6 +33,25 @@ export default function AdditionalContextDialog(): JSX.Element {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      if (guestConnection) {
+        const generationContext = await GenerationContextService.getGenerationContext(guestConnection);
+        if (generationContext?.additionalContexts) {
+          const contextValues = Object.values(generationContext.additionalContexts).flat();
+          const appClaims = contextValues.find(ctx => 
+            ctx.extensionId === extensionId && 
+            ctx.additionalContextType === AdditionalContextTypes.Claims
+          );
+          
+          if (appClaims && Array.isArray(appClaims.additionalContextValues)) {
+            setSelectedClaims(appClaims.additionalContextValues);
+          }
+        }
+      }
+    })();
+  }, [guestConnection]);
+
   const handleClaimsLibrarySelection = (library: Key | null) => {
     if (library === null) return;
     setSelectedClaimLibrary(library);
