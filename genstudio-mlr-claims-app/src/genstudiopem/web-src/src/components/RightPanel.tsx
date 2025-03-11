@@ -41,25 +41,29 @@ export default function RightPanel(): JSX.Element {
     setSelectedClaimLibrary(library);
   };
 
-  const getExperience = async (): Promise<boolean> => {
-    if (!guestConnection) return false;
+  const getExperience = async (): Promise<Experience[] | null> => {
+    if (!guestConnection) return null;
     setIsSyncing(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       const remoteExperiences = await ExperienceService.getExperiences(guestConnection);
       if (remoteExperiences && remoteExperiences.length > 0) {
         setExperiences(remoteExperiences);
-        return true;
+        return remoteExperiences;
       }
-      return false;
+      return null;
     } finally {
       setIsSyncing(false);
     }
   };
 
-  const runClaimsCheck = async (experience: Experience, selectedClaimLibrary: any): Promise<void> => {
+  const handleRunClaimsCheck = async (): Promise<void> => {
+    if (selectedExperienceIndex == null || !selectedClaimLibrary) return;
     setIsLoading(true);
     try {
+      const newExperiences = await getExperience(); // setState is async
+      if (!newExperiences) return;
+      const experience = newExperiences[selectedExperienceIndex];
       const result = validateClaims(experience, selectedClaimLibrary);
       // Add a minimum loading time of 0.5 seconds
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -104,19 +108,6 @@ export default function RightPanel(): JSX.Element {
           {experiences && experiences.length > 0 ? (
             <Flex direction="column" gap="size-200">
               <View paddingX="size-200" paddingY="size-100">
-                <Flex direction="row" justifyContent="space-between" alignItems="center" marginBottom="size-100">
-                  <Heading level={4}>Experiences</Heading>
-                  <Button 
-                    variant="secondary"
-                    onPress={getExperience}
-                    UNSAFE_style={{ minWidth: 'auto' }}
-                    isDisabled={isSyncing}
-                  >
-                    {isSyncing && <ProgressCircle aria-label="Syncing" isIndeterminate size="S" marginBottom="size-50" />}
-                    Sync
-                  </Button>
-                </Flex>
-                <Divider size="S" />
                 <View marginTop="size-200">
                   <Heading level={4}>Claim Libraries</Heading>
                   <Picker
@@ -149,20 +140,17 @@ export default function RightPanel(): JSX.Element {
                 </ComboBox>
               </View>
 
-              {selectedExperienceIndex !== null && (
-                <View paddingX="size-200">
-                  <Button 
-                    variant="primary"
-                    width="100%"
-                    onPress={() => {
-                      const experience = experiences[selectedExperienceIndex];
-                      runClaimsCheck(experience, selectedClaimLibrary);
-                    }}
-                  >
-                    Run Claims Check
-                  </Button>
-                </View>
-              )}
+              <View paddingX="size-200">
+                <Button 
+                  variant="primary"
+                  width="100%"
+                  onPress={handleRunClaimsCheck}
+                  isDisabled={selectedExperienceIndex == null || !selectedClaimLibrary || !experiences}
+                >
+                  Run Claims Check
+                </Button>
+              </View>
+              
               {isLoading ? (
                 <View padding="size-200">
                   <Spinner />
