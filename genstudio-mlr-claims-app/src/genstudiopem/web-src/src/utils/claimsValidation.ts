@@ -18,19 +18,12 @@ governing permissions and limitations under the License.
 // return the result
 
 import { Experience } from '@adobe/genstudio-uix-sdk';
-import { TEST_CLAIMS } from '../Constants';
+import { TEST_CLAIMS, VIOLATION_STATUS, ViolationStatus } from '../Constants';
 import { Key } from 'react';
 
-export const claimStatus = {
-    Valid: 'valid',
-    Violated: 'violated',
-    N_A: 'n/a'
-};
-
-export type ClaimStatus = typeof claimStatus[keyof typeof claimStatus];
-export type FieldClaim = {
-    claimStatus: ClaimStatus;
-    claimViolation?: string;
+export type Violation = {
+    status: ViolationStatus;
+    violation?: string;
 }
 
 const maxCharacterLimits = {
@@ -39,23 +32,12 @@ const maxCharacterLimits = {
     body: 150,
 }
 
-function checkClaim(fieldName: string, text: string, claim: string): FieldClaim {
-    // Check if field has a character limit and if text exceeds it
-    const extractedFieldName = fieldName.replace(/pod\d+_/, '')
-    const hasLimit = extractedFieldName in maxCharacterLimits;
-    const limit = hasLimit ? maxCharacterLimits[extractedFieldName as keyof typeof maxCharacterLimits] : 0;
-    if (hasLimit && text.length > limit) {
-        return {
-            claimStatus: claimStatus.Violated,
-            claimViolation: `Violated: Max character limit for ${fieldName} is ${limit}`
-        }
-    }
-
+function checkClaim(fieldName: string, text: string, claim: string): Violation {
     const textLower = text.toLowerCase();
     const claimLower = claim.toLowerCase();
 
     if (textLower.includes(claimLower)) {
-        return { claimStatus: claimStatus.Valid }
+        return { status: VIOLATION_STATUS.Valid }
     }
 
     // remove numbers from text and claim
@@ -65,12 +47,26 @@ function checkClaim(fieldName: string, text: string, claim: string): FieldClaim 
 
     if (textWithoutNumbers.includes(claimWithoutNumbers)) {
         return {
-            claimStatus: claimStatus.Violated,
-            claimViolation: `Violated: ${claim}`
+            status: VIOLATION_STATUS.Violated,
+            violation: `Violated claim: ${claim}`
         }
     }
 
-    return { claimStatus: claimStatus.N_A }
+    return { status: VIOLATION_STATUS.N_A }
+}
+
+function checkCharacterLimits(fieldName: string, text: string): Violation {
+    // Check if field has a character limit and if text exceeds it
+    const extractedFieldName = fieldName.replace(/pod\d+_/, '')
+    const hasLimit = extractedFieldName in maxCharacterLimits;
+    const limit = hasLimit ? maxCharacterLimits[extractedFieldName as keyof typeof maxCharacterLimits] : 0;
+    if (hasLimit && text.length > limit) {
+        return {
+            status: VIOLATION_STATUS.Violated,
+            violation: `Violated: Max character limit for ${fieldName} is ${limit}`
+        }
+    }
+    return { status: VIOLATION_STATUS.N_A }
 }
 
 // a poor man's claims validation
@@ -94,6 +90,7 @@ export const validateClaims = (experience: Experience, selectedClaimLibrary: Key
             for (const claim of filteredClaims) {
                 result[fieldName].push(checkClaim(fieldName, entry.fieldValue, claim.description));
             }
+            result[fieldName].push(checkCharacterLimits(fieldName, entry.fieldValue));
         }
     }
 

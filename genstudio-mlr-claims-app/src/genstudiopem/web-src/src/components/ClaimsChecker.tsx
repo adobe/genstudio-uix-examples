@@ -11,25 +11,26 @@ governing permissions and limitations under the License.
 */
 
 import React from 'react';
-import { Flex, Heading, Text, View, Button, InlineAlert, Badge } from "@adobe/react-spectrum";
+import { Flex, Heading, Text, View, Button, InlineAlert, Badge, Divider } from "@adobe/react-spectrum";
 import Alert from "@spectrum-icons/workflow/Alert";
-import { claimStatus } from '../utils/claimsValidation';
+import { Violation } from '../utils/claimsValidation';
 import { copyToClipboard } from '../utils/copyToClipboard';
+import { VIOLATION_STATUS } from '../Constants';
 
 interface ClaimsCheckerProps {
     claims: any;  // or define a more specific type
     experienceNumber: number;
-  } 
+} 
 
-  const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber }) => {
+const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber }) => {
   // Count total issues
-  const totalIssues = Object.values(claims).flat().filter((claim: any) => 
-    claim.claimStatus === claimStatus.Violated
+  const totalIssues = Object.values(claims).flat().filter((violation: any) => 
+    violation.status === VIOLATION_STATUS.Violated
   ).length;
-  
-  const renderSection = (title: string, items: Array<{ claimStatus: string; claimViolation?: string }>) => {
+
+  const renderViolation = (title: string, items: Array<{ status: string; violation?: string }>) => {
     const issueCount = items?.filter(item => 
-      item.claimStatus === claimStatus.Violated
+      item.status === VIOLATION_STATUS.Violated
     ).length;
   
     return (
@@ -44,19 +45,20 @@ interface ClaimsCheckerProps {
         </Flex>
 
         {issueCount > 0 && items.map((item, index) => (
-          item.claimStatus === claimStatus.Violated && item.claimViolation && (
+          item.status === VIOLATION_STATUS.Violated && item.violation && (
             <View key={index} marginY="size-100">
               <Flex gap="size-100" alignItems="start">
-                <Alert size="S" />
+                <Alert size="S" color='notice' />
                 <View>
-                  <Text>{item.claimViolation}</Text>
-                    {/* Copy Claim Button */}
+                  <Text>{item.violation}</Text>
+                  {/* Copy Claim Button */
+                    item.violation!.includes('Violated claim:') && 
                     <View marginTop="size-100">
-                    <Button variant="secondary" style="fill" onPress={() => copyToClipboard(item.claimViolation!)}
-                    >
-                      Copy Claim
-                    </Button>
+                      <Button variant="secondary" style="fill" onPress={() => copyToClipboard(item.violation!.split('Violated claim:')[1].trim())}>
+                        Copy Claim
+                      </Button>
                     </View>
+                  }
                 </View>
               </Flex>
             </View>
@@ -75,18 +77,39 @@ interface ClaimsCheckerProps {
         return <InlineAlert variant="notice" width="100%"><Heading>{totalIssues} issues need attention on Email {experienceNumber + 1}</Heading></InlineAlert>
     }
   }
-  
-    return (
-      <View padding="size-200">
-        {/* Status Alert */}
-          <Flex gap="size-100"  justifyContent="space-between">
-            {message(totalIssues)}
-          </Flex>
-  
-        {renderSection('Pre header', claims.pre_header)}
-        {renderSection('Header', claims.header)}
-        {renderSection('Body', claims.body)}
-      </View>
-    );
-  };
+
+  // Group violations by pod and field
+  const violationsByPodAndField: Record<string, Record<string, Violation[]>> = {}
+  for (const rawField of Object.keys(claims)) {
+    const field = rawField.replace(/pod\d+_/, '')
+    const match = rawField.match(/^pod(\d+)_/i);
+    const pod = match ? match[1] : '0';
+    if (!violationsByPodAndField[pod]) violationsByPodAndField[pod] = {};
+    violationsByPodAndField[pod][field] = claims[rawField];
+  }
+
+  const camelcase = (str: string) => {
+    return str.replace(/(?:^|_)(\w)/g, (_, char) => char.toUpperCase());
+  }
+
+  return (
+    <View padding="size-200">
+      {/* Status Alert */}
+      <Flex gap="size-100"  justifyContent="space-between">
+        {message(totalIssues)}
+      </Flex>
+      {Object.keys(violationsByPodAndField).map((pod) => (
+        <View key={pod}>
+          { pod!== '0' && <Heading level={5}>Section {pod}</Heading> }
+          {Object.keys(violationsByPodAndField[pod]).map((fieldName) => (
+            <View key={fieldName}>
+              {renderViolation(camelcase(fieldName), violationsByPodAndField[pod][fieldName])}
+            </View>
+          ))}
+          <Divider size="S" />
+        </View>
+      ))}
+    </View>
+  );
+};
 export default ClaimsChecker;
