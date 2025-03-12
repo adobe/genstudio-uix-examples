@@ -48,13 +48,37 @@ export default function RightPanel(): JSX.Element {
     })();
   }, []);
 
+  useEffect(() => {
+    if (guestConnection) {
+      pollForExperiences();
+    }
+  }, [guestConnection]);
+
   const handleClaimsLibrarySelection = (library: Key | null) => {
     if (library === null) return;
+
     setSelectedClaimLibrary(library);
+  };
+
+  const handleExperienceSelection = (key: React.Key | null) => {
+    if (!key || !experiences?.length) return;
+
+    const index = experiences.findIndex(exp => exp.id === key);
+    if (index !== -1) {
+      setSelectedExperienceIndex(index);
+    }
+  };
+
+  const handleRunClaimsCheck = () => {
+    if (selectedExperienceIndex === null || !experiences?.length) return;
+
+    const experience = experiences[selectedExperienceIndex];
+    runClaimsCheck(experience, selectedExperienceIndex, selectedClaimLibrary);
   };
 
   const getExperience = async (): Promise<boolean> => {
     if (!guestConnection) return false;
+
     setIsSyncing(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -110,28 +134,6 @@ export default function RightPanel(): JSX.Element {
     }
     setIsPolling(false);
   };
-
-  useEffect(() => {
-    if (guestConnection) {
-      pollForExperiences();
-    }
-  }, [guestConnection]);
-
-  const handleExperienceSelection = (key: React.Key | null) => {
-    if (!key || !experiences?.length) return;
-  
-    const index = experiences.findIndex(exp => exp.id === key);
-    if (index !== -1) {
-      setSelectedExperienceIndex(index);
-    }
-  }
-  
-  const handleRunClaimsCheck = () => {
-    if (selectedExperienceIndex === null || !experiences?.length) return;
-  
-    const experience = experiences[selectedExperienceIndex];
-    runClaimsCheck(experience, selectedExperienceIndex, selectedClaimLibrary);
-  }
 
   return (
     <View backgroundColor="static-white" height="100vh">
