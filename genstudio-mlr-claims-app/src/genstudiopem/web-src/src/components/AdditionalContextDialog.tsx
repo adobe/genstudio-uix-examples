@@ -67,6 +67,21 @@ export default function AdditionalContextDialog(): JSX.Element {
     );
   };
 
+  const handleCancel = () =>
+    ExtensionRegistrationService.closeAddContextAddOnBar(guestConnection);
+
+  const handleClaimSelect = async () => {
+    const claimsContext: AdditionalContext<Claim> = {
+      extensionId: extensionId,
+      additionalContextType: AdditionalContextTypes.Claims,
+      additionalContextValues: selectedClaims,
+    };
+    await GenerationContextService.setAdditionalContext(
+      guestConnection,
+      claimsContext
+    );
+  };
+
   useEffect(() => {
     const filteredClaims =
       TEST_CLAIMS.find(
@@ -138,31 +153,10 @@ export default function AdditionalContextDialog(): JSX.Element {
           justifyContent="end"
           gridArea="actions"
         >
-          <Button
-            variant="secondary"
-            onPress={() =>
-              ExtensionRegistrationService.closeAddContextAddOnBar(
-                guestConnection
-              )
-            }
-          >
+          <Button variant="secondary" onPress={handleCancel}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            style="fill"
-            onPress={async () => {
-              const claimsContext: AdditionalContext<Claim> = {
-                extensionId: extensionId,
-                additionalContextType: AdditionalContextTypes.Claims,
-                additionalContextValues: selectedClaims,
-              };
-              await GenerationContextService.setAdditionalContext(
-                guestConnection,
-                claimsContext
-              );
-            }}
-          >
+          <Button variant="primary" style="fill" onPress={handleClaimSelect}>
             Select
           </Button>
         </Flex>
