@@ -77,7 +77,7 @@ interface ClaimsCheckerProps {
   }
   
     return (
-      <View padding="size-200">
+      <View>
         {/* Status Alert */}
           <Flex gap="size-100"  justifyContent="space-between">
             {message(totalIssues)}
