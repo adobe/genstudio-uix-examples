@@ -137,15 +137,14 @@ export default function RightPanel(): JSX.Element {
               <Button
                 variant="secondary"
                 onPress={getExperience}
-                UNSAFE_style={{ minWidth: "auto" }}
                 isDisabled={isSyncing}
               >
                 {isSyncing && (
                   <ProgressCircle
+                    size="S"
+                    marginEnd="size-50"
                     aria-label="Syncing"
                     isIndeterminate
-                    size="S"
-                    marginBottom="size-50"
                   />
                 )}
                 Sync
