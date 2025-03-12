@@ -10,12 +10,31 @@
  * governing permissions and limitations under the License.
  */
 
-
-import React, { useEffect, useState } from 'react';
+import {
+  AdditionalContext,
+  AdditionalContextTypes,
+  Claim,
+  ExtensionRegistrationService,
+  GenerationContextService,
+} from "@adobe/genstudio-uix-sdk";
+import {
+  Button,
+  Checkbox,
+  defaultTheme,
+  Divider,
+  Flex,
+  Grid,
+  Item,
+  Key,
+  Picker,
+  Provider,
+  SearchField,
+  View,
+} from "@adobe/react-spectrum";
 import { attach } from "@adobe/uix-guest";
+import React, { useEffect, useState } from "react";
+
 import { extensionId, TEST_CLAIMS } from "../Constants";
-import { Provider, defaultTheme, Flex, Item, Divider, SearchField, Checkbox, Key, Button, Picker, View, Grid } from '@adobe/react-spectrum';
-import { Claim, AdditionalContextTypes, GenerationContextService, AdditionalContext, ExtensionRegistrationService } from '@adobe/genstudio-uix-sdk';
 
 export default function AdditionalContextDialog(): JSX.Element {
   const [guestConnection, setGuestConnection] = useState<any>(null);
@@ -43,24 +62,30 @@ export default function AdditionalContextDialog(): JSX.Element {
   };
 
   const handleClaimChange = (claim: Claim) => {
-    setSelectedClaims(prev =>
-      prev.some(c => c.id === claim.id) ? prev.filter(c => c.id !== claim.id) : [...prev, claim]
+    setSelectedClaims((prev) =>
+      prev.some((c) => c.id === claim.id)
+        ? prev.filter((c) => c.id !== claim.id)
+        : [...prev, claim]
     );
   };
 
   useEffect(() => {
-    const filteredClaims = TEST_CLAIMS.find(library => library.id === selectedClaimLibrary)?.claims.filter(claim =>
-      claim.description.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
+    const filteredClaims =
+      TEST_CLAIMS.find(
+        (library) => library.id === selectedClaimLibrary
+      )?.claims.filter((claim) =>
+        claim.description.toLowerCase().includes(searchTerm.toLowerCase())
+      ) || [];
     setClaimsList(filteredClaims);
     setFilteredClaimsList(filteredClaims);
     setDisableSearch(!selectedClaimLibrary);
   }, [selectedClaimLibrary]);
 
   useEffect(() => {
-    const filteredClaims = claimsList.filter(claim =>
-      claim.description.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
+    const filteredClaims =
+      claimsList.filter((claim) =>
+        claim.description.toLowerCase().includes(searchTerm.toLowerCase())
+      ) || [];
     setFilteredClaimsList(filteredClaims);
   }, [searchTerm]);
 
@@ -68,50 +93,41 @@ export default function AdditionalContextDialog(): JSX.Element {
     <Provider theme={defaultTheme}>
       <View backgroundColor="static-white" height="100vh">
         <Grid
-          areas={[
-            'library',
-            'divider',
-            'search',
-            'claims',
-            'actions'
-          ]}
-          columns={['1fr']}
-          rows={['auto', 'auto', 'auto', '2fr', 'auto']}
+          areas={["library", "divider", "search", "claims", "actions"]}
+          columns={["1fr"]}
+          rows={["auto", "auto", "auto", "2fr", "auto"]}
           height="100%"
           gap="size-300"
         >
           <View gridArea="library">
             <Picker
-              label="Select a claim library"
+              label="Select claim library"
               width="100%"
               onSelectionChange={handleClaimsLibrarySelection}
             >
-              {TEST_CLAIMS.map(library => (
+              {TEST_CLAIMS.map((library) => (
                 <Item key={library.id}>{library.name}</Item>
               ))}
             </Picker>
           </View>
-          
           <View gridArea="divider">
             <Divider size="S" />
           </View>
-          
           <View gridArea="search">
             <SearchField
-              label="Search Claims"
+              label="Search claims"
               width="100%"
               value={searchTerm}
               onChange={handleSearchChange}
               isDisabled={disableSearch}
             />
           </View>
-          
           <View gridArea="claims" overflow="auto">
             <Flex direction="column" gap="size-100">
-              {filteredClaimsList.map(claim => (
+              {filteredClaimsList.map((claim) => (
                 <Checkbox
                   key={claim.id}
-                  isSelected={selectedClaims?.some(c => c.id === claim.id)}
+                  isSelected={selectedClaims?.some((c) => c.id === claim.id)}
                   onChange={() => handleClaimChange(claim)}
                 >
                   {claim.description}
@@ -119,11 +135,19 @@ export default function AdditionalContextDialog(): JSX.Element {
               ))}
             </Flex>
           </View>
-          
-          <Flex direction="row" gap="size-100" justifyContent="end" gridArea="actions">
+          <Flex
+            direction="row"
+            gap="size-100"
+            justifyContent="end"
+            gridArea="actions"
+          >
             <Button
               variant="secondary"
-              onPress={() => ExtensionRegistrationService.closeAddContextAddOnBar(guestConnection)}
+              onPress={() =>
+                ExtensionRegistrationService.closeAddContextAddOnBar(
+                  guestConnection
+                )
+              }
             >
               Cancel
             </Button>
@@ -134,9 +158,12 @@ export default function AdditionalContextDialog(): JSX.Element {
                 const claimsContext: AdditionalContext<Claim> = {
                   extensionId: extensionId,
                   additionalContextType: AdditionalContextTypes.Claims,
-                  additionalContextValues: selectedClaims
+                  additionalContextValues: selectedClaims,
                 };
-                await GenerationContextService.setAdditionalContext(guestConnection, claimsContext);
+                await GenerationContextService.setAdditionalContext(
+                  guestConnection,
+                  claimsContext
+                );
               }}
             >
               Select
@@ -146,4 +173,4 @@ export default function AdditionalContextDialog(): JSX.Element {
       </View>
     </Provider>
   );
-};
+}
