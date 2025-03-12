@@ -117,6 +117,22 @@ export default function RightPanel(): JSX.Element {
     }
   }, [guestConnection]);
 
+  const handleExperienceSelection = (key: React.Key | null) => {
+    if (!key || !experiences?.length) return;
+  
+    const index = experiences.findIndex(exp => exp.id === key);
+    if (index !== -1) {
+      setSelectedExperienceIndex(index);
+    }
+  }
+  
+  const handleRunClaimsCheck = () => {
+    if (selectedExperienceIndex === null || !experiences?.length) return;
+  
+    const experience = experiences[selectedExperienceIndex];
+    runClaimsCheck(experience, selectedExperienceIndex, selectedClaimLibrary);
+  }
+
   return (
     <View backgroundColor="static-white" height="100vh">
       <Flex height="100%" direction="column" marginX="size-200">
@@ -150,16 +166,7 @@ export default function RightPanel(): JSX.Element {
                     label="Select experience"
                     align="start"
                     isDisabled={!selectedClaimLibrary || isSyncing}
-                    onSelectionChange={(key: React.Key | null) => {
-                      if (key !== null) {
-                        const index = experiences.findIndex(
-                          exp => exp.id === key,
-                        );
-                        if (index !== -1) {
-                          setSelectedExperienceIndex(index);
-                        }
-                      }
-                    }}
+                    onSelectionChange={handleExperienceSelection}
                   >
                     {experiences.map((experience, index) => (
                       <Item
@@ -198,14 +205,7 @@ export default function RightPanel(): JSX.Element {
                   <Button
                     variant="primary"
                     isDisabled={isLoading}
-                    onPress={() => {
-                      const experience = experiences[selectedExperienceIndex];
-                      runClaimsCheck(
-                        experience,
-                        selectedExperienceIndex,
-                        selectedClaimLibrary,
-                      );
-                    }}
+                    onPress={handleRunClaimsCheck}
                   >
                     Run Claims Check
                   </Button>
