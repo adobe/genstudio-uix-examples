@@ -13,7 +13,6 @@ governing permissions and limitations under the License.
 import { Experience, ExperienceService } from "@adobe/genstudio-uix-sdk";
 import {
   Button,
-  ComboBox,
   Divider,
   Flex,
   Heading,
@@ -120,123 +119,131 @@ export default function RightPanel(): JSX.Element {
 
   return (
     <View backgroundColor="static-white" height="100vh">
-      {experiences && experiences.length > 0 ? (
-        <Flex
-          direction="column"
-          height="100%"
-          gap="size-200"
-        >
-          <View paddingX="size-200" paddingY="size-100">
-            <Flex
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              marginBottom="size-100"
-            >
-              <Heading level={4}>Experiences</Heading>
-              <Button
-                variant="secondary"
-                onPress={getExperience}
-                isDisabled={isSyncing}
-              >
-                {isSyncing && (
-                  <ProgressCircle
-                    size="S"
-                    marginEnd="size-50"
-                    aria-label="Syncing"
-                    isIndeterminate
-                  />
+      <Flex height="100%" direction="column" marginX="size-200">
+        {experiences && experiences.length > 0 ? (
+          <Flex
+            height="100%"
+            direction="column"
+            marginY="size-200"
+            gap="size-400"
+          >
+            <Flex direction="column" gap="size-200">
+              <Heading level={3} UNSAFE_style={{ lineHeight: "8px" }}>
+                Check Claims
+              </Heading>
+              <Flex direction="column" gap="size-300">
+                <Picker
+                  label="Select claim library"
+                  width="100%"
+                  onSelectionChange={handleClaimsLibrarySelection}
+                >
+                  {TEST_CLAIMS.map(library => (
+                    <Item key={library.id}>{library.name}</Item>
+                  ))}
+                </Picker>
+                <Flex
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Picker
+                    label="Select experience"
+                    align="start"
+                    isDisabled={!selectedClaimLibrary || isSyncing}
+                    onSelectionChange={(key: React.Key | null) => {
+                      if (key !== null) {
+                        const index = experiences.findIndex(
+                          exp => exp.id === key,
+                        );
+                        if (index !== -1) {
+                          setSelectedExperienceIndex(index);
+                        }
+                      }
+                    }}
+                  >
+                    {experiences.map((experience, index) => (
+                      <Item
+                        key={experience.id}
+                      >{`Experience ${index + 1}`}</Item>
+                    ))}
+                  </Picker>
+                  <Button
+                    variant="secondary"
+                    width="160px"
+                    isDisabled={isSyncing}
+                    onPress={getExperience}
+                    marginTop="size-300"
+                  >
+                    {isSyncing ? (
+                      <Flex
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-around"
+                        gap="size-50"
+                      >
+                        <ProgressCircle
+                          size="S"
+                          marginEnd="size-50"
+                          aria-label="Syncing"
+                          isIndeterminate
+                        />
+                        <Text>Syncing...</Text>
+                      </Flex>
+                    ) : (
+                      <Text>Sync Experiences</Text>
+                    )}
+                  </Button>
+                </Flex>
+                {selectedExperienceIndex !== null && (
+                  <Button
+                    variant="primary"
+                    isDisabled={isLoading}
+                    onPress={() => {
+                      const experience = experiences[selectedExperienceIndex];
+                      runClaimsCheck(
+                        experience,
+                        selectedExperienceIndex,
+                        selectedClaimLibrary,
+                      );
+                    }}
+                  >
+                    Run Claims Check
+                  </Button>
                 )}
-                Sync
-              </Button>
+              </Flex>
             </Flex>
-            <Divider size="S" />
-            <View marginTop="size-200">
-              <Heading level={4}>Claim Libraries</Heading>
-              <Picker
-                label="Select a claim library"
-                width="100%"
-                onSelectionChange={handleClaimsLibrarySelection}
-              >
-                {TEST_CLAIMS.map(library => (
-                  <Item key={library.id}>{library.name}</Item>
-                ))}
-              </Picker>
-            </View>
-            <Divider size="S" />
-            <ComboBox
-              label="Select Experience to Run Claims Check"
-              align="start"
-              isDisabled={!selectedClaimLibrary}
-              onSelectionChange={(key: React.Key | null) => {
-                if (key !== null) {
-                  const index = experiences.findIndex(exp => exp.id === key);
-                  if (index !== -1) {
-                    setSelectedExperienceIndex(index);
-                  }
-                }
-              }}
-            >
-              {experiences.map((experience, index) => (
-                <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
-              ))}
-            </ComboBox>
-          </View>
-          {selectedExperienceIndex !== null && (
-            <View paddingX="size-200">
-              <Button
-                variant="primary"
-                width="100%"
-                isDisabled={isLoading}
-                onPress={() => {
-                  const experience = experiences[selectedExperienceIndex];
-                  runClaimsCheck(
-                    experience,
-                    selectedExperienceIndex,
-                    selectedClaimLibrary,
-                  );
-                }}
-              >
-                Run Claims Check
-              </Button>
-            </View>
-          )}
-          {isLoading ? (
-            <Flex
-              height="100%"
-              marginBottom="size-200"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <ProgressCircle aria-label="Loading" isIndeterminate />
-            </Flex>
-          ) : (
-            claimsResult && (
-              <View>
-                <Divider size="S" />
-                <View paddingX="size-200" paddingTop="size-200">
-                  <Heading level={4}>Claims Results</Heading>
-                </View>
-                <ClaimsChecker
-                  claims={claimsResult}
-                  experienceNumber={selectedExperienceIndex || 0}
-                />
-              </View>
-            )
-          )}
-        </Flex>
-      ) : (
-        <Flex
-          direction="column"
-          height="100%"
-          alignItems="center"
-          justifyContent="center"
-          gap="size-200"
-        >
-          <ProgressCircle aria-label="Loading" isIndeterminate />
-          {isPolling && <Text>Waiting for experiences to be ready...</Text>}
-        </Flex>
-      )}
+            {(isLoading || claimsResult) && <Divider size="S" />}
+            {isLoading ? (
+              <Flex height="100%" alignItems="center" justifyContent="center">
+                <ProgressCircle aria-label="Loading" isIndeterminate />
+              </Flex>
+            ) : (
+              claimsResult && (
+                <Flex direction="column" gap="size-300">
+                  <Heading level={3} UNSAFE_style={{ lineHeight: "0px" }}>
+                    Results
+                  </Heading>
+                  <ClaimsChecker
+                    claims={claimsResult}
+                    experienceNumber={selectedExperienceIndex || 0}
+                  />
+                </Flex>
+              )
+            )}
+          </Flex>
+        ) : (
+          <Flex
+            height="100%"
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            gap="size-200"
+          >
+            <ProgressCircle aria-label="Loading" isIndeterminate />
+            {isPolling && <Text>Waiting for experiences to be ready...</Text>}
+          </Flex>
+        )}
+      </Flex>
     </View>
   );
 }
