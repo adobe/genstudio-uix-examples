@@ -54,6 +54,12 @@ export default function RightPanel(): JSX.Element {
     }
   }, [guestConnection]);
 
+  useEffect(() => {
+    setClaimsResult(null)
+  }, [selectedExperienceIndex]);
+
+  console.log(claimsResult);
+
   const handleClaimsLibrarySelection = (library: Key | null) => {
     if (library === null) return;
 
