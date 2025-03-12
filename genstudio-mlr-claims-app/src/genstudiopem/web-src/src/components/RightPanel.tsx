@@ -135,116 +135,143 @@ export default function RightPanel(): JSX.Element {
     setIsPolling(false);
   };
 
+  const renderClaimsLibraryPicker = () => (
+    <Picker
+      label="Select claim library"
+      width="100%"
+      onSelectionChange={handleClaimsLibrarySelection}
+    >
+      {TEST_CLAIMS.map(library => (
+        <Item key={library.id}>{library.name}</Item>
+      ))}
+    </Picker>
+  );
+
+  const renderExperiencePicker = () => {
+    if (!experiences) return null;
+
+    return (
+      <Picker
+        label="Select experience"
+        align="start"
+        isDisabled={!selectedClaimLibrary || isSyncing}
+        onSelectionChange={handleExperienceSelection}
+      >
+        {experiences.map((experience, index) => (
+          <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
+        ))}
+      </Picker>
+    );
+  };
+
+  const renderSyncExperiencesButton = () => (
+    <Button
+      variant="secondary"
+      width="160px"
+      isDisabled={isSyncing}
+      onPress={getExperience}
+      marginTop="size-300"
+    >
+      {isSyncing ? (
+        <Flex
+          direction="row"
+          alignItems="center"
+          justifyContent="space-around"
+          gap="size-50"
+        >
+          <ProgressCircle
+            size="S"
+            marginEnd="size-50"
+            aria-label="Syncing"
+            isIndeterminate
+          />
+          <Text>Syncing...</Text>
+        </Flex>
+      ) : (
+        <Text>Sync Experiences</Text>
+      )}
+    </Button>
+  );
+
+  const renderRunClaimsCheckButton = () => {
+    if (selectedExperienceIndex === null) return null;
+
+    return (
+      <Button
+        variant="primary"
+        isDisabled={isLoading}
+        onPress={handleRunClaimsCheck}
+      >
+        Run Claims Check
+      </Button>
+    );
+  };
+
+  const renderLoadingIndicator = () => (
+    <Flex height="100%" alignItems="center" justifyContent="center">
+      <ProgressCircle aria-label="Loading" isIndeterminate />
+    </Flex>
+  );
+
+  const renderResults = () => {
+    if (!claimsResult) return null;
+
+    return (
+      <Flex direction="column" gap="size-300">
+        <Heading level={3} UNSAFE_style={{ lineHeight: "0px" }}>
+          Results
+        </Heading>
+        <ClaimsChecker
+          claims={claimsResult}
+          experienceNumber={selectedExperienceIndex || 0}
+        />
+      </Flex>
+    );
+  };
+
+  const renderClaimsChecker = () => (
+    <Flex height="100%" direction="column" marginY="size-200" gap="size-400">
+      <Flex direction="column" gap="size-200">
+        <Heading level={3} UNSAFE_style={{ lineHeight: "8px" }}>
+          Check Claims
+        </Heading>
+        <Flex direction="column" gap="size-300">
+          {renderClaimsLibraryPicker()}
+          <Flex
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            {renderExperiencePicker()}
+            {renderSyncExperiencesButton()}
+          </Flex>
+          {renderRunClaimsCheckButton()}
+        </Flex>
+      </Flex>
+      {(isLoading || claimsResult) && <Divider size="S" />}
+      {isLoading ? renderLoadingIndicator() : renderResults()}
+    </Flex>
+  );
+
+  const renderWaitingForExperiences = () => (
+    <Flex
+      height="100%"
+      direction="column"
+      alignItems="center"
+      justifyContent="center"
+      gap="size-200"
+    >
+      <ProgressCircle aria-label="Loading" isIndeterminate />
+      {isPolling && <Text>Waiting for experiences to be ready...</Text>}
+    </Flex>
+  );
+
   return (
     <View backgroundColor="static-white" height="100vh">
       <Flex height="100%" direction="column" marginX="size-200">
-        {experiences && experiences.length > 0 ? (
-          <Flex
-            height="100%"
-            direction="column"
-            marginY="size-200"
-            gap="size-400"
-          >
-            <Flex direction="column" gap="size-200">
-              <Heading level={3} UNSAFE_style={{ lineHeight: "8px" }}>
-                Check Claims
-              </Heading>
-              <Flex direction="column" gap="size-300">
-                <Picker
-                  label="Select claim library"
-                  width="100%"
-                  onSelectionChange={handleClaimsLibrarySelection}
-                >
-                  {TEST_CLAIMS.map(library => (
-                    <Item key={library.id}>{library.name}</Item>
-                  ))}
-                </Picker>
-                <Flex
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <Picker
-                    label="Select experience"
-                    align="start"
-                    isDisabled={!selectedClaimLibrary || isSyncing}
-                    onSelectionChange={handleExperienceSelection}
-                  >
-                    {experiences.map((experience, index) => (
-                      <Item
-                        key={experience.id}
-                      >{`Experience ${index + 1}`}</Item>
-                    ))}
-                  </Picker>
-                  <Button
-                    variant="secondary"
-                    width="160px"
-                    isDisabled={isSyncing}
-                    onPress={getExperience}
-                    marginTop="size-300"
-                  >
-                    {isSyncing ? (
-                      <Flex
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-around"
-                        gap="size-50"
-                      >
-                        <ProgressCircle
-                          size="S"
-                          marginEnd="size-50"
-                          aria-label="Syncing"
-                          isIndeterminate
-                        />
-                        <Text>Syncing...</Text>
-                      </Flex>
-                    ) : (
-                      <Text>Sync Experiences</Text>
-                    )}
-                  </Button>
-                </Flex>
-                {selectedExperienceIndex !== null && (
-                  <Button
-                    variant="primary"
-                    isDisabled={isLoading}
-                    onPress={handleRunClaimsCheck}
-                  >
-                    Run Claims Check
-                  </Button>
-                )}
-              </Flex>
-            </Flex>
-            {(isLoading || claimsResult) && <Divider size="S" />}
-            {isLoading ? (
-              <Flex height="100%" alignItems="center" justifyContent="center">
-                <ProgressCircle aria-label="Loading" isIndeterminate />
-              </Flex>
-            ) : (
-              claimsResult && (
-                <Flex direction="column" gap="size-300">
-                  <Heading level={3} UNSAFE_style={{ lineHeight: "0px" }}>
-                    Results
-                  </Heading>
-                  <ClaimsChecker
-                    claims={claimsResult}
-                    experienceNumber={selectedExperienceIndex || 0}
-                  />
-                </Flex>
-              )
-            )}
-          </Flex>
-        ) : (
-          <Flex
-            height="100%"
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            gap="size-200"
-          >
-            <ProgressCircle aria-label="Loading" isIndeterminate />
-            {isPolling && <Text>Waiting for experiences to be ready...</Text>}
-          </Flex>
-        )}
+        {experiences && experiences.length > 0
+          ? renderClaimsChecker()
+          : renderWaitingForExperiences()}
       </Flex>
     </View>
   );
