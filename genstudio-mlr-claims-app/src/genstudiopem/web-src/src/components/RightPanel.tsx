@@ -28,6 +28,7 @@ import React, { Key, useEffect, useState } from "react";
 import { extensionId, TEST_CLAIMS } from "../Constants";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
+import { ClaimResults } from "../types";
 
 export default function RightPanel(): JSX.Element {
   const [guestConnection, setGuestConnection] = useState<any>(null);
@@ -36,7 +37,7 @@ export default function RightPanel(): JSX.Element {
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
     number | null
   >(null);
-  const [claimsResult, setClaimsResult] = useState<any>(null);
+  const [claimsResults, setClaimsResults] = useState<ClaimResults | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPolling, setIsPolling] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -55,10 +56,8 @@ export default function RightPanel(): JSX.Element {
   }, [guestConnection]);
 
   useEffect(() => {
-    setClaimsResult(null);
+    setClaimsResults(null);
   }, [selectedExperienceIndex]);
-
-  console.log(claimsResult);
 
   const handleClaimsLibrarySelection = (library: Key | null) => {
     if (library === null) return;
@@ -76,9 +75,10 @@ export default function RightPanel(): JSX.Element {
   };
 
   const handleRunClaimsCheck = async () => {
+    if (selectedExperienceIndex === null) return;
     // setState is async so we need the result from getExperience directly
     const newExperiences = await getExperience();
-    if (selectedExperienceIndex === null || !newExperiences?.length) return;
+    if (!newExperiences?.length) return;
     runClaimsCheck(newExperiences[selectedExperienceIndex], selectedClaimLibrary);
   };
 
@@ -111,7 +111,7 @@ export default function RightPanel(): JSX.Element {
       // Add a minimum loading time of 0.5 seconds
       await new Promise((resolve) => setTimeout(resolve, 500));
       // Update state with results
-      setClaimsResult(result);
+      setClaimsResults(result);
     } catch (error) {
       console.error("Error in claims validation:", error);
     } finally {
@@ -187,15 +187,15 @@ export default function RightPanel(): JSX.Element {
   );
 
   const renderResults = () => {
-    if (!claimsResult) return null;
+    if (!claimsResults) return null;
 
     return (
-      <Flex direction="column" gap="size-300">
+      <Flex direction="column" gap="size-200">
         <Heading level={3} UNSAFE_style={{ lineHeight: "0px" }}>
           Results
         </Heading>
         <ClaimsChecker
-          claims={claimsResult}
+          claims={claimsResults}
           experienceNumber={selectedExperienceIndex || 0}
         />
       </Flex>
@@ -220,7 +220,7 @@ export default function RightPanel(): JSX.Element {
           {renderRunClaimsCheckButton()}
         </Flex>
       </Flex>
-      {(isLoading || claimsResult) && <Divider size="S" />}
+      {(isLoading || claimsResults) && <Divider size="S" />}
       {isLoading ? renderLoadingIndicator() : renderResults()}
     </Flex>
   );
