@@ -32,7 +32,7 @@ const maxCharacterLimits = {
     body: 150,
 }
 
-function checkClaim(fieldName: string, text: string, claim: string): Violation {
+function checkClaim(text: string, claim: string): Violation {
     const textLower = text.toLowerCase();
     const claimLower = claim.toLowerCase();
 
@@ -88,7 +88,7 @@ export const validateClaims = (experience: Experience, selectedClaimLibrary: Key
         if (typeof entry.fieldValue === 'string') {
             result[fieldName] = [];
             for (const claim of filteredClaims) {
-                result[fieldName].push(checkClaim(fieldName, entry.fieldValue, claim.description));
+                result[fieldName].push(checkClaim(entry.fieldValue, claim.description));
             }
             result[fieldName].push(checkCharacterLimits(fieldName, entry.fieldValue));
         }

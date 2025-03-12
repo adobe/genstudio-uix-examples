@@ -24,6 +24,7 @@ export default function AdditionalContextDialog(): JSX.Element {
   const [claimsList, setClaimsList] = useState<Claim[]>([]);
   const [filteredClaimsList, setFilteredClaimsList] = useState<Claim[]>([]);
   const [selectedClaims, setSelectedClaims] = useState<Claim[]>([]);
+  const [disableSearch, setDisableSearch] = useState<boolean>(true);
 
   useEffect(() => {
     (async () => {
@@ -53,6 +54,7 @@ export default function AdditionalContextDialog(): JSX.Element {
     ) || [];
     setClaimsList(filteredClaims);
     setFilteredClaimsList(filteredClaims);
+    setDisableSearch(!selectedClaimLibrary);
   }, [selectedClaimLibrary]);
 
   useEffect(() => {
@@ -100,6 +102,7 @@ export default function AdditionalContextDialog(): JSX.Element {
               width="100%"
               value={searchTerm}
               onChange={handleSearchChange}
+              isDisabled={disableSearch}
             />
           </View>
           

@@ -11,11 +11,12 @@ governing permissions and limitations under the License.
 */
 
 import React from 'react';
-import { Flex, Heading, Text, View, Button, InlineAlert, Badge, Divider } from "@adobe/react-spectrum";
+import { Flex, Heading, Text, View, Button, InlineAlert, Badge, Divider, Grid, ActionButton } from "@adobe/react-spectrum";
 import Alert from "@spectrum-icons/workflow/Alert";
 import { Violation } from '../utils/claimsValidation';
 import { copyToClipboard } from '../utils/copyToClipboard';
 import { VIOLATION_STATUS } from '../Constants';
+import Copy from '@spectrum-icons/workflow/Copy';
 
 interface ClaimsCheckerProps {
     claims: any;  // or define a more specific type
@@ -27,6 +28,14 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
   const totalIssues = Object.values(claims).flat().filter((violation: any) => 
     violation.status === VIOLATION_STATUS.Violated
   ).length;
+
+  const renderCopyButton = (violation: string) => {
+    return (
+      <ActionButton onPress={() => copyToClipboard(violation.split('Violated claim:')[1].trim())}>
+        <Copy />
+      </ActionButton>
+    )
+  }
 
   const renderViolation = (title: string, items: Array<{ status: string; violation?: string }>) => {
     const issueCount = items?.filter(item => 
@@ -47,20 +56,15 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
         {issueCount > 0 && items.map((item, index) => (
           item.status === VIOLATION_STATUS.Violated && item.violation && (
             <View key={index} marginY="size-100">
-              <Flex gap="size-100" alignItems="start">
+              <Grid
+                columns={["size-200", "auto", "auto"]}
+                gap="size-100"
+                alignItems="start"
+              >
                 <Alert size="S" color='notice' />
-                <View>
-                  <Text>{item.violation}</Text>
-                  {/* Copy Claim Button */
-                    item.violation!.includes('Violated claim:') && 
-                    <View marginTop="size-100">
-                      <Button variant="secondary" style="fill" onPress={() => copyToClipboard(item.violation!.split('Violated claim:')[1].trim())}>
-                        Copy Claim
-                      </Button>
-                    </View>
-                  }
-                </View>
-              </Flex>
+                <Text>{item.violation}</Text>
+                { item.violation!.includes('Violated claim:') && renderCopyButton(item.violation) }
+              </Grid>
             </View>
           )
         ))}
@@ -98,7 +102,7 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
       <Flex gap="size-100"  justifyContent="space-between">
         {message(totalIssues)}
       </Flex>
-      {Object.keys(violationsByPodAndField).map((pod) => (
+      {Object.keys(violationsByPodAndField).map((pod, index, array) => (
         <View key={pod}>
           { pod!== '0' && <Heading level={5}>Section {pod}</Heading> }
           {Object.keys(violationsByPodAndField[pod]).map((fieldName) => (
@@ -106,7 +110,7 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
               {renderViolation(camelcase(fieldName), violationsByPodAndField[pod][fieldName])}
             </View>
           ))}
-          <Divider size="S" />
+          {index < array.length - 1 && <Divider size="S" />}
         </View>
       ))}
     </View>
