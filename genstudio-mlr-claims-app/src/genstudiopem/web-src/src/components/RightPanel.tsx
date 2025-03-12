@@ -29,7 +29,6 @@ import React, { Key, useEffect, useState } from "react";
 import { extensionId, TEST_CLAIMS } from "../Constants";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
-import Spinner from "./Spinner";
 
 export default function RightPanel(): JSX.Element {
   const [guestConnection, setGuestConnection] = useState<any>(null);
@@ -122,7 +121,11 @@ export default function RightPanel(): JSX.Element {
   return (
     <View backgroundColor="static-white" height="100vh">
       {experiences && experiences.length > 0 ? (
-        <Flex direction="column" gap="size-200">
+        <Flex
+          direction="column"
+          height="100%"
+          gap="size-200"
+        >
           <View paddingX="size-200" paddingY="size-100">
             <Flex
               direction="row"
@@ -199,9 +202,14 @@ export default function RightPanel(): JSX.Element {
             </View>
           )}
           {isLoading ? (
-            <View padding="size-200">
-              <Spinner />
-            </View>
+            <Flex
+              height="100%"
+              marginBottom="size-200"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <ProgressCircle aria-label="Loading" isIndeterminate />
+            </Flex>
           ) : (
             claimsResult && (
               <View>
@@ -225,7 +233,7 @@ export default function RightPanel(): JSX.Element {
           justifyContent="center"
           gap="size-200"
         >
-          <ProgressCircle aria-label="Loading..." isIndeterminate />
+          <ProgressCircle aria-label="Loading" isIndeterminate />
           {isPolling && <Text>Waiting for experiences to be ready...</Text>}
         </Flex>
       )}
