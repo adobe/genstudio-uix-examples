@@ -20,14 +20,12 @@ import {
 import {
   Button,
   Checkbox,
-  defaultTheme,
   Divider,
   Flex,
   Grid,
   Item,
   Key,
   Picker,
-  Provider,
   SearchField,
   View,
 } from "@adobe/react-spectrum";
@@ -90,87 +88,85 @@ export default function AdditionalContextDialog(): JSX.Element {
   }, [searchTerm]);
 
   return (
-    <Provider theme={defaultTheme}>
-      <View backgroundColor="static-white" height="100vh">
-        <Grid
-          areas={["library", "divider", "search", "claims", "actions"]}
-          columns={["1fr"]}
-          rows={["auto", "auto", "auto", "2fr", "auto"]}
-          height="100%"
-          gap="size-300"
-        >
-          <View gridArea="library">
-            <Picker
-              label="Select claim library"
-              width="100%"
-              onSelectionChange={handleClaimsLibrarySelection}
-            >
-              {TEST_CLAIMS.map((library) => (
-                <Item key={library.id}>{library.name}</Item>
-              ))}
-            </Picker>
-          </View>
-          <View gridArea="divider">
-            <Divider size="S" />
-          </View>
-          <View gridArea="search">
-            <SearchField
-              label="Search claims"
-              width="100%"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              isDisabled={disableSearch}
-            />
-          </View>
-          <View gridArea="claims" overflow="auto">
-            <Flex direction="column" gap="size-100">
-              {filteredClaimsList.map((claim) => (
-                <Checkbox
-                  key={claim.id}
-                  isSelected={selectedClaims?.some((c) => c.id === claim.id)}
-                  onChange={() => handleClaimChange(claim)}
-                >
-                  {claim.description}
-                </Checkbox>
-              ))}
-            </Flex>
-          </View>
-          <Flex
-            direction="row"
-            gap="size-100"
-            justifyContent="end"
-            gridArea="actions"
+    <View backgroundColor="static-white" height="100vh">
+      <Grid
+        areas={["library", "divider", "search", "claims", "actions"]}
+        columns={["1fr"]}
+        rows={["auto", "auto", "auto", "2fr", "auto"]}
+        height="100%"
+        gap="size-300"
+      >
+        <View gridArea="library">
+          <Picker
+            label="Select claim library"
+            width="100%"
+            onSelectionChange={handleClaimsLibrarySelection}
           >
-            <Button
-              variant="secondary"
-              onPress={() =>
-                ExtensionRegistrationService.closeAddContextAddOnBar(
-                  guestConnection
-                )
-              }
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              style="fill"
-              onPress={async () => {
-                const claimsContext: AdditionalContext<Claim> = {
-                  extensionId: extensionId,
-                  additionalContextType: AdditionalContextTypes.Claims,
-                  additionalContextValues: selectedClaims,
-                };
-                await GenerationContextService.setAdditionalContext(
-                  guestConnection,
-                  claimsContext
-                );
-              }}
-            >
-              Select
-            </Button>
+            {TEST_CLAIMS.map((library) => (
+              <Item key={library.id}>{library.name}</Item>
+            ))}
+          </Picker>
+        </View>
+        <View gridArea="divider">
+          <Divider size="S" />
+        </View>
+        <View gridArea="search">
+          <SearchField
+            label="Search claims"
+            width="100%"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            isDisabled={disableSearch}
+          />
+        </View>
+        <View gridArea="claims" overflow="auto">
+          <Flex direction="column" gap="size-100">
+            {filteredClaimsList.map((claim) => (
+              <Checkbox
+                key={claim.id}
+                isSelected={selectedClaims?.some((c) => c.id === claim.id)}
+                onChange={() => handleClaimChange(claim)}
+              >
+                {claim.description}
+              </Checkbox>
+            ))}
           </Flex>
-        </Grid>
-      </View>
-    </Provider>
+        </View>
+        <Flex
+          direction="row"
+          gap="size-100"
+          justifyContent="end"
+          gridArea="actions"
+        >
+          <Button
+            variant="secondary"
+            onPress={() =>
+              ExtensionRegistrationService.closeAddContextAddOnBar(
+                guestConnection
+              )
+            }
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            style="fill"
+            onPress={async () => {
+              const claimsContext: AdditionalContext<Claim> = {
+                extensionId: extensionId,
+                additionalContextType: AdditionalContextTypes.Claims,
+                additionalContextValues: selectedClaims,
+              };
+              await GenerationContextService.setAdditionalContext(
+                guestConnection,
+                claimsContext
+              );
+            }}
+          >
+            Select
+          </Button>
+        </Flex>
+      </Grid>
+    </View>
   );
 }
