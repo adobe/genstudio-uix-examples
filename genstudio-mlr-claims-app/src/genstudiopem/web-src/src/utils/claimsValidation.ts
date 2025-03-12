@@ -42,8 +42,8 @@ function checkClaim(fieldName: string, text: string, claim: string): Violation {
 
     // remove numbers from text and claim
     // hack to get claims to violate that are the same except for numbers
-    const textWithoutNumbers = textLower.replace(/[0-9]/g, '');
-    const claimWithoutNumbers = claimLower.replace(/[0-9]/g, '');
+    const textWithoutNumbers = textLower.replace(/[0-9,.!?;:]/g, '');
+    const claimWithoutNumbers = claimLower.replace(/[0-9,.!?;:]/g, '');
 
     if (textWithoutNumbers.includes(claimWithoutNumbers)) {
         return {
@@ -93,6 +93,7 @@ export const validateClaims = (experience: Experience, selectedClaimLibrary: Key
             result[fieldName].push(checkCharacterLimits(fieldName, entry.fieldValue));
         }
     }
+
 
     return result;
 }
