@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { attach } from "@adobe/uix-guest";
 import { extensionId } from "../Constants";
 import { View, Provider, defaultTheme, Button, ComboBox, Item, Heading, Text, Flex, Divider } from '@adobe/react-spectrum';
-import { Experience, ExperienceService } from '@adobe/genstudio-uix-sdk';
+import { Experience, ExperienceService, GenerationContext } from '@adobe/genstudio-uix-sdk';
 import Spinner from './Spinner';
 
 export default function RightPanel(): JSX.Element {
@@ -22,6 +22,7 @@ export default function RightPanel(): JSX.Element {
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<number | null>(null);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
+  const [generationContext, setGenerationContext] = useState<GenerationContext | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -37,12 +38,28 @@ export default function RightPanel(): JSX.Element {
     
     try {
       const remoteExperiences = await ExperienceService.getExperiences(guestConnection);
+      await getGenerationContext();
       // Add a minimum loading time of 0.5 seconds
       await new Promise(resolve => setTimeout(resolve, 500));
       setExperiences(remoteExperiences);
       setIsLoading(false);
     } catch (error) {
       console.error("Error fetching experiences:", error);
+      setIsLoading(false);
+    }
+  };
+
+  const getGenerationContext = async (): Promise<void> => {
+    if (!guestConnection) return;
+    setIsLoading(true);
+    try {
+      console.log("Fetching generation context...");
+      const generationContext = await ExperienceService.getGenerationContext(guestConnection);
+      console.log("Generation context:", generationContext);
+      setGenerationContext(generationContext);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching generation context:", error);
       setIsLoading(false);
     }
   };
