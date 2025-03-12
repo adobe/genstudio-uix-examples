@@ -187,6 +187,7 @@ export default function RightPanel(): JSX.Element {
               <Button
                 variant="primary"
                 width="100%"
+                isDisabled={isLoading}
                 onPress={() => {
                   const experience = experiences[selectedExperienceIndex];
                   runClaimsCheck(
