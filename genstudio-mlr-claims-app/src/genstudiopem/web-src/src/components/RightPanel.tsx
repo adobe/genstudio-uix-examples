@@ -191,7 +191,7 @@ export default function RightPanel(): JSX.Element {
 
     return (
       <Flex direction="column" gap="size-200">
-        <Heading level={3} UNSAFE_style={{ lineHeight: "0px" }}>
+        <Heading level={2} marginY="size-0">
           Results
         </Heading>
         <ClaimsChecker
@@ -205,7 +205,7 @@ export default function RightPanel(): JSX.Element {
   const renderClaimsChecker = () => (
     <Flex height="100%" direction="column" marginY="size-200" gap="size-400">
       <Flex direction="column" gap="size-200">
-        <Heading level={3} UNSAFE_style={{ lineHeight: "8px" }}>
+        <Heading level={2} marginY="size-0">
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">

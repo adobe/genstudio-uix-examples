@@ -31,7 +31,40 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
   ).length;
 
   const handleCopyPress = (violation: string) => copyToClipboard(violation.split('Violated claim:')[1].trim());
-  const renderViolation = (title: string, items: Violation[]) => {
+
+  const renderViolationFieldHeader = (title: string, items: Violation[], issueCount: number) => {
+    return (
+      <Flex justifyContent="space-between" alignItems="center">
+        <Heading level={4}>{title}</Heading>
+        {issueCount > 0 ? (
+          <Badge variant="negative">{issueCount} issue{issueCount > 1 ? 's' : ''}</Badge>
+        ) : (
+          <Badge variant="positive">No issues</Badge>
+        )}
+      </Flex>
+    );
+  };
+
+  const renderViolationFieldEntry = (item: Violation) => {
+    return (
+      <View key={item.violation}>
+        <Grid
+          columns={["size-200", "auto", "auto"]}
+          gap="size-100"
+          alignItems="start"
+        >
+          <Alert size="S" color='notice' />
+          <Text>{item.violation}</Text>
+          { item.violation!.includes(CLAIM_VIOLATION_PREFIX) && 
+            <ActionButton onPress={() => handleCopyPress(item.violation!)}>
+              <Copy />
+            </ActionButton> }
+        </Grid>
+      </View>
+    );
+  };
+
+  const renderViolationField = (title: string, items: Violation[]) => {
     const issueCount = items?.filter(item => 
       item.status === VIOLATION_STATUS.Violated
     ).length;
@@ -39,36 +72,20 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
   
     return (
       <View>
-        <Flex justifyContent="space-between" alignItems="center">
-          <Heading level={4}>{title}</Heading>
-          {issueCount > 0 ? (
-            <Badge variant="negative">{issueCount} issue{issueCount > 1 ? 's' : ''}</Badge>
-          ) : (
-            <Badge variant="positive">No issues</Badge>
+        {renderViolationFieldHeader(title, items, issueCount)}
+        <View paddingStart="size-100">
+          {issueCount > 0 && (
+            <Flex direction="column" gap="size-100">
+              {items.map(item => (
+                hasViolations(item) && renderViolationFieldEntry(item)
+              ))}
+            </Flex>
           )}
-        </Flex>
-
-        {issueCount > 0 && items.map((item, index) => (
-          hasViolations(item) && (
-            <View key={index} marginBottom="size-200">
-              <Grid
-                columns={["size-200", "auto", "auto"]}
-                gap="size-100"
-                alignItems="start"
-              >
-                <Alert size="S" color='notice' />
-                <Text>{item.violation}</Text>
-                { item.violation!.includes(CLAIM_VIOLATION_PREFIX) && 
-                  <ActionButton onPress={() => handleCopyPress(item.violation!)}>
-                    <Copy />
-                  </ActionButton> }
-              </Grid>
-            </View>
-          )
-        ))}
+        </View>
       </View>
     );
   };
+
   const renderAlertMessage = (totalIssues: number) => {
     const emailNumber = experienceNumber + 1;
     let message = "";
@@ -84,9 +101,11 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
     }
 
     return (
-      <InlineAlert width="100%" variant={totalIssues === 0 ? "positive" : "notice"}>
-        <Heading>{message}</Heading>
-      </InlineAlert>
+      <Flex gap="size-100" justifyContent="space-between">
+        <InlineAlert width="100%" variant={totalIssues === 0 ? "positive" : "notice"}>
+          <Heading>{message}</Heading>
+        </InlineAlert>
+      </Flex>
     );
   };
 
@@ -99,23 +118,35 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
     violationsByPodAndField[pod][field] = claims[rawField];
   }
 
-  return (
-    <View padding="size-200">
-      {/* Status Alert */}
-      <Flex gap="size-100"  justifyContent="space-between">
-        {renderAlertMessage(totalIssues)}
-      </Flex>
-      {Object.keys(violationsByPodAndField).map((pod, index, array) => (
+  const renderPodSection = () => {
+    return Object.keys(violationsByPodAndField)
+      .flatMap((pod, index, array) => [
         <View key={pod}>
-          { pod !== '0' && <Heading level={4}>Section {pod}</Heading> }
-          {Object.keys(violationsByPodAndField[pod]).map((fieldName) => (
-            <View key={pod+fieldName}>
-              {renderViolation(convertSnakeCaseToCamelCase(fieldName), violationsByPodAndField[pod][fieldName])}
-            </View>
-          ))}
-          {index < array.length - 1 && <Divider size="S" marginX="size-400" marginTop="size-0"/>}
-        </View>
-      ))}
+          {pod !== '0' && (<Heading level={3}>Section {pod}</Heading>)}
+          {
+            Object.keys(violationsByPodAndField[pod]).map((fieldName) =>
+              (<View key={pod + fieldName}>
+                {renderViolationField(
+                  convertSnakeCaseToCamelCase(fieldName),
+                  violationsByPodAndField[pod][fieldName]
+                )}
+              </View>)
+            )
+          }
+        </View>,
+      ( /* Only add a divider if it's not the last pod */
+        index < array.length - 1 && 
+        <Divider key={`divider-${pod}`} size="S" marginX="size-400"/>
+      ),
+    ]).filter(Boolean);
+  };
+
+  return (
+    <View>
+      {renderAlertMessage(totalIssues)}
+      <Flex direction="column" gap="size-200">
+        {renderPodSection()}
+      </Flex>
     </View>
   );
 };
