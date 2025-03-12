@@ -55,7 +55,7 @@ export default function RightPanel(): JSX.Element {
   }, [guestConnection]);
 
   useEffect(() => {
-    setClaimsResult(null)
+    setClaimsResult(null);
   }, [selectedExperienceIndex]);
 
   console.log(claimsResult);
@@ -69,7 +69,7 @@ export default function RightPanel(): JSX.Element {
   const handleExperienceSelection = (key: React.Key | null) => {
     if (!key || !experiences?.length) return;
 
-    const index = experiences.findIndex(exp => exp.id === key);
+    const index = experiences.findIndex((exp) => exp.id === key);
     if (index !== -1) {
       setSelectedExperienceIndex(index);
     }
@@ -87,9 +87,10 @@ export default function RightPanel(): JSX.Element {
 
     setIsSyncing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const remoteExperiences =
-        await ExperienceService.getExperiences(guestConnection);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const remoteExperiences = await ExperienceService.getExperiences(
+        guestConnection
+      );
       if (remoteExperiences && remoteExperiences.length > 0) {
         setExperiences(remoteExperiences);
         return true;
@@ -103,17 +104,17 @@ export default function RightPanel(): JSX.Element {
   const runClaimsCheck = async (
     experience: Experience,
     selectedExperienceIndex: number,
-    selectedClaimLibrary: any,
+    selectedClaimLibrary: any
   ): Promise<void> => {
     setIsLoading(true);
     try {
       const result = validateClaims(
         experience,
         selectedExperienceIndex,
-        selectedClaimLibrary,
+        selectedClaimLibrary
       );
       // Add a minimum loading time of 0.5 seconds
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       // Update state with results
       setClaimsResult(result);
     } catch (error) {
@@ -135,7 +136,7 @@ export default function RightPanel(): JSX.Element {
         setIsPolling(false);
         return;
       }
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval));
       retries++;
     }
     setIsPolling(false);
@@ -147,7 +148,7 @@ export default function RightPanel(): JSX.Element {
       width="100%"
       onSelectionChange={handleClaimsLibrarySelection}
     >
-      {TEST_CLAIMS.map(library => (
+      {TEST_CLAIMS.map((library) => (
         <Item key={library.id}>{library.name}</Item>
       ))}
     </Picker>
