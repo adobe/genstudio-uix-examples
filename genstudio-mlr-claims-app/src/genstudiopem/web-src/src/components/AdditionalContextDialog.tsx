@@ -76,7 +76,7 @@ export default function AdditionalContextDialog(): JSX.Element {
           direction="column"
           marginX="size-200"
           marginY="size-200"
-          gap="size-200"
+          gap="size-300"
         >
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
