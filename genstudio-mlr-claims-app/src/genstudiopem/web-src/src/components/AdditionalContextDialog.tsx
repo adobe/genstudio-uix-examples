@@ -92,13 +92,13 @@ export default function AdditionalContextDialog(): JSX.Element {
 
   return (
     <View backgroundColor="static-white" height="100vh">
-      <Flex
-        height="100%"
-        direction="column"
-        justifyContent="space-between"
-        marginX="size-100"
-      >
-        <Flex direction="column" height="100%" gap="size-200">
+      <Flex height="100%" direction="column" justifyContent="space-between">
+        <Flex
+          height="100%"
+          direction="column"
+          marginX="size-200"
+          gap="size-200"
+        >
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
           />
