@@ -22,10 +22,11 @@ import {
   Text,
   View,
 } from "@adobe/react-spectrum";
-import React, { Key, useEffect, useState } from "react";
+import React, { useEffect, useState, type Key } from "react";
 
 import { extensionId } from "../Constants";
 import { useGuestConnection } from "../hooks/useGuestConnection";
+import { useSelectedClaimLibrary } from "../hooks/useSelectedClaimLibrary";
 import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
@@ -33,7 +34,6 @@ import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function RightPanel(): JSX.Element {
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
-  const [selectedClaimLibrary, setSelectedClaimLibrary] = useState<Key>();
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
     number | null
   >(null);
@@ -43,6 +43,8 @@ export default function RightPanel(): JSX.Element {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const guestConnection = useGuestConnection(extensionId);
+  const { selectedClaimLibrary, handleClaimsLibrarySelection } =
+    useSelectedClaimLibrary();
 
   useEffect(() => {
     if (guestConnection) {
@@ -54,13 +56,7 @@ export default function RightPanel(): JSX.Element {
     setClaimsResults(null);
   }, [selectedExperienceIndex]);
 
-  const handleClaimsLibrarySelection = (library: Key | null) => {
-    if (library === null) return;
-
-    setSelectedClaimLibrary(library);
-  };
-
-  const handleExperienceSelection = (key: React.Key | null) => {
+  const handleExperienceSelection = (key: Key | null) => {
     if (!key || !experiences?.length) return;
 
     const index = experiences.findIndex((exp) => exp.id === key);

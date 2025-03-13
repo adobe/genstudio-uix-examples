@@ -23,7 +23,6 @@ import {
   Divider,
   Flex,
   Grid,
-  Key,
   SearchField,
   View,
 } from "@adobe/react-spectrum";
@@ -31,10 +30,10 @@ import React, { useEffect, useState } from "react";
 
 import { extensionId, TEST_CLAIMS } from "../Constants";
 import { useGuestConnection } from "../hooks/useGuestConnection";
+import { useSelectedClaimLibrary } from "../hooks/useSelectedClaimLibrary";
 import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function AdditionalContextDialog(): JSX.Element {
-  const [selectedClaimLibrary, setSelectedClaimLibrary] = useState<Key>();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [claimsList, setClaimsList] = useState<Claim[]>([]);
   const [filteredClaimsList, setFilteredClaimsList] = useState<Claim[]>([]);
@@ -42,6 +41,8 @@ export default function AdditionalContextDialog(): JSX.Element {
   const [disableSearch, setDisableSearch] = useState<boolean>(true);
 
   const guestConnection = useGuestConnection(extensionId);
+  const { selectedClaimLibrary, handleClaimsLibrarySelection } =
+    useSelectedClaimLibrary();
 
   useEffect(() => {
     const filteredClaims =
@@ -62,11 +63,6 @@ export default function AdditionalContextDialog(): JSX.Element {
       ) || [];
     setFilteredClaimsList(filteredClaims);
   }, [searchTerm]);
-
-  const handleClaimsLibrarySelection = (library: Key | null) => {
-    if (library === null) return;
-    setSelectedClaimLibrary(library);
-  };
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
