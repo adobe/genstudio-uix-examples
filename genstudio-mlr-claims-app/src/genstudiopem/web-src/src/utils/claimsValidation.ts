@@ -18,62 +18,76 @@ governing permissions and limitations under the License.
 // return the result
 
 import { Experience } from '@adobe/genstudio-uix-sdk';
-import { TEST_CLAIMS } from '../Constants';
+import { CLAIM_VIOLATION_PREFIX, TEST_CLAIMS, VIOLATION_PREFIX, VIOLATION_STATUS } from '../Constants';
+import { ClaimResults, Violation } from '../types'
 import { Key } from 'react';
+import { removePodPrefix } from './stringUtils';
 
-
-export const claimStatus = {
-    Valid: 'valid',
-    Violated: 'violated',
-    N_A: 'n/a'
+const maxCharacterLimits = {
+    header: 80,
+    pre_header: 100,
+    body: 300,
 }
 
-function checkClaim(text: string, claim: string, threshold: number = 0.2): "valid" | "violated" | "n/a" {
-    const textLower = text.toLowerCase();
-    const claimLower = claim.toLowerCase();
+function checkClaim(text: string, claim: string): Violation {
+    // Trim whitespace and normalize spaces to help with matching
+    const normalizedText=text.toLowerCase().trim().replace(/\s+/g, ' ').replace(/[,.!?;:]/g,'');
+    const normalizedClaim=claim.toLowerCase().trim().replace(/\s+/g, ' ').replace(/[,.!?;:]/g,'');
 
-    if (textLower.includes(claimLower)) {
-        return "valid";
+    if (normalizedText.includes(normalizedClaim)) {
+        return { status: VIOLATION_STATUS.Valid }
     }
 
     // remove numbers from text and claim
     // hack to get claims to violate that are the same except for numbers
-    const textWithoutNumbers = textLower.replace(/[0-9]/g, '');
-    const claimWithoutNumbers = claimLower.replace(/[0-9]/g, '');
+    const normalizedTextWithoutNumbers = normalizedText.replace(/[0-9]/g, '');
+    const normalizedClaimWithoutNumbers = normalizedClaim.replace(/[0-9]/g, '');
 
-    if (textWithoutNumbers.includes(claimWithoutNumbers)) {
-        return "violated";
+    return normalizedTextWithoutNumbers.includes(normalizedClaimWithoutNumbers) ? 
+        {
+            status: VIOLATION_STATUS.Violated,
+            violation: CLAIM_VIOLATION_PREFIX + claim
+        } : { status: VIOLATION_STATUS.N_A }
     }
 
-    return "n/a";
+function checkCharacterLimits(fieldName: string, text: string): Violation {
+    // Check if field has a character limit and if text exceeds it
+    const extractedFieldName = removePodPrefix(fieldName)
+    const limit = maxCharacterLimits[extractedFieldName as keyof typeof maxCharacterLimits];
+    if (limit && text.length > limit) {
+        return {
+            status: VIOLATION_STATUS.Violated,
+            violation: `${VIOLATION_PREFIX}Max character limit for ${fieldName} is ${limit}`
+        }
+    }
+    return { status: VIOLATION_STATUS.N_A }
 }
 
 // a poor man's claims validation
 // if contains exact match, return valid
 // if contains exact match without numbers, return violated
 // otherwise return n/a
-export const validateClaims = (experience: Experience, experienceNumber: number, selectedClaimLibrary: Key) => {
+export const validateClaims = (experience: Experience, selectedClaimLibrary: Key) => {
     const filteredClaims = TEST_CLAIMS.find(library => library.id === selectedClaimLibrary)?.claims;
 
     if (!filteredClaims) {
         return {};
     }
 
-    const result: Record<string, any[]> = {};
-    
+    const result: ClaimResults = {};
+    const experienceFields = experience.experienceFields;
+
     // Use for...of instead of forEach for better control flow
-    for (const [fieldName, entry] of Object.entries(experience.experienceFields)) {
+    for (const [fieldName, entry] of Object.entries(experienceFields)) {
         if (typeof entry.fieldValue === 'string') {
             result[fieldName] = [];
             for (const claim of filteredClaims) {
-                const fieldClaim = {
-                    claimStatus: checkClaim(entry.fieldValue, claim.description),
-                    claimViolation: `Violated claim: ${claim.description}`
-                };
-                result[fieldName].push(fieldClaim);
+                result[fieldName].push(checkClaim(entry.fieldValue, claim.description));
             }
+            result[fieldName].push(checkCharacterLimits(fieldName, entry.fieldValue));
         }
     }
+
 
     return result;
 }
