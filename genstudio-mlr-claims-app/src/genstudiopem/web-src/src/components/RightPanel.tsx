@@ -26,10 +26,10 @@ import { attach } from "@adobe/uix-guest";
 import React, { Key, useEffect, useState } from "react";
 
 import { extensionId } from "../Constants";
+import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
 import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
-import { ClaimResults } from "../types";
 
 export default function RightPanel(): JSX.Element {
   const [guestConnection, setGuestConnection] = useState<any>(null);
@@ -80,7 +80,10 @@ export default function RightPanel(): JSX.Element {
     // setState is async so we need the result from getExperience directly
     const newExperiences = await getExperience();
     if (!newExperiences?.length) return;
-    runClaimsCheck(newExperiences[selectedExperienceIndex], selectedClaimLibrary);
+    runClaimsCheck(
+      newExperiences[selectedExperienceIndex],
+      selectedClaimLibrary
+    );
   };
 
   const getExperience = async (): Promise<Experience[] | null> => {
@@ -193,7 +196,9 @@ export default function RightPanel(): JSX.Element {
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">
-          <ClaimsLibraryPicker handleSelectionChange={handleClaimsLibrarySelection} />
+          <ClaimsLibraryPicker
+            handleSelectionChange={handleClaimsLibrarySelection}
+          />
           <Flex
             direction="row"
             alignItems="center"
@@ -208,7 +213,6 @@ export default function RightPanel(): JSX.Element {
       {isLoading ? renderLoadingIndicator() : renderResults()}
     </Flex>
   );
-  
 
   const renderWaitingForExperiences = () => (
     <Flex
