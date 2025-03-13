@@ -19,6 +19,7 @@ import {
 } from "@adobe/genstudio-uix-sdk";
 import {
   Button,
+  ButtonGroup,
   Checkbox,
   Divider,
   Flex,
@@ -114,18 +115,14 @@ export default function AdditionalContextDialog(): JSX.Element {
             </Checkbox>
           ))}
         </Flex>
-        <Flex
-          direction="row"
-          gap="size-100"
-          justifyContent="end"
-        >
+        <ButtonGroup align="end">
           <Button variant="secondary" onPress={handleCancel}>
             Cancel
           </Button>
           <Button variant="primary" style="fill" onPress={handleClaimSelect}>
             Select
           </Button>
-        </Flex>
+        </ButtonGroup>
       </Flex>
     </View>
   );
