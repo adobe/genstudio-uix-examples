@@ -22,7 +22,6 @@ import {
   ButtonGroup,
   Checkbox,
   Flex,
-  SearchField,
   View,
 } from "@adobe/react-spectrum";
 import React, { useEffect, useState } from "react";
@@ -32,11 +31,8 @@ import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
 import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function AdditionalContextDialog(): JSX.Element {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [claimsList, setClaimsList] = useState<Claim[]>([]);
   const [filteredClaimsList, setFilteredClaimsList] = useState<Claim[]>([]);
   const [selectedClaims, setSelectedClaims] = useState<Claim[]>([]);
-  const [disableSearch, setDisableSearch] = useState<boolean>(true);
 
   const guestConnection = useGuestConnection(extensionId);
   const { selectedClaimLibrary, handleClaimsLibrarySelection } =
@@ -44,22 +40,10 @@ export default function AdditionalContextDialog(): JSX.Element {
 
   useEffect(() => {
     const libraryClaims =
-      TEST_CLAIMS.find((library) => library.id === selectedClaimLibrary)?.claims || [];
-    setClaimsList(libraryClaims);
+      TEST_CLAIMS.find((library) => library.id === selectedClaimLibrary)
+        ?.claims || [];
     setFilteredClaimsList(libraryClaims);
-    setDisableSearch(!selectedClaimLibrary);
   }, [selectedClaimLibrary]);
-
-  useEffect(() => {
-    const filteredClaims = claimsList.filter((claim) =>
-      claim.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredClaimsList(filteredClaims);
-  }, [searchTerm, claimsList]);
-
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-  };
 
   const handleClaimChange = (claim: Claim) => {
     setSelectedClaims((prev) =>
@@ -92,17 +76,10 @@ export default function AdditionalContextDialog(): JSX.Element {
           direction="column"
           marginX="size-200"
           marginY="size-200"
-          gap="size-200"
+          gap="size-300"
         >
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
-          />
-          <SearchField
-            label="Search claims"
-            width="60%"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            isDisabled={disableSearch}
           />
           <Flex direction="column" gap="size-100">
             {filteredClaimsList.map((claim) => (
