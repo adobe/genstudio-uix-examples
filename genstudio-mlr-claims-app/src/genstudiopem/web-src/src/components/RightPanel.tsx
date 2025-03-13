@@ -190,15 +190,10 @@ export default function RightPanel(): JSX.Element {
     if (!claimsResults) return null;
 
     return (
-      <Flex direction="column" gap="size-200">
-        <Heading level={2} marginY="size-0">
-          Results
-        </Heading>
-        <ClaimsChecker
-          claims={claimsResults}
-          experienceNumber={selectedExperienceIndex || 0}
-        />
-      </Flex>
+      <ClaimsChecker
+        claims={claimsResults}
+        experienceNumber={selectedExperienceIndex || 0}
+      />
     );
   };
 

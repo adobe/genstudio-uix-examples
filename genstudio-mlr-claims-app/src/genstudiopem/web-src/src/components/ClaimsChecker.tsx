@@ -101,11 +101,9 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
     }
 
     return (
-      <Flex gap="size-100" justifyContent="space-between">
-        <InlineAlert width="100%" variant={totalIssues === 0 ? "positive" : "notice"}>
-          <Heading>{message}</Heading>
-        </InlineAlert>
-      </Flex>
+      <InlineAlert width="100%" variant={totalIssues === 0 ? "positive" : "notice"}>
+        <Heading>{message}</Heading>
+      </InlineAlert>
     );
   };
 
@@ -142,12 +140,13 @@ const ClaimsChecker: React.FC<ClaimsCheckerProps> = ({ claims, experienceNumber 
   };
 
   return (
-    <View>
+    <Flex direction="column" gap="size-200">
+      <Heading level={2} marginY="size-0">
+        Results
+      </Heading>
       {renderAlertMessage(totalIssues)}
-      <Flex direction="column" gap="size-200">
-        {renderPodSection()}
-      </Flex>
-    </View>
+      {renderPodSection()}
+    </Flex>
   );
 };
 export default ClaimsChecker;
