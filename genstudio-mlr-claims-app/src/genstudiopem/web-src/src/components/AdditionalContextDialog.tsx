@@ -49,20 +49,19 @@ export default function AdditionalContextDialog(): JSX.Element {
   };
 
   useEffect(() => {
-    const filteredClaims = TEST_CLAIMS.find(library => library.id === selectedClaimLibrary)?.claims.filter(claim =>
-      claim.description.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
-    setClaimsList(filteredClaims);
-    setFilteredClaimsList(filteredClaims);
+    const libraryClaims =
+      TEST_CLAIMS.find((library) => library.id === selectedClaimLibrary)?.claims || [];
+    setClaimsList(libraryClaims);
+    setFilteredClaimsList(libraryClaims);
     setDisableSearch(!selectedClaimLibrary);
   }, [selectedClaimLibrary]);
 
   useEffect(() => {
-    const filteredClaims = claimsList.filter(claim =>
+    const filteredClaims = claimsList.filter((claim) =>
       claim.description.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
+    );
     setFilteredClaimsList(filteredClaims);
-  }, [searchTerm]);
+  }, [searchTerm, claimsList]);
 
   return (
     <Provider theme={defaultTheme}>
