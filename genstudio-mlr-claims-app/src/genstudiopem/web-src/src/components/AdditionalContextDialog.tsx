@@ -29,8 +29,7 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { extensionId, TEST_CLAIMS } from "../Constants";
-import { useGuestConnection } from "../hooks/useGuestConnection";
-import { useSelectedClaimLibrary } from "../hooks/useSelectedClaimLibrary";
+import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
 import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function AdditionalContextDialog(): JSX.Element {

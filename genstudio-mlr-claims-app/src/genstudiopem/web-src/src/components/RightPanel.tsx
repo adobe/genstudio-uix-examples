@@ -25,8 +25,7 @@ import {
 import React, { useEffect, useState, type Key } from "react";
 
 import { extensionId } from "../Constants";
-import { useGuestConnection } from "../hooks/useGuestConnection";
-import { useSelectedClaimLibrary } from "../hooks/useSelectedClaimLibrary";
+import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
 import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
