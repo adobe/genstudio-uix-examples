@@ -21,7 +21,6 @@ import {
   Button,
   ButtonGroup,
   Checkbox,
-  Divider,
   Flex,
   SearchField,
   View,
@@ -97,23 +96,24 @@ export default function AdditionalContextDialog(): JSX.Element {
           height="100%"
           direction="column"
           marginX="size-200"
+          marginY="size-200"
           gap="size-200"
         >
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
           />
-          <Divider size="S" />
           <SearchField
             label="Search claims"
-            width="100%"
+            width="60%"
             value={searchTerm}
             onChange={handleSearchChange}
             isDisabled={disableSearch}
           />
-          <Flex direction="column" gap="size-100" marginStart="size-100">
+          <Flex direction="column" gap="size-100">
             {filteredClaimsList.map((claim) => (
               <Checkbox
                 key={claim.id}
+                marginStart="size-50"
                 isSelected={selectedClaims?.some((c) => c.id === claim.id)}
                 onChange={() => handleClaimChange(claim)}
               >
