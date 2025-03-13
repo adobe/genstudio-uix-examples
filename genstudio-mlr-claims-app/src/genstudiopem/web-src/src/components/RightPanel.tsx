@@ -199,13 +199,7 @@ export default function RightPanel(): JSX.Element {
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
           />
-          <Flex
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            {renderExperiencePicker()}
-          </Flex>
+          {renderExperiencePicker()}
           {renderRunClaimsCheckButton()}
         </Flex>
       </Flex>
