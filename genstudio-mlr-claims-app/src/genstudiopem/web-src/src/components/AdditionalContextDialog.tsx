@@ -92,28 +92,30 @@ export default function AdditionalContextDialog(): JSX.Element {
 
   return (
     <View backgroundColor="static-white" height="100vh">
-      <Flex height="100%" direction="column" gap="size-300">
-        <ClaimsLibraryPicker
-          handleSelectionChange={handleClaimsLibrarySelection}
-        />
-        <Divider size="S" />
-        <SearchField
-          label="Search claims"
-          width="100%"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          isDisabled={disableSearch}
-        />
-        <Flex direction="column" gap="size-100">
-          {filteredClaimsList.map((claim) => (
-            <Checkbox
-              key={claim.id}
-              isSelected={selectedClaims?.some((c) => c.id === claim.id)}
-              onChange={() => handleClaimChange(claim)}
-            >
-              {claim.description}
-            </Checkbox>
-          ))}
+      <Flex height="100%" direction="column" justifyContent="space-between">
+        <Flex direction="column" gap="size-300">
+          <ClaimsLibraryPicker
+            handleSelectionChange={handleClaimsLibrarySelection}
+          />
+          <Divider size="S" />
+          <SearchField
+            label="Search claims"
+            width="100%"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            isDisabled={disableSearch}
+          />
+          <Flex direction="column" gap="size-100">
+            {filteredClaimsList.map((claim) => (
+              <Checkbox
+                key={claim.id}
+                isSelected={selectedClaims?.some((c) => c.id === claim.id)}
+                onChange={() => handleClaimChange(claim)}
+              >
+                {claim.description}
+              </Checkbox>
+            ))}
+          </Flex>
         </Flex>
         <ButtonGroup align="end">
           <Button variant="secondary" onPress={handleCancel}>
