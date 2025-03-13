@@ -22,18 +22,17 @@ import {
   Text,
   View,
 } from "@adobe/react-spectrum";
-import { attach } from "@adobe/uix-guest";
-import React, { Key, useEffect, useState } from "react";
+import React, { useEffect, useState, type Key } from "react";
 
-import { extensionId, TEST_CLAIMS } from "../Constants";
+import { extensionId } from "../Constants";
+import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
+import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
-import { ClaimResults } from "../types";
+import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function RightPanel(): JSX.Element {
-  const [guestConnection, setGuestConnection] = useState<any>(null);
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
-  const [selectedClaimLibrary, setSelectedClaimLibrary] = useState<Key>();
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
     number | null
   >(null);
@@ -42,12 +41,9 @@ export default function RightPanel(): JSX.Element {
   const [isPolling, setIsPolling] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const connection = await attach({ id: extensionId });
-      setGuestConnection(connection as any);
-    })();
-  }, []);
+  const guestConnection = useGuestConnection(extensionId);
+  const { selectedClaimLibrary, handleClaimsLibrarySelection } =
+    useSelectedClaimLibrary();
 
   useEffect(() => {
     if (guestConnection) {
@@ -59,13 +55,7 @@ export default function RightPanel(): JSX.Element {
     setClaimsResults(null);
   }, [selectedExperienceIndex]);
 
-  const handleClaimsLibrarySelection = (library: Key | null) => {
-    if (library === null) return;
-
-    setSelectedClaimLibrary(library);
-  };
-
-  const handleExperienceSelection = (key: React.Key | null) => {
+  const handleExperienceSelection = (key: Key | null) => {
     if (!key || !experiences?.length) return;
 
     const index = experiences.findIndex((exp) => exp.id === key);
@@ -79,7 +69,10 @@ export default function RightPanel(): JSX.Element {
     // setState is async so we need the result from getExperience directly
     const newExperiences = await getExperience();
     if (!newExperiences?.length) return;
-    runClaimsCheck(newExperiences[selectedExperienceIndex], selectedClaimLibrary);
+    runClaimsCheck(
+      newExperiences[selectedExperienceIndex],
+      selectedClaimLibrary
+    );
   };
 
   const getExperience = async (): Promise<Experience[] | null> => {
@@ -137,18 +130,6 @@ export default function RightPanel(): JSX.Element {
     setIsPolling(false);
   };
 
-  const renderClaimsLibraryPicker = () => (
-    <Picker
-      label="Select claim library"
-      width="100%"
-      onSelectionChange={handleClaimsLibrarySelection}
-    >
-      {TEST_CLAIMS.map((library) => (
-        <Item key={library.id}>{library.name}</Item>
-      ))}
-    </Picker>
-  );
-
   const renderExperiencePicker = () => {
     if (!experiences) return null;
 
@@ -204,14 +185,10 @@ export default function RightPanel(): JSX.Element {
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">
-          {renderClaimsLibraryPicker()}
-          <Flex
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            {renderExperiencePicker()}
-          </Flex>
+          <ClaimsLibraryPicker
+            handleSelectionChange={handleClaimsLibrarySelection}
+          />
+          {renderExperiencePicker()}
           {renderRunClaimsCheckButton()}
         </Flex>
       </Flex>
@@ -219,7 +196,6 @@ export default function RightPanel(): JSX.Element {
       {isLoading ? renderLoadingIndicator() : renderResults()}
     </Flex>
   );
-  
 
   const renderWaitingForExperiences = () => (
     <Flex
