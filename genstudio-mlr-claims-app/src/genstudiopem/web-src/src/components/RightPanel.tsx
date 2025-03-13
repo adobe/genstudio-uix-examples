@@ -22,17 +22,16 @@ import {
   Text,
   View,
 } from "@adobe/react-spectrum";
-import { attach } from "@adobe/uix-guest";
 import React, { Key, useEffect, useState } from "react";
 
 import { extensionId } from "../Constants";
+import { useGuestConnection } from "../hooks/useGuestConnection";
 import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
 import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function RightPanel(): JSX.Element {
-  const [guestConnection, setGuestConnection] = useState<any>(null);
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
   const [selectedClaimLibrary, setSelectedClaimLibrary] = useState<Key>();
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
@@ -43,12 +42,7 @@ export default function RightPanel(): JSX.Element {
   const [isPolling, setIsPolling] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const connection = await attach({ id: extensionId });
-      setGuestConnection(connection as any);
-    })();
-  }, []);
+  const guestConnection = useGuestConnection(extensionId);
 
   useEffect(() => {
     if (guestConnection) {

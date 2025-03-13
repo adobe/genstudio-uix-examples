@@ -27,14 +27,13 @@ import {
   SearchField,
   View,
 } from "@adobe/react-spectrum";
-import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 
-import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 import { extensionId, TEST_CLAIMS } from "../Constants";
+import { useGuestConnection } from "../hooks/useGuestConnection";
+import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function AdditionalContextDialog(): JSX.Element {
-  const [guestConnection, setGuestConnection] = useState<any>(null);
   const [selectedClaimLibrary, setSelectedClaimLibrary] = useState<Key>();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [claimsList, setClaimsList] = useState<Claim[]>([]);
@@ -42,12 +41,7 @@ export default function AdditionalContextDialog(): JSX.Element {
   const [selectedClaims, setSelectedClaims] = useState<Claim[]>([]);
   const [disableSearch, setDisableSearch] = useState<boolean>(true);
 
-  useEffect(() => {
-    (async () => {
-      const connection = await attach({ id: extensionId });
-      setGuestConnection(connection as any);
-    })();
-  }, []);
+  const guestConnection = useGuestConnection(extensionId);
 
   useEffect(() => {
     const filteredClaims =
@@ -111,7 +105,9 @@ export default function AdditionalContextDialog(): JSX.Element {
         gap="size-300"
       >
         <View gridArea="library">
-          <ClaimsLibraryPicker handleSelectionChange={handleClaimsLibrarySelection} />
+          <ClaimsLibraryPicker
+            handleSelectionChange={handleClaimsLibrarySelection}
+          />
         </View>
         <View gridArea="divider">
           <Divider size="S" />
