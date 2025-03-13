@@ -25,9 +25,10 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { Key, useEffect, useState } from "react";
 
-import { extensionId, TEST_CLAIMS } from "../Constants";
+import { extensionId } from "../Constants";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
+import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function RightPanel(): JSX.Element {
   const [guestConnection, setGuestConnection] = useState<any>(null);
@@ -142,18 +143,6 @@ export default function RightPanel(): JSX.Element {
     setIsPolling(false);
   };
 
-  const renderClaimsLibraryPicker = () => (
-    <Picker
-      label="Select claim library"
-      width="100%"
-      onSelectionChange={handleClaimsLibrarySelection}
-    >
-      {TEST_CLAIMS.map((library) => (
-        <Item key={library.id}>{library.name}</Item>
-      ))}
-    </Picker>
-  );
-
   const renderExperiencePicker = () => {
     if (!experiences) return null;
 
@@ -243,7 +232,7 @@ export default function RightPanel(): JSX.Element {
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">
-          {renderClaimsLibraryPicker()}
+          <ClaimsLibraryPicker handleSelectionChange={handleClaimsLibrarySelection} />
           <Flex
             direction="row"
             alignItems="center"

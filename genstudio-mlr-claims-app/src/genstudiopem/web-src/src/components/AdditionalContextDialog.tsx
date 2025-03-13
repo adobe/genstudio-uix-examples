@@ -23,15 +23,14 @@ import {
   Divider,
   Flex,
   Grid,
-  Item,
   Key,
-  Picker,
   SearchField,
   View,
 } from "@adobe/react-spectrum";
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 
+import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 import { extensionId, TEST_CLAIMS } from "../Constants";
 
 export default function AdditionalContextDialog(): JSX.Element {
@@ -112,15 +111,7 @@ export default function AdditionalContextDialog(): JSX.Element {
         gap="size-300"
       >
         <View gridArea="library">
-          <Picker
-            label="Select claim library"
-            width="100%"
-            onSelectionChange={handleClaimsLibrarySelection}
-          >
-            {TEST_CLAIMS.map((library) => (
-              <Item key={library.id}>{library.name}</Item>
-            ))}
-          </Picker>
+          <ClaimsLibraryPicker handleSelectionChange={handleClaimsLibrarySelection} />
         </View>
         <View gridArea="divider">
           <Divider size="S" />
