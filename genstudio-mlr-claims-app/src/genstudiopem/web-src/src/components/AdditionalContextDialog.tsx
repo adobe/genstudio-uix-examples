@@ -22,7 +22,6 @@ import {
   Checkbox,
   Divider,
   Flex,
-  Grid,
   SearchField,
   View,
 } from "@adobe/react-spectrum";
@@ -92,48 +91,33 @@ export default function AdditionalContextDialog(): JSX.Element {
 
   return (
     <View backgroundColor="static-white" height="100vh">
-      <Grid
-        areas={["library", "divider", "search", "claims", "actions"]}
-        columns={["1fr"]}
-        rows={["auto", "auto", "auto", "2fr", "auto"]}
-        height="100%"
-        gap="size-300"
-      >
-        <View gridArea="library">
-          <ClaimsLibraryPicker
-            handleSelectionChange={handleClaimsLibrarySelection}
-          />
-        </View>
-        <View gridArea="divider">
-          <Divider size="S" />
-        </View>
-        <View gridArea="search">
-          <SearchField
-            label="Search claims"
-            width="100%"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            isDisabled={disableSearch}
-          />
-        </View>
-        <View gridArea="claims" overflow="auto">
-          <Flex direction="column" gap="size-100">
-            {filteredClaimsList.map((claim) => (
-              <Checkbox
-                key={claim.id}
-                isSelected={selectedClaims?.some((c) => c.id === claim.id)}
-                onChange={() => handleClaimChange(claim)}
-              >
-                {claim.description}
-              </Checkbox>
-            ))}
-          </Flex>
-        </View>
+      <Flex height="100%" direction="column" gap="size-300">
+        <ClaimsLibraryPicker
+          handleSelectionChange={handleClaimsLibrarySelection}
+        />
+        <Divider size="S" />
+        <SearchField
+          label="Search claims"
+          width="100%"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          isDisabled={disableSearch}
+        />
+        <Flex direction="column" gap="size-100">
+          {filteredClaimsList.map((claim) => (
+            <Checkbox
+              key={claim.id}
+              isSelected={selectedClaims?.some((c) => c.id === claim.id)}
+              onChange={() => handleClaimChange(claim)}
+            >
+              {claim.description}
+            </Checkbox>
+          ))}
+        </Flex>
         <Flex
           direction="row"
           gap="size-100"
           justifyContent="end"
-          gridArea="actions"
         >
           <Button variant="secondary" onPress={handleCancel}>
             Cancel
@@ -142,7 +126,7 @@ export default function AdditionalContextDialog(): JSX.Element {
             Select
           </Button>
         </Flex>
-      </Grid>
+      </Flex>
     </View>
   );
 }
