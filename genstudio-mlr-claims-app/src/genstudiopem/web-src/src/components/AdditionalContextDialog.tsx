@@ -92,8 +92,13 @@ export default function AdditionalContextDialog(): JSX.Element {
 
   return (
     <View backgroundColor="static-white" height="100vh">
-      <Flex height="100%" direction="column" justifyContent="space-between">
-        <Flex direction="column" gap="size-300">
+      <Flex
+        height="100%"
+        direction="column"
+        justifyContent="space-between"
+        marginX="size-100"
+      >
+        <Flex direction="column" height="100%" gap="size-200">
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
           />
@@ -105,7 +110,7 @@ export default function AdditionalContextDialog(): JSX.Element {
             onChange={handleSearchChange}
             isDisabled={disableSearch}
           />
-          <Flex direction="column" gap="size-100">
+          <Flex direction="column" gap="size-100" marginStart="size-100">
             {filteredClaimsList.map((claim) => (
               <Checkbox
                 key={claim.id}
