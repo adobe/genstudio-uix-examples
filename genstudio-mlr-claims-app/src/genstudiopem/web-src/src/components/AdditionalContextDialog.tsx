@@ -22,6 +22,7 @@ import {
   ButtonGroup,
   Checkbox,
   Flex,
+  Grid,
   View,
 } from "@adobe/react-spectrum";
 import React, { useEffect, useState } from "react";
@@ -70,17 +71,20 @@ export default function AdditionalContextDialog(): JSX.Element {
 
   return (
     <View backgroundColor="static-white" height="100vh">
-      <Flex height="100%" direction="column" justifyContent="space-between">
-        <Flex
-          height="100%"
-          direction="column"
-          marginX="size-200"
-          marginY="size-200"
-          gap="size-300"
-        >
+      <Grid
+        columns={["1fr"]}
+        rows={["auto", "1fr", "auto"]}
+        areas={["library", "claims", "actions"]}
+        height="100%"
+        marginX="size-200"
+        gap="size-300"
+      >
+        <View gridArea="library" marginTop="size-150">
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
           />
+        </View>
+        <View gridArea="claims" overflow="auto">
           <Flex direction="column" gap="size-100">
             {filteredClaimsList.map((claim) => (
               <Checkbox
@@ -93,8 +97,8 @@ export default function AdditionalContextDialog(): JSX.Element {
               </Checkbox>
             ))}
           </Flex>
-        </Flex>
-        <ButtonGroup align="end">
+        </View>
+        <ButtonGroup gridArea="actions" align="end">
           <Button variant="secondary" onPress={handleCancel}>
             Cancel
           </Button>
@@ -102,7 +106,7 @@ export default function AdditionalContextDialog(): JSX.Element {
             Select
           </Button>
         </ButtonGroup>
-      </Flex>
+      </Grid>
     </View>
   );
 }
