@@ -27,21 +27,49 @@ import {
 } from "@adobe/react-spectrum";
 import React, { useEffect, useState } from "react";
 
-import { extensionId, TEST_CLAIMS } from "../Constants";
+import { extensionId, IO_RUNTIME_ACTION_URL } from "../Constants";
 import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
 import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
+import { actionWebInvoke } from "../utils/actionWebInvoke";
+
+interface Auth {
+  imsToken: string;
+  imsOrg: string;
+}
 
 export default function AdditionalContextDialog(): JSX.Element {
   const [filteredClaimsList, setFilteredClaimsList] = useState<Claim[]>([]);
   const [selectedClaims, setSelectedClaims] = useState<Claim[]>([]);
+  const [auth, setAuth] = useState<Auth | null>(null);
+  const [testClaims, setTestClaims] = useState<any[]>([]);
 
   const guestConnection = useGuestConnection(extensionId);
   const { selectedClaimLibrary, handleClaimsLibrarySelection } =
-    useSelectedClaimLibrary();
+  useSelectedClaimLibrary();
+
+  useEffect(() => {
+    const sharedAuth = guestConnection?.sharedContext.get("auth");
+    console.log("Auth:", sharedAuth);
+    if (sharedAuth) {
+      setAuth(sharedAuth as Auth);
+    }
+  }, [guestConnection]);
+
+  useEffect(() => {
+    (async () => {
+      if (!auth?.imsToken || !auth?.imsOrg) return;
+      const response = await actionWebInvoke(IO_RUNTIME_ACTION_URL, auth.imsToken, auth.imsOrg);
+      console.log("Web action response:", response);
+      if (response && typeof response === 'object') {
+        setTestClaims((response as {claims: Claim[]}).claims || []);
+      }
+    })();
+  }, [auth, guestConnection]);
+
 
   useEffect(() => {
     const libraryClaims =
-      TEST_CLAIMS.find((library) => library.id === selectedClaimLibrary)
+      testClaims.find((library) => library.id === selectedClaimLibrary)
         ?.claims || [];
     setFilteredClaimsList(libraryClaims);
   }, [selectedClaimLibrary]);
