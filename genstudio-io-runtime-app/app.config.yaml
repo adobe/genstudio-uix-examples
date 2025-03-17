@@ -3,7 +3,7 @@ extensions:
     $include: src/genstudiopem/ext.config.yaml
     runtimeManifest:
       packages:
-        genstudio-mlr-claims-app:
+        genstudio-io-runtime-app:
           license: Apache-2.0
           actions:
             claims-finder:

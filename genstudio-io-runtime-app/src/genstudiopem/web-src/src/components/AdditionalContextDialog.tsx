@@ -72,7 +72,7 @@ export default function AdditionalContextDialog(): JSX.Element {
       testClaims.find((library) => library.id === selectedClaimLibrary)
         ?.claims || [];
     setFilteredClaimsList(libraryClaims);
-  }, [selectedClaimLibrary]);
+  }, [selectedClaimLibrary, testClaims]);
 
   const handleClaimChange = (claim: Claim) => {
     setSelectedClaims((prev) =>
@@ -110,6 +110,7 @@ export default function AdditionalContextDialog(): JSX.Element {
         <View gridArea="library" marginTop="size-150">
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
+            claims={testClaims}
           />
         </View>
         <View gridArea="claims" overflow="auto">

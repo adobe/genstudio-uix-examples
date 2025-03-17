@@ -1,6 +1,6 @@
 {
-  "name": "GS-Create-UIX-ValidationApp",
-  "id": "gs-create-uix-validationapp",
-  "description": "GS Create UIX Validation App",
+  "name": "GS-IO-Runtime-App",
+  "id": "gs-io-runtime-app",
+  "description": "GS IO Runtime App",
   "version": "0.0.1"
 }

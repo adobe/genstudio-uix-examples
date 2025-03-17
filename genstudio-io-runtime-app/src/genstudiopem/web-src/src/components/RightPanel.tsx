@@ -10,7 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import { Experience, ExperienceService } from "@adobe/genstudio-uix-sdk";
+import { Claim, Experience, ExperienceService } from "@adobe/genstudio-uix-sdk";
 import {
   Button,
   Divider,
@@ -23,13 +23,17 @@ import {
   View,
 } from "@adobe/react-spectrum";
 import React, { useEffect, useState, type Key } from "react";
-
-import { extensionId } from "../Constants";
+import { extensionId, IO_RUNTIME_ACTION_URL } from "../Constants";
 import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
 import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
 import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
+import { actionWebInvoke } from "../utils/actionWebInvoke";
+interface Auth {
+  imsToken: string;
+  imsOrg: string;
+}
 
 export default function RightPanel(): JSX.Element {
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
@@ -40,6 +44,8 @@ export default function RightPanel(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPolling, setIsPolling] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [auth, setAuth] = useState<Auth | null>(null);
+  const [testClaims, setTestClaims] = useState<any[]>([]);
 
   const guestConnection = useGuestConnection(extensionId);
   const { selectedClaimLibrary, handleClaimsLibrarySelection } =
@@ -54,6 +60,25 @@ export default function RightPanel(): JSX.Element {
   useEffect(() => {
     setClaimsResults(null);
   }, [selectedExperienceIndex]);
+
+  useEffect(() => {
+    const sharedAuth = guestConnection?.sharedContext.get("auth");
+    console.log("Auth:", sharedAuth);
+    if (sharedAuth) {
+      setAuth(sharedAuth as Auth);
+    }
+  }, [guestConnection]);
+
+  useEffect(() => {
+    (async () => {
+      if (!auth?.imsToken || !auth?.imsOrg) return;
+      const response = await actionWebInvoke(IO_RUNTIME_ACTION_URL, auth.imsToken, auth.imsOrg);
+      console.log("Web action response:", response);
+      if (response && typeof response === 'object') {
+        setTestClaims((response as {claims: Claim[]}).claims || []);
+      }
+    })();
+  }, [auth, guestConnection]);
 
   const handleExperienceSelection = (key: Key | null) => {
     if (!key || !experiences?.length) return;
@@ -187,6 +212,7 @@ export default function RightPanel(): JSX.Element {
         <Flex direction="column" gap="size-300">
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
+            claims={testClaims}
           />
           {renderExperiencePicker()}
           {renderRunClaimsCheckButton()}
