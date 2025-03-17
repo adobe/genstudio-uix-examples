@@ -22,31 +22,28 @@ import {
   Text,
   View,
 } from "@adobe/react-spectrum";
-import { attach } from "@adobe/uix-guest";
-import React, { Key, useEffect, useState } from "react";
+import React, { useEffect, useState, type Key } from "react";
 
-import { extensionId, TEST_CLAIMS } from "../Constants";
+import { extensionId } from "../Constants";
+import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
+import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
+import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function RightPanel(): JSX.Element {
-  const [guestConnection, setGuestConnection] = useState<any>(null);
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
-  const [selectedClaimLibrary, setSelectedClaimLibrary] = useState<Key>();
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
     number | null
   >(null);
-  const [claimsResult, setClaimsResult] = useState<any>(null);
+  const [claimsResults, setClaimsResults] = useState<ClaimResults | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPolling, setIsPolling] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const connection = await attach({ id: extensionId });
-      setGuestConnection(connection as any);
-    })();
-  }, []);
+  const guestConnection = useGuestConnection(extensionId);
+  const { selectedClaimLibrary, handleClaimsLibrarySelection } =
+    useSelectedClaimLibrary();
 
   useEffect(() => {
     if (guestConnection) {
@@ -55,18 +52,10 @@ export default function RightPanel(): JSX.Element {
   }, [guestConnection]);
 
   useEffect(() => {
-    setClaimsResult(null);
+    setClaimsResults(null);
   }, [selectedExperienceIndex]);
 
-  console.log(claimsResult);
-
-  const handleClaimsLibrarySelection = (library: Key | null) => {
-    if (library === null) return;
-
-    setSelectedClaimLibrary(library);
-  };
-
-  const handleExperienceSelection = (key: React.Key | null) => {
+  const handleExperienceSelection = (key: Key | null) => {
     if (!key || !experiences?.length) return;
 
     const index = experiences.findIndex((exp) => exp.id === key);
@@ -75,15 +64,19 @@ export default function RightPanel(): JSX.Element {
     }
   };
 
-  const handleRunClaimsCheck = () => {
-    if (selectedExperienceIndex === null || !experiences?.length) return;
-
-    const experience = experiences[selectedExperienceIndex];
-    runClaimsCheck(experience, selectedExperienceIndex, selectedClaimLibrary);
+  const handleRunClaimsCheck = async () => {
+    if (selectedExperienceIndex === null) return;
+    // setState is async so we need the result from getExperience directly
+    const newExperiences = await getExperience();
+    if (!newExperiences?.length) return;
+    runClaimsCheck(
+      newExperiences[selectedExperienceIndex],
+      selectedClaimLibrary
+    );
   };
 
-  const getExperience = async (): Promise<boolean> => {
-    if (!guestConnection) return false;
+  const getExperience = async (): Promise<Experience[] | null> => {
+    if (!guestConnection) return null;
 
     setIsSyncing(true);
     try {
@@ -93,9 +86,9 @@ export default function RightPanel(): JSX.Element {
       );
       if (remoteExperiences && remoteExperiences.length > 0) {
         setExperiences(remoteExperiences);
-        return true;
+        return remoteExperiences;
       }
-      return false;
+      return null;
     } finally {
       setIsSyncing(false);
     }
@@ -103,20 +96,15 @@ export default function RightPanel(): JSX.Element {
 
   const runClaimsCheck = async (
     experience: Experience,
-    selectedExperienceIndex: number,
     selectedClaimLibrary: any
   ): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = validateClaims(
-        experience,
-        selectedExperienceIndex,
-        selectedClaimLibrary
-      );
+      const result = validateClaims(experience, selectedClaimLibrary);
       // Add a minimum loading time of 0.5 seconds
       await new Promise((resolve) => setTimeout(resolve, 500));
       // Update state with results
-      setClaimsResult(result);
+      setClaimsResults(result);
     } catch (error) {
       console.error("Error in claims validation:", error);
     } finally {
@@ -142,18 +130,6 @@ export default function RightPanel(): JSX.Element {
     setIsPolling(false);
   };
 
-  const renderClaimsLibraryPicker = () => (
-    <Picker
-      label="Select claim library"
-      width="100%"
-      onSelectionChange={handleClaimsLibrarySelection}
-    >
-      {TEST_CLAIMS.map((library) => (
-        <Item key={library.id}>{library.name}</Item>
-      ))}
-    </Picker>
-  );
-
   const renderExperiencePicker = () => {
     if (!experiences) return null;
 
@@ -170,35 +146,6 @@ export default function RightPanel(): JSX.Element {
       </Picker>
     );
   };
-
-  const renderSyncExperiencesButton = () => (
-    <Button
-      variant="secondary"
-      width="160px"
-      isDisabled={isSyncing}
-      onPress={getExperience}
-      marginTop="size-300"
-    >
-      {isSyncing ? (
-        <Flex
-          direction="row"
-          alignItems="center"
-          justifyContent="space-around"
-          gap="size-50"
-        >
-          <ProgressCircle
-            size="S"
-            marginEnd="size-50"
-            aria-label="Syncing"
-            isIndeterminate
-          />
-          <Text>Syncing...</Text>
-        </Flex>
-      ) : (
-        <Text>Sync Experiences</Text>
-      )}
-    </Button>
-  );
 
   const renderRunClaimsCheckButton = () => {
     if (selectedExperienceIndex === null) return null;
@@ -221,41 +168,31 @@ export default function RightPanel(): JSX.Element {
   );
 
   const renderResults = () => {
-    if (!claimsResult) return null;
+    if (!claimsResults) return null;
 
     return (
-      <Flex direction="column" gap="size-300">
-        <Heading level={3} UNSAFE_style={{ lineHeight: "0px" }}>
-          Results
-        </Heading>
-        <ClaimsChecker
-          claims={claimsResult}
-          experienceNumber={selectedExperienceIndex || 0}
-        />
-      </Flex>
+      <ClaimsChecker
+        claims={claimsResults}
+        experienceNumber={selectedExperienceIndex || 0}
+      />
     );
   };
 
   const renderClaimsChecker = () => (
     <Flex height="100%" direction="column" marginY="size-200" gap="size-400">
       <Flex direction="column" gap="size-200">
-        <Heading level={3} UNSAFE_style={{ lineHeight: "8px" }}>
+        <Heading level={2} marginY="size-0">
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">
-          {renderClaimsLibraryPicker()}
-          <Flex
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            {renderExperiencePicker()}
-            {renderSyncExperiencesButton()}
-          </Flex>
+          <ClaimsLibraryPicker
+            handleSelectionChange={handleClaimsLibrarySelection}
+          />
+          {renderExperiencePicker()}
           {renderRunClaimsCheckButton()}
         </Flex>
       </Flex>
-      {(isLoading || claimsResult) && <Divider size="S" />}
+      {(isLoading || claimsResults) && <Divider size="S" />}
       {isLoading ? renderLoadingIndicator() : renderResults()}
     </Flex>
   );
