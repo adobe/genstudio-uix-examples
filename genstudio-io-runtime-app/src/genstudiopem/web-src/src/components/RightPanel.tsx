@@ -46,7 +46,7 @@ export default function RightPanel(): JSX.Element {
   const [isSyncing, setIsSyncing] = useState(false);
   const [auth, setAuth] = useState<Auth | null>(null);
   const [testClaims, setTestClaims] = useState<any[]>([]);
-
+  const [isPollingClaims, setIsPollingClaims] = useState(false);
   const guestConnection = useGuestConnection(extensionId);
   const { selectedClaimLibrary, handleClaimsLibrarySelection } =
     useSelectedClaimLibrary();
@@ -57,28 +57,26 @@ export default function RightPanel(): JSX.Element {
     }
   }, [guestConnection]);
 
-  useEffect(() => {
-    setClaimsResults(null);
-  }, [selectedExperienceIndex]);
-
-  useEffect(() => {
+  // Get auth from shared context
+  useEffect(()=> {
     const sharedAuth = guestConnection?.sharedContext.get("auth");
-    console.log("Auth:", sharedAuth);
-    if (sharedAuth) {
+      if (sharedAuth) {
       setAuth(sharedAuth as Auth);
     }
   }, [guestConnection]);
 
+  // Poll for claims
   useEffect(() => {
-    (async () => {
-      if (!auth?.imsToken || !auth?.imsOrg) return;
-      const response = await actionWebInvoke(IO_RUNTIME_ACTION_URL, auth.imsToken, auth.imsOrg);
-      console.log("Web action response:", response);
-      if (response && typeof response === 'object') {
-        setTestClaims((response as {claims: Claim[]}).claims || []);
-      }
-    })();
-  }, [auth, guestConnection]);
+    if (guestConnection) {
+      pollForClaims();
+    }
+  }, [guestConnection, auth]);
+
+
+  useEffect(() => {
+    setClaimsResults(null);
+  }, [selectedExperienceIndex]);
+
 
   const handleExperienceSelection = (key: Key | null) => {
     if (!key || !experiences?.length) return;
@@ -154,6 +152,25 @@ export default function RightPanel(): JSX.Element {
     }
     setIsPolling(false);
   };
+
+  const pollForClaims = async () => {
+    setIsPollingClaims(true);
+    let retries = 0;
+    const maxRetries = 10;
+    const interval = 2000; // 2 seconds
+    if (!auth?.imsToken || !auth?.imsOrg) return;
+    while (retries < maxRetries) {
+      const response = await actionWebInvoke(IO_RUNTIME_ACTION_URL, auth.imsToken, auth.imsOrg);
+      if (response && typeof response === 'object') {
+        setTestClaims((response as {claims: Claim[]}).claims || []);
+        setIsPollingClaims(false);
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, interval));
+      retries++;
+    }
+    setIsPollingClaims(false);
+  }
 
   const renderExperiencePicker = () => {
     if (!experiences) return null;
@@ -232,14 +249,14 @@ export default function RightPanel(): JSX.Element {
       gap="size-200"
     >
       <ProgressCircle aria-label="Loading" isIndeterminate />
-      {isPolling && <Text>Waiting for experiences to be ready...</Text>}
+      {(isPolling || isPollingClaims) && <Text>Waiting for experiences and claims to be ready...</Text>}
     </Flex>
   );
 
   return (
     <View backgroundColor="static-white" height="100vh">
       <Flex height="100%" direction="column" marginX="size-200">
-        {experiences && experiences.length > 0
+        {experiences && experiences.length > 0 && testClaims && testClaims.length > 0
           ? renderClaimsChecker()
           : renderWaitingForExperiences()}
       </Flex>

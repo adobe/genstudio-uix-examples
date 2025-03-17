@@ -24,6 +24,8 @@ import {
   Flex,
   Grid,
   View,
+  Text,
+  ProgressCircle
 } from "@adobe/react-spectrum";
 import React, { useEffect, useState } from "react";
 
@@ -42,30 +44,23 @@ export default function AdditionalContextDialog(): JSX.Element {
   const [selectedClaims, setSelectedClaims] = useState<Claim[]>([]);
   const [auth, setAuth] = useState<Auth | null>(null);
   const [testClaims, setTestClaims] = useState<any[]>([]);
-
+  const [isPollingClaims, setIsPollingClaims] = useState(false);
   const guestConnection = useGuestConnection(extensionId);
   const { selectedClaimLibrary, handleClaimsLibrarySelection } =
   useSelectedClaimLibrary();
 
   useEffect(() => {
-    const sharedAuth = guestConnection?.sharedContext.get("auth");
-    console.log("Auth:", sharedAuth);
+    const sharedAuth = guestConnection?.sharedContext.get("auth");;
     if (sharedAuth) {
       setAuth(sharedAuth as Auth);
     }
   }, [guestConnection]);
 
   useEffect(() => {
-    (async () => {
-      if (!auth?.imsToken || !auth?.imsOrg) return;
-      const response = await actionWebInvoke(IO_RUNTIME_ACTION_URL, auth.imsToken, auth.imsOrg);
-      console.log("Web action response:", response);
-      if (response && typeof response === 'object') {
-        setTestClaims((response as {claims: Claim[]}).claims || []);
-      }
-    })();
-  }, [auth, guestConnection]);
-
+    if (guestConnection) {
+      pollForClaims();
+    }
+  }, [guestConnection, auth]);
 
   useEffect(() => {
     const libraryClaims =
@@ -97,6 +92,65 @@ export default function AdditionalContextDialog(): JSX.Element {
     );
   };
 
+  const pollForClaims = async () => {
+    setIsPollingClaims(true);
+    let retries = 0;
+    const maxRetries = 10;
+    const interval = 2000; // 2 seconds
+    if (!auth?.imsToken || !auth?.imsOrg) return;
+    while (retries < maxRetries) {
+      const response = await actionWebInvoke(IO_RUNTIME_ACTION_URL, auth.imsToken, auth.imsOrg);
+      if (response && typeof response === 'object') {
+        setTestClaims((response as {claims: Claim[]}).claims || []);
+        setIsPollingClaims(false);
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, interval));
+      retries++;
+    }
+    setIsPollingClaims(false);
+  }
+
+  const renderWaitingForClaims = () => {
+    return (
+      <Flex
+        height="100%"
+        direction="column"
+        alignItems="center"
+        justifyContent="center"
+        gap="size-200"
+      >
+        <ProgressCircle aria-label="Loading" isIndeterminate />
+        <Text>Waiting for claims to be ready...</Text>
+      </Flex>
+    );
+  }
+  const renderClaims = () => {
+    return (
+      <>
+        <View gridArea="library" marginTop="size-150">
+          <ClaimsLibraryPicker
+            handleSelectionChange={handleClaimsLibrarySelection}
+        claims={testClaims}
+      />
+    </View>
+    <View gridArea="claims" overflow="auto">
+      <Flex direction="column" gap="size-100">
+        {filteredClaimsList.map((claim) => (
+          <Checkbox
+            key={claim.id}
+            marginStart="size-50"
+            isSelected={selectedClaims?.some((c) => c.id === claim.id)}
+            onChange={() => handleClaimChange(claim)}
+          >
+            {claim.description}
+          </Checkbox>
+        ))}
+      </Flex>
+    </View>
+      </>
+    );
+  }
   return (
     <View backgroundColor="static-white" height="100vh">
       <Grid
@@ -107,26 +161,7 @@ export default function AdditionalContextDialog(): JSX.Element {
         marginX="size-200"
         gap="size-300"
       >
-        <View gridArea="library" marginTop="size-150">
-          <ClaimsLibraryPicker
-            handleSelectionChange={handleClaimsLibrarySelection}
-            claims={testClaims}
-          />
-        </View>
-        <View gridArea="claims" overflow="auto">
-          <Flex direction="column" gap="size-100">
-            {filteredClaimsList.map((claim) => (
-              <Checkbox
-                key={claim.id}
-                marginStart="size-50"
-                isSelected={selectedClaims?.some((c) => c.id === claim.id)}
-                onChange={() => handleClaimChange(claim)}
-              >
-                {claim.description}
-              </Checkbox>
-            ))}
-          </Flex>
-        </View>
+        {isPollingClaims ? renderWaitingForClaims() : renderClaims()}
         <ButtonGroup gridArea="actions" align="end">
           <Button variant="secondary" onPress={handleCancel}>
             Cancel
