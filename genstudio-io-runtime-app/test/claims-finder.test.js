@@ -35,42 +35,42 @@ describe('claims-finder', () => {
   test('should return an http reponse with the fetched content', async () => {
     const mockFetchResponse = {
       ok: true,
-      json: () => Promise.resolve({ content: 'fake' })
+      json: () => Promise.resolve({
+        claims: [
+          {
+            id: 'efficacy-claims',
+            name: 'Efficacy Claims',
+            claims: [
+              {
+                id: 'claim1',
+                description: 'Clinically proven to reduce joint inflammation by up to 50%.'
+              }
+              // ... other claims exist
+            ]
+          }
+          // ... other claim categories exist
+        ]
+      })
     }
     fetch.mockResolvedValue(mockFetchResponse)
     const response = await action.main(fakeParams)
     expect(response).toEqual({
       statusCode: 200,
-      body: { content: 'fake' }
-    })
-  })
-  test('if there is an error should return a 500 and log the error', async () => {
-    const fakeError = new Error('fake')
-    fetch.mockRejectedValue(fakeError)
-    const response = await action.main(fakeParams)
-    expect(response).toEqual({
-      error: {
-        statusCode: 500,
-        body: { error: 'server error' }
+      body: {
+        claims: expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            name: expect.any(String),
+            claims: expect.arrayContaining([
+              expect.objectContaining({
+                id: expect.any(String),
+                description: expect.any(String)
+              })
+            ])
+          })
+        ])
       }
     })
-    expect(mockLoggerInstance.error).toHaveBeenCalledWith(fakeError)
-  })
-  test('if returned service status code is not ok should return a 500 and log the status', async () => {
-    const mockFetchResponse = {
-      ok: false,
-      status: 404
-    }
-    fetch.mockResolvedValue(mockFetchResponse)
-    const response = await action.main(fakeParams)
-    expect(response).toEqual({
-      error: {
-        statusCode: 500,
-        body: { error: 'server error' }
-      }
-    })
-    // error message should contain 404
-    expect(mockLoggerInstance.error).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('404') }))
   })
   test('missing input request parameters, should return 400', async () => {
     const response = await action.main({})

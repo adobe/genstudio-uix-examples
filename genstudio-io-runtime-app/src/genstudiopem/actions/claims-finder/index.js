@@ -48,12 +48,17 @@ async function main (params) {
 
     // log the response status code
     logger.info(`${response.statusCode}: successful request`)
-    return response
+    return response;
   } catch (error) {
     // log any server errors
     logger.error(error)
     // return with 500
-    return errorResponse(500, 'server error', logger)
+    return {
+      error: {
+        statusCode: 500,
+        body: { error: 'server error' }
+      }
+    }
   }
 }
 
