@@ -1,14 +1,14 @@
 /*
- * Copyright 2025 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
+Copyright 2025 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
 
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
 
 import {
   AdditionalContext,
@@ -131,23 +131,23 @@ export default function AdditionalContextDialog(): JSX.Element {
         <View gridArea="library" marginTop="size-150">
           <ClaimsLibraryPicker
             handleSelectionChange={handleClaimsLibrarySelection}
-        claims={testClaims}
-      />
-    </View>
-    <View gridArea="claims" overflow="auto">
-      <Flex direction="column" gap="size-100">
-        {filteredClaimsList.map((claim) => (
-          <Checkbox
-            key={claim.id}
-            marginStart="size-50"
-            isSelected={selectedClaims?.some((c) => c.id === claim.id)}
-            onChange={() => handleClaimChange(claim)}
-          >
-            {claim.description}
-          </Checkbox>
-        ))}
-      </Flex>
-    </View>
+            claims={testClaims}
+        />
+        </View>
+        <View gridArea="claims" overflow="auto">
+          <Flex direction="column" gap="size-100">
+            {filteredClaimsList.map((claim) => (
+              <Checkbox
+                key={claim.id}
+                marginStart="size-50"
+                isSelected={selectedClaims?.some((c) => c.id === claim.id)}
+                onChange={() => handleClaimChange(claim)}
+              >
+                {claim.description}
+              </Checkbox>
+            ))}
+          </Flex>
+        </View>
       </>
     );
   }

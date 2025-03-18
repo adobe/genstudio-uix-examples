@@ -11,7 +11,7 @@ governing permissions and limitations under the License.
 */
 
 import React from 'react';
-import { Flex, Heading, Text, View, Button, InlineAlert, Badge, Divider, Grid, ActionButton } from "@adobe/react-spectrum";
+import { Flex, Heading, Text, View, InlineAlert, Badge, Divider, Grid, ActionButton } from "@adobe/react-spectrum";
 import Alert from "@spectrum-icons/workflow/Alert";
 import { Violation, ClaimResults } from '../types';
 import { copyToClipboard } from '../utils/copyToClipboard';

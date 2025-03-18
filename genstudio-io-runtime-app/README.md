@@ -1,6 +1,7 @@
-# GenStudio MLR Claims App
+# GenStudio IO Runtime App
 
 This is an App Builder application that creates an extension point in GenStudio to add context via claims and validate experiences with claims.
+It also calls a custom action to get the claims.
 
 Welcome to my Adobe I/O Application!
 
@@ -25,6 +26,9 @@ local serverless stack and also run your actions locally use the `aio app run --
 
 - `aio app deploy` to build and deploy all actions on Runtime and static files to CDN
 - `aio app undeploy` to undeploy the app
+
+## Logging
+See [I/O Runtime Logging](https://developer.adobe.com/app-builder/docs/guides/runtime-logging/)
 
 ## Config
 
