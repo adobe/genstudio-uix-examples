@@ -29,6 +29,9 @@ Here is the list of examples:
 - [GenStudio Create Context Add On](./genstudio-create-context-addon/)
     - This is an example of a Context Add On that adds a new context to the Generation Context
     - It includes 1 dialog that opens in Prompt Drawer to add claims to the Generation Context
+- [GenStudio IO Runtime App](./genstudio-io-runtime-app/)
+    - This is an example of an App for using the IO Runtime Action
+    - It includes the same code in MLR Claims App but uses the IO Runtime API to fetch claims from an external source
 
 ## Usage
 1. Clone the repository

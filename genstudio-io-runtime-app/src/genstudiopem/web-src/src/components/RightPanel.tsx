@@ -1,0 +1,265 @@
+/*
+Copyright 2025 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+
+import { Claim, Experience, ExperienceService } from "@adobe/genstudio-uix-sdk";
+import {
+  Button,
+  Divider,
+  Flex,
+  Heading,
+  Item,
+  Picker,
+  ProgressCircle,
+  Text,
+  View,
+} from "@adobe/react-spectrum";
+import React, { useEffect, useState, type Key } from "react";
+import { extensionId, IO_RUNTIME_ACTION_URL } from "../Constants";
+import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
+import { ClaimResults } from "../types";
+import { validateClaims } from "../utils/claimsValidation";
+import ClaimsChecker from "./ClaimsChecker";
+import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
+import { actionWebInvoke } from "../utils/actionWebInvoke";
+interface Auth {
+  imsToken: string;
+  imsOrg: string;
+}
+
+export default function RightPanel(): JSX.Element {
+  const [experiences, setExperiences] = useState<Experience[] | null>(null);
+  const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
+    number | null
+  >(null);
+  const [claimsResults, setClaimsResults] = useState<ClaimResults | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isPolling, setIsPolling] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [auth, setAuth] = useState<Auth | null>(null);
+  const [testClaims, setTestClaims] = useState<any[]>([]);
+  const [isPollingClaims, setIsPollingClaims] = useState(false);
+  const guestConnection = useGuestConnection(extensionId);
+  const { selectedClaimLibrary, handleClaimsLibrarySelection } =
+    useSelectedClaimLibrary();
+
+  useEffect(() => {
+    if (guestConnection) {
+      pollForExperiences();
+    }
+  }, [guestConnection]);
+
+  // Get auth from shared context
+  useEffect(()=> {
+    const sharedAuth = guestConnection?.sharedContext.get("auth");
+      if (sharedAuth) {
+      setAuth(sharedAuth as Auth);
+    }
+  }, [guestConnection]);
+
+  // Poll for claims
+  useEffect(() => {
+    if (guestConnection) {
+      pollForClaims();
+    }
+  }, [guestConnection, auth]);
+
+
+  useEffect(() => {
+    setClaimsResults(null);
+  }, [selectedExperienceIndex]);
+
+
+  const handleExperienceSelection = (key: Key | null) => {
+    if (!key || !experiences?.length) return;
+
+    const index = experiences.findIndex((exp) => exp.id === key);
+    if (index !== -1) {
+      setSelectedExperienceIndex(index);
+    }
+  };
+
+  const handleRunClaimsCheck = async () => {
+    if (selectedExperienceIndex === null) return;
+    // setState is async so we need the result from getExperience directly
+    const newExperiences = await getExperience();
+    if (!newExperiences?.length) return;
+    runClaimsCheck(
+      newExperiences[selectedExperienceIndex],
+      selectedClaimLibrary
+    );
+  };
+
+  const getExperience = async (): Promise<Experience[] | null> => {
+    if (!guestConnection) return null;
+
+    setIsSyncing(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const remoteExperiences = await ExperienceService.getExperiences(
+        guestConnection
+      );
+      if (remoteExperiences && remoteExperiences.length > 0) {
+        setExperiences(remoteExperiences);
+        return remoteExperiences;
+      }
+      return null;
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const runClaimsCheck = async (
+    experience: Experience,
+    selectedClaimLibrary: any
+  ): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const result = validateClaims(experience, selectedClaimLibrary);
+      // Add a minimum loading time of 0.5 seconds
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Update state with results
+      setClaimsResults(result);
+    } catch (error) {
+      console.error("Error in claims validation:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const pollForExperiences = async () => {
+    setIsPolling(true);
+    let retries = 0;
+    const maxRetries = 10;
+    const interval = 2000; // 2 seconds
+
+    while (retries < maxRetries) {
+      const hasExperiences = await getExperience();
+      if (hasExperiences) {
+        setIsPolling(false);
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, interval));
+      retries++;
+    }
+    setIsPolling(false);
+  };
+
+  const pollForClaims = async () => {
+    setIsPollingClaims(true);
+    let retries = 0;
+    const maxRetries = 10;
+    const interval = 2000; // 2 seconds
+    if (!auth?.imsToken || !auth?.imsOrg) return;
+    while (retries < maxRetries) {
+      const response = await actionWebInvoke(IO_RUNTIME_ACTION_URL, auth.imsToken, auth.imsOrg);
+      if (response && typeof response === 'object') {
+        setTestClaims((response as {claims: Claim[]}).claims || []);
+        setIsPollingClaims(false);
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, interval));
+      retries++;
+    }
+    setIsPollingClaims(false);
+  }
+
+  const renderExperiencePicker = () => {
+    if (!experiences) return null;
+
+    return (
+      <Picker
+        label="Select experience"
+        align="start"
+        isDisabled={!selectedClaimLibrary || isSyncing}
+        onSelectionChange={handleExperienceSelection}
+      >
+        {experiences.map((experience, index) => (
+          <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
+        ))}
+      </Picker>
+    );
+  };
+
+  const renderRunClaimsCheckButton = () => {
+    if (selectedExperienceIndex === null) return null;
+
+    return (
+      <Button
+        variant="primary"
+        isDisabled={isLoading}
+        onPress={handleRunClaimsCheck}
+      >
+        Run Claims Check
+      </Button>
+    );
+  };
+
+  const renderLoadingIndicator = () => (
+    <Flex height="100%" alignItems="center" justifyContent="center">
+      <ProgressCircle aria-label="Loading" isIndeterminate />
+    </Flex>
+  );
+
+  const renderResults = () => {
+    if (!claimsResults) return null;
+
+    return (
+      <ClaimsChecker
+        claims={claimsResults}
+        experienceNumber={selectedExperienceIndex || 0}
+      />
+    );
+  };
+
+  const renderClaimsChecker = () => (
+    <Flex height="100%" direction="column" marginY="size-200" gap="size-400">
+      <Flex direction="column" gap="size-200">
+        <Heading level={2} marginY="size-0">
+          Check Claims
+        </Heading>
+        <Flex direction="column" gap="size-300">
+          <ClaimsLibraryPicker
+            handleSelectionChange={handleClaimsLibrarySelection}
+            claims={testClaims}
+          />
+          {renderExperiencePicker()}
+          {renderRunClaimsCheckButton()}
+        </Flex>
+      </Flex>
+      {(isLoading || claimsResults) && <Divider size="S" />}
+      {isLoading ? renderLoadingIndicator() : renderResults()}
+    </Flex>
+  );
+
+  const renderWaitingForExperiences = () => (
+    <Flex
+      height="100%"
+      direction="column"
+      alignItems="center"
+      justifyContent="center"
+      gap="size-200"
+    >
+      <ProgressCircle aria-label="Loading" isIndeterminate />
+      {(isPolling || isPollingClaims) && <Text>Waiting for experiences and claims to be ready...</Text>}
+    </Flex>
+  );
+
+  return (
+    <View backgroundColor="static-white" height="100vh">
+      <Flex height="100%" direction="column" marginX="size-200">
+        {experiences && experiences.length > 0 && testClaims && testClaims.length > 0
+          ? renderClaimsChecker()
+          : renderWaitingForExperiences()}
+      </Flex>
+    </View>
+  );
+}
