@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - "genstudio-mlr-claims-app/**"
-      - ".github/workflows/pr_test.yml"
 
 jobs:
   test:
