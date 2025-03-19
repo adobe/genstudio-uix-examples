@@ -41,6 +41,7 @@ jobs:
       - name: Auth
         uses: adobe/aio-apps-action@3.3.0
         with:
+          os: ${{ matrix.os }}
           command: oauth_sts
           CLIENTID: ${{ secrets.CLIENTID }}
           CLIENTSECRET: ${{ secrets.CLIENTSECRET }}
