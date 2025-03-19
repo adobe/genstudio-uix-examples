@@ -1,6 +1,11 @@
 name: AIO App CI
 
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      - "genstudio-mlr-claims-app/**"
+      - ".github/workflows/pr_test.yml"
+
 jobs:
   test:
     name: Test PR
