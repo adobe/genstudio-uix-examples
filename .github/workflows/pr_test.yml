@@ -71,6 +71,7 @@ jobs:
         with:
           os: ${{ matrix.os }}
           command: build
+          working-directory: ${{ matrix.app }}
       # - name: Deploy
       #   env:
       #     AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
