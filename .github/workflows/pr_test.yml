@@ -64,6 +64,7 @@ jobs:
           IMSORGID: ${{ secrets.IMSORGID }}
           SCOPES: ${{ secrets.SCOPES }}
       - name: Build
+        working-directory: ${{ matrix.app }}
         env:
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
         uses: adobe/aio-apps-action@3.3.0
