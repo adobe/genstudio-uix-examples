@@ -37,7 +37,7 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('${{ matrix.app }}/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node--${{ hashFiles('${{ matrix.app }}/package-lock.json') }}
       - name: Install dependencies
         run: npm i
       - name: Setup CLI
