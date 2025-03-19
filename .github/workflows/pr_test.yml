@@ -35,6 +35,7 @@ jobs:
           echo "Project Workspace ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}"
           echo "Project Workspace Name: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}"
           echo 'hash ${{ hashFiles('package-lock.json') }}'
+          echo 'AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}'
           pwd
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -66,7 +67,7 @@ jobs:
           SCOPES: ${{ secrets.SCOPES }}
       - name: Build Run
         env:
-          AIO_CLI_ENV: ${{ environments.AIO_CLI_ENV }}
+          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
         run: |
           aio app build --force-build
