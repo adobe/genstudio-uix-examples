@@ -21,6 +21,11 @@ jobs:
       - name: Test
         run: |
           echo "Environment: ${{ matrix.environment }}"
+          echo "Scopes: ${{ secrets.SCOPES }}"
+          echo "Client ID: ${{ secrets.CLIENTID }}"
+          echo "Technical Account ID: ${{ secrets.TECHNICALACCOUNTID }}"
+          echo "Technical Account Email: ${{ secrets.TECHNICALACCOUNTEMAIL }}"
+          echo "IMS Org ID: ${{ secrets.IMSORGID }}"
           pwd
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
