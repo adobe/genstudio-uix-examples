@@ -56,6 +56,7 @@ jobs:
         env:
           AIO_CLI_ENV: stage
         with:
+          os: ${{ matrix.os }}
           command: oauth_sts
           CLIENTID: ${{ secrets.CLIENTID }}
           CLIENTSECRET: ${{ secrets.CLIENTSECRET }}
@@ -69,6 +70,7 @@ jobs:
         uses: adobe/aio-apps-action@3.3.0
         working-directory: ${{ matrix.app }}
         with:
+          os: ${{ matrix.os }}
           command: build
       # - name: Deploy
       #   env:
