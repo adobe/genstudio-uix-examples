@@ -14,9 +14,14 @@ jobs:
     defaults:
       run:
         working-directory: ${{ matrix.app }}
+        environment: ${{ matrix.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Test
+        run: |
+          echo "Environment: ${{ matrix.environment }}"
+          pwd
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -29,7 +34,6 @@ jobs:
           version: 10.x.x
       - name: Auth
         uses: adobe/aio-apps-action@3.3.0
-        environment: ${{ matrix.environment }}
         with:
           command: oauth_sts
           CLIENTID: ${{ secrets.CLIENTID }}
