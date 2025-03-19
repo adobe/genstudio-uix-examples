@@ -26,12 +26,14 @@ jobs:
           echo "Technical Account ID: ${{ secrets.TECHNICALACCOUNTID }}"
           echo "Technical Account Email: ${{ secrets.TECHNICALACCOUNTEMAIL }}"
           echo "IMS Org ID: ${{ secrets.IMSORGID }}"
-          echo '${{ hashFiles('package-lock.json') }}'
+          echo 'hash ${{ hashFiles('package-lock.json') }}'
           pwd
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - name: Install dependencies
         run: npm i
       - name: Setup CLI
