@@ -45,8 +45,8 @@ jobs:
           command: oauth_sts
           CLIENTID: ${{ secrets.CLIENTID }}
           CLIENTSECRET: ${{ secrets.CLIENTSECRET }}
-          TECHNICALACCOUNTID: ${{ secrets.TECHNICALACCID }}
-          TECHNICALACCOUNTEMAIL: ${{ secrets.TECHNICALACCEMAIL }}
+          TECHNICALACCOUNTID: ${{ secrets.TECHNICALACCOUNTID }}
+          TECHNICALACCOUNTEMAIL: ${{ secrets.TECHNICALACCOUNTEMAIL }}
           IMSORGID: ${{ secrets.IMSORGID }}
           SCOPES: ${{ secrets.SCOPES }}
       - name: Build
