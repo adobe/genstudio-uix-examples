@@ -9,7 +9,7 @@ jobs:
         node-version: ["20"]
         os: [macOS-latest] # [macOS-latest, ubuntu-latest, windows-latest]
         app: [genstudio-mlr-claims-app]
-        environment: [Test, OrgStg_MLR_WsPrd] # [development, staging, production]
+        environment: [TEST, OrgStg_MLR_WsPrd] # [development, staging, production]
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
     defaults:
@@ -54,7 +54,7 @@ jobs:
       - name: Auth
         uses: adobe/aio-apps-action@3.4.0
         env:
-          AIO_CLI_ENV: stage
+          AIO_CLI_ENV: ${{}}
         with:
           os: ${{ matrix.os }}
           command: oauth_sts
@@ -66,9 +66,10 @@ jobs:
           SCOPES: ${{ secrets.SCOPES }}
       - name: Build Run
         env:
+          AIO_CLI_ENV: ${{ environments.AIO_CLI_ENV }}
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
         run: |
-          aio app build
+          aio app build --force-build
 
       # - name: Build
       #   env:
@@ -78,18 +79,19 @@ jobs:
       #     os: ${{ matrix.os }}
       #     command: build
       #     working-directory: ${{ matrix.app }}
-      # - name: Deploy
-      #   env:
-      #     AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
-      #     AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
-      #     AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
-      #     AIO_PROJECT_NAME: ${{ secrets.AIO_PROJECT_NAME }}
-      #     AIO_PROJECT_ORG_ID: ${{ secrets.AIO_PROJECT_ORG_ID }}
-      #     AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
-      #     AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
-      #     AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
-      #   uses: adobe/aio-apps-action@3.3.0
-      #   with:
-      #     os: ${{ matrix.os }}
-      #     command: deploy
-      #     noPublish: true
+      - name: Deploy to Stage
+        env:
+          AIO_CLI_ENV: ${{}}
+          AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
+          AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
+          AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
+          AIO_PROJECT_NAME: ${{ secrets.AIO_PROJECT_NAME }}
+          AIO_PROJECT_ORG_ID: ${{ secrets.AIO_PROJECT_ORG_ID }}
+          AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
+          AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
+          AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
+        uses: adobe/aio-apps-action@3.3.0
+        with:
+          os: ${{ matrix.os }}
+          command: deploy
+          noPublish: true
