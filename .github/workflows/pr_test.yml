@@ -23,9 +23,17 @@ jobs:
           echo "Environment: ${{ matrix.environment }}"
           echo "Scopes: ${{ secrets.SCOPES }}"
           echo "Client ID: ${{ secrets.CLIENTID }}"
+          echo "Client Secret: ${{ secrets.CLIENTSECRET }}"
           echo "Technical Account ID: ${{ secrets.TECHNICALACCOUNTID }}"
           echo "Technical Account Email: ${{ secrets.TECHNICALACCOUNTEMAIL }}"
           echo "IMS Org ID: ${{ secrets.IMSORGID }}"
+          echo "Runtime Namespace: ${{ secrets.AIO_RUNTIME_NAMESPACE }}"
+          echo "Runtime Auth: ${{ secrets.AIO_RUNTIME_AUTH }}"
+          echo "Project ID: ${{ secrets.AIO_PROJECT_ID }}"
+          echo "Project Name: ${{ secrets.AIO_PROJECT_NAME }}"
+          echo "Project Org ID: ${{ secrets.AIO_PROJECT_ORG_ID }}"
+          echo "Project Workspace ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}"
+          echo "Project Workspace Name: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}"
           echo 'hash ${{ hashFiles('package-lock.json') }}'
           pwd
       - name: Use Node.js ${{ matrix.node-version }}
