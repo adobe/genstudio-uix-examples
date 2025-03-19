@@ -64,14 +64,20 @@ jobs:
           TECHNICALACCOUNTEMAIL: ${{ secrets.TECHNICALACCOUNTEMAIL }}
           IMSORGID: ${{ secrets.IMSORGID }}
           SCOPES: ${{ secrets.SCOPES }}
-      - name: Build
+      - name: Build Run
         env:
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
-        uses: adobe/aio-apps-action@3.3.0
-        with:
-          os: ${{ matrix.os }}
-          command: build
-          working-directory: ${{ matrix.app }}
+        run: |
+          aio app build
+
+      # - name: Build
+      #   env:
+      #     AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
+      #   uses: adobe/aio-apps-action@3.3.0
+      #   with:
+      #     os: ${{ matrix.os }}
+      #     command: build
+      #     working-directory: ${{ matrix.app }}
       # - name: Deploy
       #   env:
       #     AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
