@@ -82,7 +82,7 @@ jobs:
       #     working-directory: ${{ matrix.app }}
       - name: Deploy to Stage
         env:
-          AIO_CLI_ENV: ${{}}
+          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
           AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
           AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
