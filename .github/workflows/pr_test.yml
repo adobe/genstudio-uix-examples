@@ -32,13 +32,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm i
       - name: Setup CLI
