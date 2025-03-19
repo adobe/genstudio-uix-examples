@@ -71,16 +71,7 @@ jobs:
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
         run: |
           aio app build --force-build
-
-      # - name: Build
-      #   env:
-      #     AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
-      #   uses: adobe/aio-apps-action@3.3.0
-      #   with:
-      #     os: ${{ matrix.os }}
-      #     command: build
-      #     working-directory: ${{ matrix.app }}
-      - name: Deploy to Stage
+      - name: Deploy to Stg
         env:
           AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
@@ -91,5 +82,24 @@ jobs:
           AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
           AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
           AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
+        id: deploy
         run: |
-          aio app deploy --no-build --no-publish
+          output=$(aio app deploy --no-build --no-publish)
+          echo "deploy_output<<EOF" >> $GITHUB_OUTPUT
+          echo "$output" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Comment PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const output = `#### Deployment Results 🚀
+            \`\`\`
+            ${{ steps.deploy.outputs.deploy_output }}
+            \`\`\`
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
