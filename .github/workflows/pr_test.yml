@@ -13,7 +13,7 @@ jobs:
         node-version: ["20"]
         os: [macOS-latest] # [macOS-latest, ubuntu-latest, windows-latest]
         app: [genstudio-mlr-claims-app]
-        environment: [TEST] # [development, staging, production]
+        environment: [OrgStg_MLR_WsPrd] #TEST, OrgStg_MLR_WsPrd] # [development, staging, production]
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
     defaults:
