@@ -55,7 +55,7 @@ jobs:
       - name: Auth
         uses: adobe/aio-apps-action@3.4.0
         env:
-          AIO_CLI_ENV: ${{}}
+          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
         with:
           os: ${{ matrix.os }}
           command: oauth_sts
