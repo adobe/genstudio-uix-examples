@@ -36,8 +36,6 @@ jobs:
           version: 10.x.x
       - name: Auth
         uses: adobe/aio-apps-action@3.4.0
-        env:
-          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
         with:
           command: oauth_sts
           CLIENTID: ${{ secrets.CLIENTID }}
