@@ -50,8 +50,9 @@ jobs:
           version: 10.x.x
       - name: Auth
         uses: adobe/aio-apps-action@3.4.0
+        env:
+          AIO_CLI_ENV: stage
         with:
-          os: ${{ matrix.os }}
           command: oauth_sts
           CLIENTID: ${{ secrets.CLIENTID }}
           CLIENTSECRET: ${{ secrets.CLIENTSECRET }}
