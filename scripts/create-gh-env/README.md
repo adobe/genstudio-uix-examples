@@ -1,4 +1,6 @@
-# Util Package
+# Create Github Environment
+
+> This script is specifically designed to work with GitHub Actions in the adobe/genstudio-uix-examples repository
 
 A Node.js script to create and manage GitHub Environment Secrets from Adobe I/O console configuration files.
 
@@ -14,10 +16,10 @@ Run the script with default settings:
 
 ```bash
 export GITHUB_TOKEN=your_github_token
-node scripts/create-gh-env --env "Env Name" --file "/path to .aio file or .console.json"
+node scripts/create-gh-env --env "Env Name" --file "/path to console.json"
 ```
 
-To get the .aio file: (or manually download from developer console)
+To get the console.json file: (or manually download from developer console)
 
 ```
 aio login --force
