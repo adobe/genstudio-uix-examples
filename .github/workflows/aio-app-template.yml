@@ -9,6 +9,7 @@ on:
       environment:
         required: true
         type: string
+    # This should come from environment
     secrets:
       # I/O Management
       CLIENTID:
