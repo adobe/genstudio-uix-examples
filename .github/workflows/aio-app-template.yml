@@ -47,9 +47,9 @@ jobs:
     strategy:
       matrix:
         node-version: ["20"]
-        os: [macOS-latest] # [macOS-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest] # [macOS-latest, ubuntu-latest, windows-latest]
         app: ${{ fromJson(inputs.app) }}
-        environment: ${{ fromJson(inputs.environment) }} #TEST, OrgStg_MLR_WsPrd] # [development, staging, production]
+        environment: ${{ fromJson(inputs.environment) }}
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
     defaults:
@@ -88,53 +88,48 @@ jobs:
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
         run: aio app build --force-build
 
-      # - name: Deploy
-      #   env:
-      #     AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
-      #     AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
-      #     AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
-      #     AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
-      #     AIO_PROJECT_NAME: ${{ secrets.AIO_PROJECT_NAME }}
-      #     AIO_PROJECT_ORG_ID: ${{ secrets.AIO_PROJECT_ORG_ID }}
-      #     AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
-      #     AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
-      #     AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
-      #   id: deploy
-      #   run: |
-      # if [ "$AIO_CLI_ENV" = "stage" ]; then
-      #       aio app build --no-build
-      #     else
-      #       aio app build --force-build
-      #     fi
-      #     output=$(aio app deploy --no-build --no-publish)
-      #     echo "deploy_output<<EOF" >> $GITHUB_OUTPUT
-      #     echo "$output" >> $GITHUB_OUTPUT
-      #     echo "EOF" >> $GITHUB_OUTPUT
-      # - name: Run URL
-      #   env:
-      #     AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
-      #     AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
-      #     AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
-      #     AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
-      #     AIO_PROJECT_NAME: ${{ secrets.AIO_PROJECT_NAME }}
-      #     AIO_PROJECT_ORG_ID: ${{ secrets.AIO_PROJECT_ORG_ID }}
-      #     AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
-      #     AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
-      #     AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
-      #   run: |
-      #     aio app get-url
-      # - name: Comment PR
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const output = `#### Deployment Results 🚀
-      #       \`\`\`
-      #       ${{ steps.deploy.outputs.deploy_output }}
-      #       \`\`\`
-      #       `;
-      #       github.rest.issues.createComment({
-      #         issue_number: context.issue.number,
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         body: output
-      #       })
+      - name: Deploy
+        env:
+          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
+          AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
+          AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
+          AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
+          AIO_PROJECT_NAME: ${{ secrets.AIO_PROJECT_NAME }}
+          AIO_PROJECT_ORG_ID: ${{ secrets.AIO_PROJECT_ORG_ID }}
+          AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
+          AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
+          AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
+        id: deploy
+        run: |
+          output=$(aio app deploy --no-build --force-deploy)
+          echo "deploy_output<<EOF" >> $GITHUB_OUTPUT
+          echo "$output" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Run URL
+        env:
+          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
+          AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
+          AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
+          AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
+          AIO_PROJECT_NAME: ${{ secrets.AIO_PROJECT_NAME }}
+          AIO_PROJECT_ORG_ID: ${{ secrets.AIO_PROJECT_ORG_ID }}
+          AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
+          AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
+          AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
+        run: |
+          aio app get-url
+      - name: Comment PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const output = `#### Deployment Results 🚀
+            \`\`\`
+            ${{ steps.deploy.outputs.deploy_output }}
+            \`\`\`
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })

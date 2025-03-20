@@ -11,5 +11,5 @@ jobs:
     uses: ./.github/workflows/aio-app-template.yml
     with:
       app: '["genstudio-mlr-claims-app"]'
-      environment: '["OrgStg_MLR_WsPrd", "TEST"]'
+      environment: '["TEST"]' #"OrgStg_MLR_WsPrd",
     secrets: inherit
