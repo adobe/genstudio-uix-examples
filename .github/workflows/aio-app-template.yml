@@ -117,10 +117,9 @@ jobs:
             // Extract the runtime URL using regex
             const urlMatch = deployOutput.match(/https:\/\/[^\/]+\.dev\.runtime\.adobe\.io/);
             const runtimeUrl = urlMatch ? urlMatch[0] : 'URL not found';
-
             // Create the comment with status and URL
-            const status = isSuccessful ? '✅ Deployment Successful' : '❌ Deployment Failed';
-            const output = `#### Deployment Status: ${status}
+            const status = isSuccessful ? '✅' : '❌';
+            const output = `#### Deployment Status for (${matrix.app}): ${status}
             **Runtime URL:** ${runtimeUrl}
             `;
 
