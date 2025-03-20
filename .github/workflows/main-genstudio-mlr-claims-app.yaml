@@ -1,15 +1,17 @@
 name: GenStudio MLR Claims App Workflow
 
 on:
-  pull_request:
+  push:
+    branches:
+      - main
     paths:
       - "genstudio-mlr-claims-app/**"
   workflow_dispatch:
 
 jobs:
-  pr:
+  deploy:
     uses: ./.github/workflows/aio-app-template.yml
     with:
       app: genstudio-mlr-claims-app
-      environment: '["Genstudio Engineering 01 - genstudio-mlr-claims-app - workspace Stage"]'
+      environment: '["Genstudio Engineering 01 - genstudio-mlr-claims-app - workspace Stage", "Genstudio Engineering 01 - genstudio-mlr-claims-app - workspace Production"]'
     secrets: inherit

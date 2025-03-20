@@ -49,13 +49,12 @@ jobs:
       matrix:
         node-version: ["20"]
         os: [ubuntu-latest] # [macOS-latest, ubuntu-latest, windows-latest]
-        app: ${{ fromJson(inputs.app) }}
         environment: ${{ fromJson(inputs.environment) }}
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
     defaults:
       run:
-        working-directory: ${{ matrix.app }}
+        working-directory: ${{ inputs.app }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,7 +63,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+          cache-dependency-path: ${{ inputs.app }}/package-lock.json
       - name: Install dependencies
         run: npm ci
       - name: Setup CLI
@@ -107,6 +106,7 @@ jobs:
           echo "$output" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
       - name: Comment PR
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
@@ -123,7 +123,7 @@ jobs:
 
             const output = `### Deployment
             **Status:** ${status}
-            **App:** ${{ matrix.app }}
+            **App:** ${{ inputs.app }}
             **Environment:** ${{ matrix.environment }}
             **Runtime URL:** ${runtimeUrl}
             `;
