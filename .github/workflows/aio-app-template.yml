@@ -105,28 +105,25 @@ jobs:
           echo "deploy_output<<EOF" >> $GITHUB_OUTPUT
           echo "$output" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      - name: Run URL
-        env:
-          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
-          AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
-          AIO_RUNTIME_AUTH: ${{ secrets.AIO_RUNTIME_AUTH }}
-          AIO_PROJECT_ID: ${{ secrets.AIO_PROJECT_ID }}
-          AIO_PROJECT_NAME: ${{ secrets.AIO_PROJECT_NAME }}
-          AIO_PROJECT_ORG_ID: ${{ secrets.AIO_PROJECT_ORG_ID }}
-          AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
-          AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
-          AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
-        run: |
-          aio app get-url
       - name: Comment PR
         uses: actions/github-script@v6
         with:
           script: |
-            const output = `#### Deployment Results 🚀
-            \`\`\`
-            ${{ steps.deploy.outputs.deploy_output }}
-            \`\`\`
+            const deployOutput = `${{ steps.deploy.outputs.deploy_output }}`;
+
+            // Determine if deployment was successful
+            const isSuccessful = deployOutput.includes('Successful deployment');
+
+            // Extract the runtime URL using regex
+            const urlMatch = deployOutput.match(/https:\/\/[^\/]+\.dev\.runtime\.adobe\.io/);
+            const runtimeUrl = urlMatch ? urlMatch[0] : 'URL not found';
+
+            // Create the comment with status and URL
+            const status = isSuccessful ? '✅ Deployment Successful' : '❌ Deployment Failed';
+            const output = `#### Deployment Status: ${status}
+            **Runtime URL:** ${runtimeUrl}
             `;
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
