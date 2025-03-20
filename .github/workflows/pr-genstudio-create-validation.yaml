@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-tests:
+  pr:
     uses: ./.github/workflows/aio-app-template.yml
     with:
       app: '["genstudio-create-validation"]'
