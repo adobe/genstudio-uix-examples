@@ -1,9 +1,45 @@
-name: AIO App CI
+name: AIO App Template
 
 on:
-  pull_request:
-    paths:
-      - "genstudio-mlr-claims-app/**"
+  workflow_call:
+    inputs:
+      app:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+    secrets:
+      # I/O Management
+      CLIENTID:
+        required: true
+      CLIENTSECRET:
+        required: true
+      TECHNICALACCOUNTID:
+        required: true
+      TECHNICALACCOUNTEMAIL:
+        required: true
+      IMSORGID:
+        required: true
+      SCOPES:
+        required: true
+      # AIO Runtime
+      AIO_RUNTIME_NAMESPACE:
+        required: true
+      AIO_RUNTIME_AUTH:
+        required: true
+      AIO_PROJECT_ID:
+        required: true
+      AIO_PROJECT_NAME:
+        required: true
+      AIO_PROJECT_ORG_ID:
+        required: true
+      AIO_PROJECT_WORKSPACE_ID:
+        required: true
+      AIO_PROJECT_WORKSPACE_NAME:
+        required: true
+      AIO_PROJECT_WORKSPACE_DETAILS_SERVICES:
+        required: true
 
 jobs:
   test:
@@ -12,8 +48,8 @@ jobs:
       matrix:
         node-version: ["20"]
         os: [macOS-latest] # [macOS-latest, ubuntu-latest, windows-latest]
-        app: [genstudio-mlr-claims-app]
-        environment: [OrgStg_MLR_WsPrd, TEST] #TEST, OrgStg_MLR_WsPrd] # [development, staging, production]
+        app: ${{ fromJson(inputs.app) }}
+        environment: ${{ fromJson(inputs.environment) }} #TEST, OrgStg_MLR_WsPrd] # [development, staging, production]
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
     defaults:
