@@ -36,8 +36,8 @@ jobs:
           version: 10.x.x
       - name: Auth
         uses: adobe/aio-apps-action@3.4.0
-        # env:
-        #   AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
+        env:
+          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
         with:
           command: oauth_sts
           CLIENTID: ${{ secrets.CLIENTID }}
@@ -48,13 +48,13 @@ jobs:
           SCOPES: ${{ secrets.SCOPES }}
       - name: Build Run
         env:
-          # AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
+          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
         run: |
           if [ "$AIO_CLI_ENV" = "stage" ]; then
-            aio app build --force-build
+            aio app build --no-build
           else
-            aio app build --force-build
+            aio app build --no-build
           fi
 
       # - name: Deploy
