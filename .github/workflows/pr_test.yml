@@ -13,7 +13,7 @@ jobs:
         node-version: ["20"]
         os: [macOS-latest] # [macOS-latest, ubuntu-latest, windows-latest]
         app: [genstudio-mlr-claims-app]
-        environment: [OrgStg_MLR_WsPrd] #TEST, OrgStg_MLR_WsPrd] # [development, staging, production]
+        environment: [OrgStg_MLR_WsPrd, TEST] #TEST, OrgStg_MLR_WsPrd] # [development, staging, production]
     runs-on: ${{ matrix.os }}
     environment: ${{ matrix.environment }}
     defaults:
@@ -50,12 +50,7 @@ jobs:
         env:
           AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
           AIO_RUNTIME_NAMESPACE: ${{ secrets.AIO_RUNTIME_NAMESPACE }}
-        run: |
-          if [ "$AIO_CLI_ENV" = "stage" ]; then
-            aio app build --no-build
-          else
-            aio app build --no-build
-          fi
+        run: aio app build --force-build
 
       # - name: Deploy
       #   env:
@@ -70,6 +65,11 @@ jobs:
       #     AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
       #   id: deploy
       #   run: |
+      # if [ "$AIO_CLI_ENV" = "stage" ]; then
+      #       aio app build --no-build
+      #     else
+      #       aio app build --force-build
+      #     fi
       #     output=$(aio app deploy --no-build --no-publish)
       #     echo "deploy_output<<EOF" >> $GITHUB_OUTPUT
       #     echo "$output" >> $GITHUB_OUTPUT
