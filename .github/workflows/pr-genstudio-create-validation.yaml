@@ -1,0 +1,15 @@
+name: GenStudio Create Validation Workflow
+
+on:
+  pull_request:
+    paths:
+      - "genstudio-create-validation/**"
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    uses: ./.github/workflows/aio-app-template.yml
+    with:
+      app: '["genstudio-create-validation"]'
+      environment: '["Genstudio Engineering 01 - genstudio-create-validation - workspace Stage"]'
+    secrets: inherit
