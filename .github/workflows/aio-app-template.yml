@@ -121,7 +121,10 @@ jobs:
             // Create the comment with status and URL
             const status = isSuccessful ? '✅' : '❌';
 
-            const output = `#### Deployment Status for ${{ matrix.app }} (${{ matrix.environment }}): ${status}
+            const output = `### Deployment
+            **Status:** ${status}
+            **App:** ${{ matrix.app }}
+            **Environment:** ${{ matrix.environment }}
             **Runtime URL:** ${runtimeUrl}
             `;
 
