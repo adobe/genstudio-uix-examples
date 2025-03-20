@@ -119,7 +119,8 @@ jobs:
             const runtimeUrl = urlMatch ? urlMatch[0] : 'URL not found';
             // Create the comment with status and URL
             const status = isSuccessful ? '✅' : '❌';
-            const output = `#### Deployment Status for (${matrix.app}): ${status}
+
+            const output = `#### Deployment Status for ${{ matrix.app }} (${{ matrix.environment }}): ${status}
             **Runtime URL:** ${runtimeUrl}
             `;
 
