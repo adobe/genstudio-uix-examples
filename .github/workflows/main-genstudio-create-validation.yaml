@@ -1,4 +1,4 @@
-name: GenStudio Create Validation Main Deployment
+name: Create Validation Main
 
 on:
   push:

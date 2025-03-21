@@ -1,4 +1,4 @@
-name: GenStudio MLR Claims App Workflow
+name: MLR Claims Main
 
 on:
   push:

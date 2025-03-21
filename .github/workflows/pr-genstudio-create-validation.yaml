@@ -1,4 +1,4 @@
-name: GenStudio Create Validation Workflow
+name: Create Validation
 
 on:
   pull_request:
