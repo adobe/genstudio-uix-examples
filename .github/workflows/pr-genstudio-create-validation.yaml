@@ -11,5 +11,5 @@ jobs:
     uses: ./.github/workflows/aio-app-template.yml
     with:
       app: genstudio-create-validation
-      environment: '["Genstudio Engineering 01 - genstudio-create-validation - workspace Stage", "GenStudio GA PAT04 - genstudio-create-validation - workspace Stage"]'
+      environment: '["Genstudio Engineering 01 - genstudio-create-validation - workspace Stage", "GenStudio GA PAT04 - genstudio-create-validation - workspace Production"]'
     secrets: inherit
