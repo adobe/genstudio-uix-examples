@@ -116,7 +116,7 @@ jobs:
             const isSuccessful = deployOutput.includes('Successful deployment');
 
             // Extract the runtime URL using regex
-            const urlMatch = deployOutput.match(/https:\/\/[^\/]+\.dev\.runtime\.adobe\.io/);
+            const urlMatch = deployOutput.match(/https:\/\/[^\/]+\.runtime\.adobe\.io/);
             const runtimeUrl = urlMatch ? urlMatch[0] : 'URL not found';
             // Create the comment with status and URL
             const status = isSuccessful ? '✅' : '❌';
