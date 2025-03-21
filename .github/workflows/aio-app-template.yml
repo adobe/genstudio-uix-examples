@@ -47,10 +47,8 @@ jobs:
     name: Deploy
     strategy:
       matrix:
-        node-version: ["20"]
-        os: [ubuntu-latest] # [macOS-latest, ubuntu-latest, windows-latest]
         environment: ${{ fromJson(inputs.environment) }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
     defaults:
       run:
@@ -58,10 +56,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: "npm"
           cache-dependency-path: ${{ inputs.app }}/package-lock.json
       - name: Install dependencies
@@ -130,6 +128,7 @@ jobs:
             **Environment:** ${{ matrix.environment }}
             **Runtime URL:** ${runtimeUrl}
             **Test URL:** ${testUrl}
+            **Action:** [View Action Run](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
             `;
 
             github.rest.issues.createComment({
