@@ -108,6 +108,8 @@ jobs:
       - name: Comment PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
+        env:
+          AIO_CLI_ENV: ${{ vars.AIO_CLI_ENV }}
         with:
           script: |
             const deployOutput = `${{ steps.deploy.outputs.deploy_output }}`;
@@ -120,12 +122,14 @@ jobs:
             const runtimeUrl = urlMatch ? urlMatch[0] : 'URL not found';
             // Create the comment with status and URL
             const status = isSuccessful ? '✅' : '❌';
+            const testUrl = `https://experience${process.env.AIO_CLI_ENV === 'stage' ? '-stage' : ''}.adobe.com/?devMode=true&ext=${runtimeUrl}`;
 
             const output = `### Deployment
             **Status:** ${status}
             **App:** ${{ inputs.app }}
             **Environment:** ${{ matrix.environment }}
             **Runtime URL:** ${runtimeUrl}
+            **Test URL:** ${testUrl}
             `;
 
             github.rest.issues.createComment({
