@@ -3,7 +3,7 @@ name: MLR Claims Main
 on:
   push:
     branches:
-      - GS-11347-main
+      - main
     paths:
       - "genstudio-mlr-claims-app/**"
   workflow_dispatch:
