@@ -3,7 +3,7 @@ name: Create Validation Main
 on:
   push:
     branches:
-      - main
+      - GS-11347-main
     paths:
       - "genstudio-create-validation/**"
   workflow_dispatch:
