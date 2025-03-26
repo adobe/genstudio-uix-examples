@@ -1,0 +1,73 @@
+{
+  "project": {
+    "id": "4566206088345331861",
+    "name": "215PurpleMole",
+    "title": "GenStudioCreateUIXReferenceAppTypeScript",
+    "org": {
+      "id": "3399078",
+      "name": "GenStudio GA PAT04",
+      "ims_org_id": "431F1E0866F5EDAD0A495FFC@AdobeOrg"
+    },
+    "workspace": {
+      "id": "4566206088345351438",
+      "name": "Production",
+      "title": "Production",
+      "action_url": "https://3399078-215purplemole.adobeioruntime.net",
+      "app_url": "https://3399078-215purplemole.adobeio-static.net",
+      "details": {
+        "credentials": [
+          {
+            "id": "755125",
+            "name": "Credential in GenStudioCreateUIX - Production",
+            "integration_type": "oauth_server_to_server",
+            "oauth_server_to_server": {
+              "client_id": "2fe217d6b2ba4b0b9b5cb3b9c0623405",
+              "client_secrets": [
+                "p8e-cpfHn1XW14qLeck_lCI_jwwTNL63IGX2"
+              ],
+              "technical_account_email": "a0c2614a-db3b-4faa-a31e-c8a9de88d7f4@techacct.adobe.com",
+              "technical_account_id": "24E51E8367DDA9B50A495C6A@techacct.adobe.com",
+              "scopes": [
+                "AdobeID",
+                "openid",
+                "read_organizations",
+                "additional_info.projectedProductContext",
+                "additional_info.roles",
+                "adobeio_api",
+                "read_client_secret",
+                "manage_client_secrets"
+              ]
+            }
+          }
+        ],
+        "services": [
+          {
+            "code": "AdobeIOManagementAPISDK",
+            "name": "I/O Management API"
+          }
+        ],
+        "runtime": {
+          "namespaces": [
+            {
+              "name": "3399078-215purplemole",
+              "auth": "90c2cc02-fe23-46b0-a922-deb1985b6657:yISp8Kk3kRF7tbr5wHoe7f0ib2b2oQ40IPHtw4ByU0G7M1XqALt85L603Kq7eGAI"
+            }
+          ]
+        },
+        "events": {
+          "registrations": []
+        },
+        "mesh": {}
+      },
+      "endpoints": {
+        "dx_genstudio/genstudiopem/1": {
+          "view": [
+            {
+              "href": "https://3399078-215purplemole.adobeio-static.net/index.html"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
