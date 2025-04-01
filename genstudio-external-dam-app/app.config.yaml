@@ -1,0 +1,53 @@
+extensions:
+  dx_genstudio/genstudiopem/1:
+    $include: src/genstudiopem/ext.config.yaml
+    runtimeManifest:
+      packages:
+        genstudio-external-dam-app:
+          license: Apache-2.0
+          actions:
+            claims-finder:
+              function: src/genstudiopem/actions/claims-finder/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+              annotations:
+                require-adobe-auth: true
+                final: true
+            search-assets:
+              function: src/genstudiopem/actions/s3-asset-manager/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+                actionType: search
+                S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+                AWS_REGION: ${AWS_REGION}
+              annotations:
+                require-adobe-auth: true
+                final: true
+            get-asset-url:
+              function: src/genstudiopem/actions/s3-asset-manager/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+                actionType: getUrl
+                S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+                AWS_REGION: ${AWS_REGION}
+              annotations:
+                require-adobe-auth: true
+                final: true
+            get-asset-metadata:
+              function: src/genstudiopem/actions/s3-asset-manager/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+                actionType: getMetadata
+                S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+                AWS_REGION: ${AWS_REGION}
+              annotations:
+                require-adobe-auth: true
+                final: true
