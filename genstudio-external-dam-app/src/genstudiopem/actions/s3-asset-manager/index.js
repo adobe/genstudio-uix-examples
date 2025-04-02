@@ -14,6 +14,9 @@ const { Core } = require('@adobe/aio-sdk');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { errorResponse, stringParameters, checkMissingRequestInputs } = require('../utils');
 const { S3Client, ListObjectsV2, HeadObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const filesLib = require('@adobe/aio-lib-files');
+
+// bucket name: genstudio-uix-external-dam-demo
 
 
 // Configure AWS S3

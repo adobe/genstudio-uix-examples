@@ -6,15 +6,6 @@ extensions:
         genstudio-external-dam-app:
           license: Apache-2.0
           actions:
-            claims-finder:
-              function: src/genstudiopem/actions/claims-finder/index.js
-              web: 'yes'
-              runtime: nodejs:22
-              inputs:
-                LOG_LEVEL: debug
-              annotations:
-                require-adobe-auth: true
-                final: true
             search-assets:
               function: src/genstudiopem/actions/s3-asset-manager/index.js
               web: 'yes'
