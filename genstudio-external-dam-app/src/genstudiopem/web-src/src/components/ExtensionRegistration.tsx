@@ -31,6 +31,7 @@ interface DialogItem {
   id: string;
   url: string;
   extensionId: string;
+  appMetaData: AppMetaData;
 }
 
 
@@ -56,6 +57,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
     const guestConnection = await register({
       id: extensionId,
       methods: {
+        // todo: remove createAddOnBar and createRightPanel
         createAddOnBar: {
           addToggle: async (appExtensionId: string): Promise<ToggleItem[]> => {
             return [
@@ -81,9 +83,10 @@ const ExtensionRegistration = (): React.JSX.Element => {
           selectDialog(appExtensionId: string): DialogItem[] {
             return [
               {
-                id: `${appExtensionId}-asset-selector`,
+                id: `${appExtensionId}`,
                 url: '#/select-content-dialog',
-                extensionId: appExtensionId
+                extensionId: appExtensionId,
+                appMetaData: getAppMetadata(appExtensionId)
               }];
           }
         },
