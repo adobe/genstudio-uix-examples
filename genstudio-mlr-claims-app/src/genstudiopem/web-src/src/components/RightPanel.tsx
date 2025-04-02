@@ -24,12 +24,11 @@ import {
 } from "@adobe/react-spectrum";
 import React, { useEffect, useState, type Key } from "react";
 
-import { extensionId } from "../Constants";
-import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
+import { extensionId, TEST_CLAIMS } from "../Constants";
+import { useGuestConnection } from "../hooks";
 import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
-import { ClaimsLibraryPicker } from "./ClaimsLibraryPicker";
 
 export default function RightPanel(): JSX.Element {
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
@@ -42,8 +41,6 @@ export default function RightPanel(): JSX.Element {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const guestConnection = useGuestConnection(extensionId);
-  const { selectedClaimLibrary, handleClaimsLibrarySelection } =
-    useSelectedClaimLibrary();
 
   useEffect(() => {
     if (guestConnection) {
@@ -52,7 +49,7 @@ export default function RightPanel(): JSX.Element {
   }, [guestConnection]);
 
   useEffect(() => {
-    setClaimsResults(null);
+    handleRunClaimsCheck();
   }, [selectedExperienceIndex]);
 
   const handleExperienceSelection = (key: Key | null) => {
@@ -69,10 +66,7 @@ export default function RightPanel(): JSX.Element {
     // setState is async so we need the result from getExperience directly
     const newExperiences = await getExperience();
     if (!newExperiences?.length) return;
-    runClaimsCheck(
-      newExperiences[selectedExperienceIndex],
-      selectedClaimLibrary
-    );
+    runClaimsCheck(newExperiences[selectedExperienceIndex]);
   };
 
   const getExperience = async (): Promise<Experience[] | null> => {
@@ -86,6 +80,7 @@ export default function RightPanel(): JSX.Element {
       );
       if (remoteExperiences && remoteExperiences.length > 0) {
         setExperiences(remoteExperiences);
+        setSelectedExperienceIndex(selectedExperienceIndex ?? 0);
         return remoteExperiences;
       }
       return null;
@@ -94,13 +89,12 @@ export default function RightPanel(): JSX.Element {
     }
   };
 
-  const runClaimsCheck = async (
-    experience: Experience,
-    selectedClaimLibrary: any
-  ): Promise<void> => {
+  const runClaimsCheck = async (experience: Experience): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = validateClaims(experience, selectedClaimLibrary);
+      // run all claim libraries
+      const allClaimLibraries = TEST_CLAIMS.map((library) => library.id);
+      const result = validateClaims(experience, allClaimLibraries);
       // Add a minimum loading time of 0.5 seconds
       await new Promise((resolve) => setTimeout(resolve, 500));
       // Update state with results
@@ -137,8 +131,11 @@ export default function RightPanel(): JSX.Element {
       <Picker
         label="Select experience"
         align="start"
-        isDisabled={!selectedClaimLibrary || isSyncing}
+        isDisabled={isSyncing}
         onSelectionChange={handleExperienceSelection}
+        defaultSelectedKey={
+          experiences?.length > 0 ? experiences[0].id : undefined
+        }
       >
         {experiences.map((experience, index) => (
           <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
@@ -185,9 +182,6 @@ export default function RightPanel(): JSX.Element {
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">
-          <ClaimsLibraryPicker
-            handleSelectionChange={handleClaimsLibrarySelection}
-          />
           {renderExperiencePicker()}
           {renderRunClaimsCheckButton()}
         </Flex>
