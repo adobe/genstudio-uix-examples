@@ -1,0 +1,17 @@
+name: IO Runtime App Main
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "genstudio-io-runtime-app/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/aio-app-template.yml
+    with:
+      app: genstudio-io-runtime-app
+      environment: '["Genstudio Engineering 01 - genstudio-io-runtime-app - workspace Stage"]'
+    secrets: inherit
