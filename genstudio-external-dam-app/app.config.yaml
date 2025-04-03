@@ -6,8 +6,8 @@ extensions:
         genstudio-external-dam-app:
           license: Apache-2.0
           actions:
-            search-assets:
-              function: src/genstudiopem/actions/s3-asset-manager/index.js
+            search:
+              function: src/genstudiopem/actions/external-dam/index.js
               web: 'yes'
               runtime: nodejs:22
               inputs:
@@ -15,11 +15,13 @@ extensions:
                 actionType: search
                 S3_BUCKET_NAME: ${S3_BUCKET_NAME}
                 AWS_REGION: ${AWS_REGION}
+                AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+                AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
               annotations:
                 require-adobe-auth: true
                 final: true
             get-asset-url:
-              function: src/genstudiopem/actions/s3-asset-manager/index.js
+              function: src/genstudiopem/actions/external-dam/index.js
               web: 'yes'
               runtime: nodejs:22
               inputs:
@@ -27,11 +29,13 @@ extensions:
                 actionType: getUrl
                 S3_BUCKET_NAME: ${S3_BUCKET_NAME}
                 AWS_REGION: ${AWS_REGION}
+                AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+                AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
               annotations:
                 require-adobe-auth: true
                 final: true
             get-asset-metadata:
-              function: src/genstudiopem/actions/s3-asset-manager/index.js
+              function: src/genstudiopem/actions/external-dam/index.js
               web: 'yes'
               runtime: nodejs:22
               inputs:
@@ -39,6 +43,8 @@ extensions:
                 actionType: getMetadata
                 S3_BUCKET_NAME: ${S3_BUCKET_NAME}
                 AWS_REGION: ${AWS_REGION}
+                AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+                AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
               annotations:
                 require-adobe-auth: true
                 final: true

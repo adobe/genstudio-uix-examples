@@ -13,7 +13,7 @@ governing permissions and limitations under the License.
 const { Core } = require('@adobe/aio-sdk');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { errorResponse, stringParameters, checkMissingRequestInputs } = require('../utils');
-const { S3Client, ListObjectsV2, HeadObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, ListObjectsV2Command, HeadObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const filesLib = require('@adobe/aio-lib-files');
 
 // bucket name: genstudio-uix-external-dam-demo
@@ -21,69 +21,106 @@ const filesLib = require('@adobe/aio-lib-files');
 
 // Configure AWS S3
 const configureBucketAccess = (params) => {
+  
   // These would need to be set securely as environment variables or through Adobe I/O Runtime parameters
   const client = new S3Client({ 
-    accessKeyId: params.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: params.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY,
-    region: params.AWS_REGION || process.env.AWS_REGION || 'us-east-1' });
-  const bucketName = params.S3_BUCKET_NAME || process.env.S3_BUCKET_NAME
+    credentials: {
+      accessKeyId: params.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: params.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY,
+    },
+    region: params.AWS_REGION || process.env.AWS_REGION || 'us-east-1' 
+  });
   
-  return { client, bucketName }
+  const bucketName = params.S3_BUCKET_NAME || process.env.S3_BUCKET_NAME;
+  
+  return { client, bucketName };
+}
+
+async function getS3PresignedUrl(s3Client, key, bucketName) {
+  const getObjCmd = new GetObjectCommand({
+    Bucket: bucketName,
+    Key: key
+  });
+  return await getSignedUrl(s3Client, getObjCmd, { expiresIn: 3600 });
+}
+
+async function getThumbnailUrl(s3Client, files, key, bucketName, logger) {
+  
+  try {
+    logger.info('Getting thumbnail URL for asset');
+    if (files.exists(`public/${key}`)) {
+      logger.info('File exists in Adobe I/O Files, generating presigned URL');
+      const fileProps = await files.generatePresignedUrl(`public/${key}`, {
+        urlType: 'external',
+        expiryInSeconds: 3600
+      });
+      return fileProps.url;
+    } else {
+      logger.info('File does not exist in Adobe I/O Files, downloading from S3');
+      // download the file from s3
+      const getObjCmd = new GetObjectCommand({
+        Bucket: bucketName,
+        Key: key
+      });
+      const s3Response = await s3Client.send(getObjCmd);
+      // upload the file to adobe i/o files
+      await files.write(`public/${key}`, s3Response.Body, {
+        contentType: s3Response.ContentType
+      });
+      const fileProps = await files.generatePresignedUrl(`public/${key}`, {
+        urlType: 'external',
+        expiryInSeconds: 3600
+      });
+      return fileProps.url;
+    }
+  } catch (error) {
+    logger.error(error);
+    return errorResponse(500, 'Error getting thumbnail URL: ' + error.message, logger);
+  }
 }
 
 // Search Assets Action
 async function searchAssets(params) {
-  const logger = Core.Logger('searchAssets', { level: params.LOG_LEVEL || 'info' })
+  const logger = Core.Logger('searchAssets', { level: params.LOG_LEVEL || 'info' });
   
   try {
-    logger.info('Searching assets in S3')
-    logger.debug(stringParameters(params))
+    logger.debug(stringParameters(params));
     
-    // Check required parameters
-    const requiredParams = []
-    const requiredHeaders = ['Authorization']
-    const errorMessage = checkMissingRequestInputs(params, requiredParams, requiredHeaders)
-    if (errorMessage) {
-      return errorResponse(400, errorMessage, logger)
-    }
+    // Initialize both Files SDK and S3 client
+    // const files = await filesLib.init();
+    const { client, bucketName } = configureBucketAccess(params);
     
-    const { client, bucketName } = configureBucketAccess(params)
-    
-    // Create the search query based on parameters
-    const prefix = params.prefix || ''
-    const limit = parseInt(params.limit) || 100
-    
-    // List objects from S3
-    const listObjectsCmd = new ListObjectsV2({
+    // List objects from S3 first (to ensure we see all assets)
+    const listObjectsCmd = new ListObjectsV2Command({
       Bucket: bucketName,
-      Prefix: prefix,
-      MaxKeys: limit
+      Prefix: params.prefix || '',
+      MaxKeys: parseInt(params.limit) || 100
     });
     
     const listResult = await client.send(listObjectsCmd);
+    logger.info(`Found ${listResult?.Contents?.length || 0} assets in S3`);
     
     // Process the returned objects
-    const assets = await Promise.all(listResult.Contents.map(async (item) => {
+    const assets = await Promise.all(listResult?.Contents.map(async (item) => {
+      // Get metadata from S3
       const headCmd = new HeadObjectCommand({
-        Bucket: bucketName,
-        key: item.Key
-      })
-      const metadata = await client.send(headCmd);
-      
-      // Create a temporary URL for the thumbnail
-      const getObjCmd = new GetObjectCommand({
         Bucket: bucketName,
         Key: item.Key
       });
-      const thumbnailUrl = await getSignedUrl(client, getObjCmd, { expiresIn: 3600});
+      const metadata = await client.send(headCmd);
+      
+      const originalUrl = await getS3PresignedUrl(client, item.Key, bucketName);
+      const thumbnailUrl = originalUrl;
+      // const thumbnailUrl = await getThumbnailUrl(client, files, item.Key, bucketName);
+
       
       return {
         id: item.Key,
         name: item.Key.split('/').pop(),
         fileType: item.Key.split('.').pop().toUpperCase(),
         size: item.Size,
-        thumbnailUrl: thumbnailUrl,
-        originalUrl: thumbnailUrl,
+        thumbnailUrl,
+        originalUrl,
         dateCreated: item.LastModified,
         dateModified: item.LastModified,
         metadata: {
@@ -91,18 +128,16 @@ async function searchAssets(params) {
           size: item.Size,
           ...metadata.Metadata
         }
-      }
-    }))
+      };
+    }));
     
     return {
       statusCode: 200,
-      body: {
-        assets
-      }
-    }
+      body: { assets }
+    };
   } catch (error) {
-    logger.error(error)
-    return errorResponse(500, 'Error searching assets: ' + error.message, logger)
+    logger.error(error);
+    return errorResponse(500, 'Error searching assets: ' + error.message, logger);
   }
 }
 
@@ -122,20 +157,13 @@ async function getAssetUrl(params) {
       return errorResponse(400, errorMessage, logger)
     }
     
+    // Initialize both Files SDK and S3 client
     const { client, bucketName } = configureBucketAccess(params);
-
-    // Create a temporary URL for the thumbnail
-    const getObjCmd = new GetObjectCommand({
-      Bucket: bucketName,
-      Key: params.assetId
-    });
-    const url = await getSignedUrl(client, getObjCmd, { expiresIn: 3600});
-
+    const url = await getS3PresignedUrl(client, params.assetId, bucketName)
+    
     return {
       statusCode: 200,
-      body: {
-        url
-      }
+      body: { url }
     }
   } catch (error) {
     logger.error(error)

@@ -30,6 +30,7 @@ import ChevronDown from '@spectrum-icons/workflow/ChevronDown';
 import { Asset } from '../types';
 import AssetCard from './AssetCard';
 import { useAssetActions } from '../hooks/useAssetActions';
+import { useGuestConnection } from '../hooks/useGuestConnection';
 
 interface AssetViewerProps {
   onAssetSelect: (assets: Asset[]) => void;
@@ -43,13 +44,14 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
     assets, 
     isLoading, 
     fetchAssets, 
-    searchAssets
+    searchAssets,
+    auth
   } = useAssetActions();
 
   useEffect(() => {
     // Load assets when component mounts
     fetchAssets();
-  }, []);
+  }, [auth]);
 
   useEffect(() => {
     // Search assets when search term changes
@@ -61,7 +63,7 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
     } else {
       fetchAssets();
     }
-  }, [searchTerm]);
+  }, [searchTerm, auth]);
 
   const handleAssetSelect = (asset: Asset) => {
     if (selectedAssets.some(a => a.id === asset.id)) {

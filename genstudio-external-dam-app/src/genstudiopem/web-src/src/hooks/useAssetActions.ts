@@ -10,15 +10,21 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Asset, AssetSearchParams } from '../types';
 import { actionWebInvoke } from '../utils/actionWebInvoke';
 import { useGuestConnection } from './index';
 import { extensionId } from '../Constants';
 import actions from "../config.json";
 
+interface Auth {
+  imsToken: string;
+  imsOrg: string;
+}
+
+
 // Define constants for our action endpoints
-const SEARCH_ASSETS_ACTION = 'genstudio-external-dam-app/search-assets';
+const SEARCH_ASSETS_ACTION = 'genstudio-external-dam-app/search';
 const GET_ASSET_URL_ACTION = 'genstudio-external-dam-app/get-asset-url';
 const GET_ASSET_METADATA_ACTION = 'genstudio-external-dam-app/get-asset-metadata';
 
@@ -27,24 +33,28 @@ export const useAssetActions = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const guestConnection = useGuestConnection(extensionId);
-  
-  // Get auth from shared context
-  const getAuth = () => {
-    const sharedAuth = guestConnection?.sharedContext.get("auth");
-    if (!sharedAuth) {
-      throw new Error("Authentication not found");
-    }
-    return sharedAuth as { imsToken: string; imsOrg: string };
-  };
+  const [auth, setAuth] = useState<Auth | null>(null);
 
+  useEffect(() => {
+    const sharedAuth = guestConnection?.sharedContext.get("auth");;
+    if (sharedAuth) {
+      setAuth(sharedAuth as Auth);
+    }
+  }, [guestConnection]);
+  
   // Fetch all assets (or with pagination)
   const fetchAssets = async (params: AssetSearchParams = { limit: 20, offset: 0 }) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const auth = getAuth();
-      const response = await actionWebInvoke(SEARCH_ASSETS_ACTION, auth.imsToken, auth.imsOrg, params);
+      if (!auth) {
+        throw new Error("Authentication not found");
+      }
+
+      const url = actions[SEARCH_ASSETS_ACTION];
+      console.log('### actions url', url);
+      const response = await actionWebInvoke(url, auth.imsToken, auth.imsOrg, params);
       
       if (response && typeof response === 'object' && 'assets' in response) {
         setAssets(response.assets as Asset[]);
@@ -68,7 +78,9 @@ export const useAssetActions = () => {
     setError(null);
     
     try {
-      const auth = getAuth();
+      if (!auth) {
+        throw new Error("Authentication not found");
+      }
       const response = await actionWebInvoke(
         actions[SEARCH_ASSETS_ACTION], 
         auth.imsToken, 
@@ -104,7 +116,9 @@ export const useAssetActions = () => {
   // Get a presigned URL for an asset
   const getAssetPresignedUrl = async (assetId: string): Promise<string | null> => {
     try {
-      const auth = getAuth();
+      if (!auth) {
+        throw new Error("Authentication not found");
+      }
       const response = await actionWebInvoke(
         actions[GET_ASSET_URL_ACTION], 
         auth.imsToken, 
@@ -126,7 +140,9 @@ export const useAssetActions = () => {
   // Get asset metadata
   const getAssetMetadata = async (assetId: string) => {
     try {
-      const auth = getAuth();
+      if (!auth) {
+        throw new Error("Authentication not found");
+      }
       const response = await actionWebInvoke(
         actions[GET_ASSET_METADATA_ACTION], 
         auth.imsToken, 
@@ -180,6 +196,7 @@ export const useAssetActions = () => {
     fetchAssets,
     searchAssets,
     getAssetPresignedUrl,
-    getAssetMetadata
+    getAssetMetadata,
+    auth
   };
 }; 
