@@ -24,7 +24,8 @@ import {
 } from "@adobe/react-spectrum";
 import React, { useEffect, useState, type Key } from "react";
 import { extensionId, IO_RUNTIME_ACTION_URL } from "../Constants";
-import { useGuestConnection, useSelectedClaimLibrary } from "../hooks";
+import actions from "../config.json";
+import { useGuestConnection } from "../hooks";
 import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
@@ -40,7 +41,9 @@ export default function RightPanel(): JSX.Element {
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
     number | null
   >(null);
-  const [claimsResults, setClaimsResults] = useState<ClaimResults | null>(null);
+  const [claimsResults, setClaimsResults] = useState<ClaimResults[] | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPolling, setIsPolling] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -48,20 +51,14 @@ export default function RightPanel(): JSX.Element {
   const [testClaims, setTestClaims] = useState<any[]>([]);
   const [isPollingClaims, setIsPollingClaims] = useState(false);
   const guestConnection = useGuestConnection(extensionId);
-  const { selectedClaimLibrary, handleClaimsLibrarySelection } =
-    useSelectedClaimLibrary();
 
   useEffect(() => {
     if (guestConnection) {
       pollForExperiences();
-    }
-  }, [guestConnection]);
-
-  // Get auth from shared context
-  useEffect(()=> {
-    const sharedAuth = guestConnection?.sharedContext.get("auth");
+      const sharedAuth = guestConnection.sharedContext.get("auth");
       if (sharedAuth) {
-      setAuth(sharedAuth as Auth);
+        setAuth(sharedAuth as Auth);
+      }
     }
   }, [guestConnection]);
 
@@ -72,11 +69,9 @@ export default function RightPanel(): JSX.Element {
     }
   }, [guestConnection, auth]);
 
-
   useEffect(() => {
-    setClaimsResults(null);
+    handleRunClaimsCheck();
   }, [selectedExperienceIndex]);
-
 
   const handleExperienceSelection = (key: Key | null) => {
     if (!key || !experiences?.length) return;
@@ -92,10 +87,7 @@ export default function RightPanel(): JSX.Element {
     // setState is async so we need the result from getExperience directly
     const newExperiences = await getExperience();
     if (!newExperiences?.length) return;
-    runClaimsCheck(
-      newExperiences[selectedExperienceIndex],
-      selectedClaimLibrary
-    );
+    runClaimsCheck(newExperiences);
   };
 
   const getExperience = async (): Promise<Experience[] | null> => {
@@ -109,6 +101,7 @@ export default function RightPanel(): JSX.Element {
       );
       if (remoteExperiences && remoteExperiences.length > 0) {
         setExperiences(remoteExperiences);
+        setSelectedExperienceIndex(selectedExperienceIndex ?? 0);
         return remoteExperiences;
       }
       return null;
@@ -117,17 +110,17 @@ export default function RightPanel(): JSX.Element {
     }
   };
 
-  const runClaimsCheck = async (
-    experience: Experience,
-    selectedClaimLibrary: any
-  ): Promise<void> => {
+  const runClaimsCheck = async (experiences: Experience[]): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = validateClaims(experience, selectedClaimLibrary);
-      // Add a minimum loading time of 0.5 seconds
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      // Update state with results
-      setClaimsResults(result);
+      // run all claim libraries
+      const allClaimLibraries = testClaims.map((library) => library.id);
+      const results: ClaimResults[] = [];
+      for (let experience of experiences) {
+        const result = validateClaims(experience, allClaimLibraries);
+        results.push(result);
+      }
+      setClaimsResults(results);
     } catch (error) {
       console.error("Error in claims validation:", error);
     } finally {
@@ -160,9 +153,13 @@ export default function RightPanel(): JSX.Element {
     const interval = 2000; // 2 seconds
     if (!auth?.imsToken || !auth?.imsOrg) return;
     while (retries < maxRetries) {
-      const response = await actionWebInvoke(IO_RUNTIME_ACTION_URL, auth.imsToken, auth.imsOrg);
-      if (response && typeof response === 'object') {
-        setTestClaims((response as {claims: Claim[]}).claims || []);
+      const response = await actionWebInvoke(
+        actions["claims-finder"],
+        auth.imsToken,
+        auth.imsOrg
+      );
+      if (response && typeof response === "object") {
+        setTestClaims((response as { claims: Claim[] }).claims || []);
         setIsPollingClaims(false);
         return;
       }
@@ -170,7 +167,7 @@ export default function RightPanel(): JSX.Element {
       retries++;
     }
     setIsPollingClaims(false);
-  }
+  };
 
   const renderExperiencePicker = () => {
     if (!experiences) return null;
@@ -179,8 +176,11 @@ export default function RightPanel(): JSX.Element {
       <Picker
         label="Select experience"
         align="start"
-        isDisabled={!selectedClaimLibrary || isSyncing}
+        isDisabled={isSyncing}
         onSelectionChange={handleExperienceSelection}
+        defaultSelectedKey={
+          experiences?.length > 0 ? experiences[0].id : undefined
+        }
       >
         {experiences.map((experience, index) => (
           <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
@@ -215,7 +215,7 @@ export default function RightPanel(): JSX.Element {
     return (
       <ClaimsChecker
         claims={claimsResults}
-        experienceNumber={selectedExperienceIndex || 0}
+        experienceNumber={selectedExperienceIndex ?? 0}
       />
     );
   };
@@ -227,10 +227,6 @@ export default function RightPanel(): JSX.Element {
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">
-          <ClaimsLibraryPicker
-            handleSelectionChange={handleClaimsLibrarySelection}
-            claims={testClaims}
-          />
           {renderExperiencePicker()}
           {renderRunClaimsCheckButton()}
         </Flex>
@@ -249,14 +245,19 @@ export default function RightPanel(): JSX.Element {
       gap="size-200"
     >
       <ProgressCircle aria-label="Loading" isIndeterminate />
-      {(isPolling || isPollingClaims) && <Text>Waiting for experiences and claims to be ready...</Text>}
+      {(isPolling || isPollingClaims) && (
+        <Text>Waiting for experiences and claims to be ready...</Text>
+      )}
     </Flex>
   );
 
   return (
     <View backgroundColor="static-white" height="100vh">
       <Flex height="100%" direction="column" marginX="size-200">
-        {experiences && experiences.length > 0 && testClaims && testClaims.length > 0
+        {experiences &&
+        experiences.length > 0 &&
+        testClaims &&
+        testClaims.length > 0
           ? renderClaimsChecker()
           : renderWaitingForExperiences()}
       </Flex>
