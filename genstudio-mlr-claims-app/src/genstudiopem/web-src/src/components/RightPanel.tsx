@@ -101,7 +101,6 @@ export default function RightPanel(): JSX.Element {
         const result = validateClaims(experience, allClaimLibraries);
         results.push(result);
       }
-      await new Promise((resolve) => setTimeout(resolve, 500));
       setClaimsResults(results);
     } catch (error) {
       console.error("Error in claims validation:", error);
