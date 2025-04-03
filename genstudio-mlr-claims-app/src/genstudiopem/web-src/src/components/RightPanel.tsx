@@ -35,7 +35,9 @@ export default function RightPanel(): JSX.Element {
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
     number | null
   >(null);
-  const [claimsResults, setClaimsResults] = useState<ClaimResults | null>(null);
+  const [claimsResults, setClaimsResults] = useState<ClaimResults[] | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPolling, setIsPolling] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -66,7 +68,7 @@ export default function RightPanel(): JSX.Element {
     // setState is async so we need the result from getExperience directly
     const newExperiences = await getExperience();
     if (!newExperiences?.length) return;
-    runClaimsCheck(newExperiences[selectedExperienceIndex]);
+    runClaimsCheck(newExperiences);
   };
 
   const getExperience = async (): Promise<Experience[] | null> => {
@@ -89,16 +91,18 @@ export default function RightPanel(): JSX.Element {
     }
   };
 
-  const runClaimsCheck = async (experience: Experience): Promise<void> => {
+  const runClaimsCheck = async (experiences: Experience[]): Promise<void> => {
     setIsLoading(true);
     try {
       // run all claim libraries
       const allClaimLibraries = TEST_CLAIMS.map((library) => library.id);
-      const result = validateClaims(experience, allClaimLibraries);
-      // Add a minimum loading time of 0.5 seconds
+      const results: ClaimResults[] = [];
+      for (let experience of experiences) {
+        const result = validateClaims(experience, allClaimLibraries);
+        results.push(result);
+      }
       await new Promise((resolve) => setTimeout(resolve, 500));
-      // Update state with results
-      setClaimsResults(result);
+      setClaimsResults(results);
     } catch (error) {
       console.error("Error in claims validation:", error);
     } finally {
@@ -170,7 +174,7 @@ export default function RightPanel(): JSX.Element {
     return (
       <ClaimsChecker
         claims={claimsResults}
-        experienceNumber={selectedExperienceIndex || 0}
+        experienceNumber={selectedExperienceIndex ?? 0}
       />
     );
   };
