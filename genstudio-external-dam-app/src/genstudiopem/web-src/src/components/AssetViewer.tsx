@@ -31,7 +31,7 @@ import { Asset } from '../types';
 import AssetCard from './AssetCard';
 import { useAssetActions } from '../hooks/useAssetActions';
 import { useGuestConnection } from '../hooks/useGuestConnection';
-
+import { extensionId } from '../Constants';
 interface AssetViewerProps {
   onAssetSelect: (assets: Asset[]) => void;
   onClose: () => void;
@@ -47,6 +47,7 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
     searchAssets,
     auth
   } = useAssetActions();
+  const guestConnection = useGuestConnection(extensionId);
 
   useEffect(() => {
     // Load assets when component mounts
@@ -65,11 +66,24 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
     }
   }, [searchTerm, auth]);
 
-  const handleAssetSelect = (asset: Asset) => {
+  const handleAssetSelect = async(asset: Asset) => {
     if (selectedAssets.some(a => a.id === asset.id)) {
-      setSelectedAssets(selectedAssets.filter(a => a.id !== asset.id));
+      // remove asset from selected assets
+      console.log("removing asset", asset.id);
+      const newSelectedAssets = selectedAssets.filter(a => a.id !== asset.id);
+      setSelectedAssets(newSelectedAssets);
+      if (guestConnection) {
+        await guestConnection.host.api?.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
+      }
     } else {
-      setSelectedAssets([...selectedAssets, asset]);
+      // add asset to selected assets
+      console.log("adding asset", asset.id);
+      const newSelectedAssets = [...selectedAssets, asset];
+      setSelectedAssets(newSelectedAssets);
+      if (guestConnection) {
+        // send selected assets to host
+        await guestConnection.host.api?.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
+      }
     }
   };
 

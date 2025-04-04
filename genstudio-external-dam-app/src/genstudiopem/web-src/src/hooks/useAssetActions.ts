@@ -53,7 +53,6 @@ export const useAssetActions = () => {
       }
 
       const url = actions[SEARCH_ASSETS_ACTION];
-      console.log('### actions url', url);
       const response = await actionWebInvoke(url, auth.imsToken, auth.imsOrg, params);
       
       if (response && typeof response === 'object' && 'assets' in response) {

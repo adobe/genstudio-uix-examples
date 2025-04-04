@@ -13,8 +13,9 @@ governing permissions and limitations under the License.
 import { Text } from "@adobe/react-spectrum";
 import { register } from "@adobe/uix-guest";
 import { extensionId, ICON_DATA_URI, extensionLabel } from "../Constants";
-import { AppMetaData, ExtensionRegistrationService } from "@adobe/genstudio-uix-sdk"
+import { AppMetaData, Email, ExtensionRegistrationService, Meta } from "@adobe/genstudio-uix-sdk"
 import React from 'react';
+import { ALL } from "node:dns";
 
 interface ToggleItem {
   appMetaData: AppMetaData;
@@ -79,7 +80,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
               }];
           }
         },
-        createSelectContentDialog: {
+        contentSelectContentDialog: {
           selectDialog(appExtensionId: string): DialogItem[] {
             return [
               {
@@ -90,6 +91,32 @@ const ExtensionRegistration = (): React.JSX.Element => {
               }];
           }
         },
+        contentSelectContentAddOns: {
+          selectContentAddOn: async (appExtensionId: string): Promise<ToggleItem[]> => {
+            return [
+              {
+                appMetaData: {
+                  id: "<appExtensionId>",
+                  label: "DAM Extension AddOn",
+                  iconDataUri: "datauri of icon SVG",
+                  supportedChannels: [{
+                    id: "email",
+                    name: "Email",
+                  }],
+                  extensionId: appExtensionId,
+                  // accounts: [
+                  //   {
+                  //       id: "324574674",
+                  //       name: "Assets DAM",
+                  //   }
+                  // ],
+                },
+                onClick: async () => {
+                  // const hostInfo = await guestConnection.host.api.contentSelectContentAddOns.openDialog(`${dialogId}`);
+                },
+              }]; 
+          }
+        }
       }
     });
   };
