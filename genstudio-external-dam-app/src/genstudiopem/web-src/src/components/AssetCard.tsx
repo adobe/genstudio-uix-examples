@@ -15,8 +15,8 @@ import {
   View, 
   Image, 
   Text,
+  Checkbox
 } from '@adobe/react-spectrum';
-import Checkmark from '@spectrum-icons/workflow/Checkmark';
 import { Asset } from '../types';
 
 interface AssetCardProps {
@@ -26,6 +26,17 @@ interface AssetCardProps {
 }
 
 const AssetCard: React.FC<AssetCardProps> = ({ asset, isSelected, onSelect }) => {
+  // Format file size for display
+  const formatFileSize = (bytes: number) => {
+    if (!bytes) return 'Unknown size';
+    const kb = bytes / 1024;
+    if (kb < 1024) {
+      return `${Math.round(kb)}KB`;
+    }
+    const mb = kb / 1024;
+    return `${mb.toFixed(1)}MB`;
+  };
+
   return (
     <View
       borderWidth="thin"
@@ -33,9 +44,9 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, isSelected, onSelect }) =>
       borderRadius="medium"
       overflow="hidden"
       UNSAFE_style={{ cursor: 'pointer', position: 'relative' }}
-      onClick={() => onSelect(asset)}
     >
-      <View height="size-3000" position="relative">
+      {/* Image container */}
+      <View height="size-3000" position="relative" onClick={() => onSelect(asset)}>
         <Image 
           src={asset.thumbnailUrl} 
           alt={asset.name}
@@ -43,6 +54,8 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, isSelected, onSelect }) =>
           width="100%" 
           height="100%" 
         />
+        
+        {/* File type badge */}
         <View 
           position="absolute" 
           bottom="size-50" 
@@ -54,22 +67,30 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, isSelected, onSelect }) =>
           <Text UNSAFE_style={{ color: 'white', fontSize: '12px' }}>{asset.fileType}</Text>
         </View>
         
-        {isSelected && (
-          <View 
-            position="absolute" 
-            top="size-100" 
-            right="size-100"
-            backgroundColor="blue-500"
-            width="size-300"
-            height="size-300"
-            UNSAFE_style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Checkmark size="S" />
-          </View>
-        )}
+        {/* Selection checkbox - positioned at top-left */}
+        <View
+          position="absolute"
+          top="size-100"
+          left="size-100"
+        >
+          <Checkbox
+            isSelected={isSelected}
+            onChange={() => onSelect(asset)}
+            UNSAFE_className="asset-selection-checkbox"
+          />
+        </View>
       </View>
-      <View padding="size-100">
-        <Text>{asset.name}</Text>
+      
+      {/* Asset info section */}
+      <View padding="size-150" backgroundColor="gray-50">
+        <Text UNSAFE_style={{ fontSize: '14px', lineHeight: '18px', display: 'block' }}>
+          {asset.name}
+        </Text>
+        <View marginTop="size-50">
+          <Text UNSAFE_style={{ fontSize: '12px', color: 'var(--spectrum-global-color-gray-700)' }}>
+           {asset.metadata.contentType} • {formatFileSize(asset.metadata?.size || 0)}
+          </Text>
+        </View>
       </View>
     </View>
   );

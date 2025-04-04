@@ -51,7 +51,7 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
   useEffect(() => {
     // Load assets when component mounts
     fetchAssets();
-  }, [auth]);
+  }, [auth, useGuestConnection]);
 
   useEffect(() => {
     // Search assets when search term changes
@@ -159,7 +159,8 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
         </View>
 
         {/* Footer */}
-        <Flex direction="row" justifyContent="space-between" alignItems="center" UNSAFE_style={{padding: "var(--spectrum-global-dimension-size-200)"}}>
+        {/* this all exists in ContentSelector */}
+        {/* <Flex direction="row" justifyContent="space-between" alignItems="center" UNSAFE_style={{padding: "var(--spectrum-global-dimension-size-200)"}}>
           <Text>{selectedAssets.length} of {selectedAssets.length} selected</Text>
           <ButtonGroup>
             <Button variant="secondary" onPress={onClose}>Cancel</Button>
@@ -171,7 +172,7 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
               Use
             </Button>
           </ButtonGroup>
-        </Flex>
+        </Flex> */}
       </Flex>
     </View>
   );
