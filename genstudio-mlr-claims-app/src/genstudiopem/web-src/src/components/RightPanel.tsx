@@ -185,7 +185,6 @@ export default function RightPanel(): JSX.Element {
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">
-          {renderExperiencePicker()}
           {renderRunClaimsCheckButton()}
         </Flex>
       </Flex>
