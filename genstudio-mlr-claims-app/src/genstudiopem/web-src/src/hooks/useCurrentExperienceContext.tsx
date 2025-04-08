@@ -10,17 +10,9 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import "core-js/stable";
-import React from "react";
-import ReactDOM from "react-dom";
+import { CurrentExperienceContext } from "../context";
+import { useContext } from "react";
 
-import App from "./components/App";
-import "./index.css";
-import { CurrentExperienceContextProvider } from "./context";
+const useCurrentExperienceContext = () => useContext(CurrentExperienceContext);
 
-ReactDOM.render(
-  <CurrentExperienceContextProvider>
-    <App />
-  </CurrentExperienceContextProvider>,
-  document.getElementById("root")
-);
+export { useCurrentExperienceContext };

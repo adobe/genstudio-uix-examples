@@ -19,6 +19,7 @@ import {
   ExtensionRegistrationService,
 } from "@adobe/genstudio-uix-sdk";
 import React from "react";
+import { useCurrentExperienceContext } from "../hooks/useCurrentExperienceContext";
 
 interface ToggleItem {
   appMetaData: AppMetaData;
@@ -51,6 +52,8 @@ const getAppMetadata = (appExtensionId: string): AppMetaData => ({
 });
 
 const ExtensionRegistration = (): React.JSX.Element => {
+  const { setCurrentExperience } = useCurrentExperienceContext();
+
   const init = async (): Promise<void> => {
     const guestConnection = await register({
       id: extensionId,
@@ -82,6 +85,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
           },
           handleExperienceChange: async (experience: Experience) => {
             console.log("can call handle");
+            setCurrentExperience(experience);
           },
         },
         createContextAddOns: {
