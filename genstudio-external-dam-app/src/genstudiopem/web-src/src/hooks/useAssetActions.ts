@@ -36,7 +36,7 @@ export const useAssetActions = () => {
   const [auth, setAuth] = useState<Auth | null>(null);
 
   useEffect(() => {
-    const sharedAuth = guestConnection?.sharedContext.get("auth");;
+    const sharedAuth = guestConnection?.sharedContext.get("auth");
     if (sharedAuth) {
       setAuth(sharedAuth as Auth);
     }

@@ -52,7 +52,7 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
   useEffect(() => {
     // Load assets when component mounts
     fetchAssets();
-  }, [auth, useGuestConnection]);
+  }, [auth, guestConnection]);
 
   useEffect(() => {
     // Search assets when search term changes
@@ -69,7 +69,7 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
   const handleAssetSelect = async(asset: Asset) => {
     if (selectedAssets.some(a => a.id === asset.id)) {
       // remove asset from selected assets
-      console.log("removing asset", asset.id);
+      console.log("### removing asset", asset.id);
       const newSelectedAssets = selectedAssets.filter(a => a.id !== asset.id);
       setSelectedAssets(newSelectedAssets);
       if (guestConnection) {
@@ -77,11 +77,12 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
       }
     } else {
       // add asset to selected assets
-      console.log("adding asset", asset.id);
+      console.log("###adding asset", asset);
       const newSelectedAssets = [...selectedAssets, asset];
       setSelectedAssets(newSelectedAssets);
       if (guestConnection) {
         // send selected assets to host
+        console.log('### guest connection', guestConnection);
         await guestConnection.host.api?.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
       }
     }
