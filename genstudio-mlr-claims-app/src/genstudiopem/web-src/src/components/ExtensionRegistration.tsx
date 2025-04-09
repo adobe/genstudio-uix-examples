@@ -52,7 +52,7 @@ const getAppMetadata = (appExtensionId: string): AppMetaData => ({
 });
 
 const ExtensionRegistration = (): React.JSX.Element => {
-  const { setCurrentExperience } = useCurrentExperienceContext();
+  const { currentExperience, setCurrentExperience } = useCurrentExperienceContext();
 
   const init = async (): Promise<void> => {
     const guestConnection = await register({
@@ -84,7 +84,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
             ];
           },
           handleExperienceChange: async (experience: Experience) => {
-            console.log("can call handle");
+            console.log("can call handle", experience);
             setCurrentExperience(experience);
           },
         },

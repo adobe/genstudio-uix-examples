@@ -29,6 +29,7 @@ import { useGuestConnection } from "../hooks";
 import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
+import { useCurrentExperienceContext } from "../hooks/useCurrentExperienceContext";
 
 export default function RightPanel(): JSX.Element {
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
@@ -44,6 +45,8 @@ export default function RightPanel(): JSX.Element {
 
   const guestConnection = useGuestConnection(extensionId);
 
+  const { currentExperience } = useCurrentExperienceContext();
+
   useEffect(() => {
     if (guestConnection) {
       pollForExperiences();
@@ -51,8 +54,11 @@ export default function RightPanel(): JSX.Element {
   }, [guestConnection]);
 
   useEffect(() => {
-    handleRunClaimsCheck();
-  }, [selectedExperienceIndex]);
+    console.log("right panel useEffect", currentExperience);
+    if (currentExperience) {
+      console.log("right panel currentExperience", currentExperience);
+    }
+  }, [currentExperience]);
 
   const handleExperienceSelection = (key: Key | null) => {
     if (!key || !experiences?.length) return;

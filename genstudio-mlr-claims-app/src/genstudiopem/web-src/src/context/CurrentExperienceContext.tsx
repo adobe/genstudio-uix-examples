@@ -11,19 +11,19 @@ governing permissions and limitations under the License.
 */
 
 import { Experience } from "@adobe/genstudio-uix-sdk";
-import React, { createContext, FC, useMemo, useState } from "react";
-
-const CurrentExperienceContext = createContext({} as CurrentExperienceContextType);
+import React, { createContext, FC, useEffect, useMemo, useState } from "react";
 
 export interface CurrentExperienceContextType {
-  currentExperience: Experience;
-  setCurrentExperience: React.Dispatch<React.SetStateAction<Experience>>;
+  currentExperience: Experience | null;
+  setCurrentExperience: React.Dispatch<React.SetStateAction<Experience | null>>;
 }
+
+const CurrentExperienceContext = createContext({} as CurrentExperienceContextType);
 
 const CurrentExperienceContextProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [currentExperience, setCurrentExperience] = useState<any>();
+  const [currentExperience, setCurrentExperience] = useState<Experience | null>(null);
 
   const context: CurrentExperienceContextType = useMemo(
     () => ({
@@ -32,6 +32,10 @@ const CurrentExperienceContextProvider: FC<{ children: React.ReactNode }> = ({
     }),
     [currentExperience],
   );
+
+  useEffect(() => {
+    console.log("Context value updated:", currentExperience);
+  }, [currentExperience]);
 
   return (
     <CurrentExperienceContext.Provider value={context}>

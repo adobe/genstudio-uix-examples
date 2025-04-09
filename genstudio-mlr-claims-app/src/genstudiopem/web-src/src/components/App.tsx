@@ -17,6 +17,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import ExtensionRegistration from './ExtensionRegistration';
 import RightPanel from './RightPanel';
 import AdditionalContextDialog from './AdditionalContextDialog';
+import { CurrentExperienceContextProvider } from '../context';
 const ErrorFallback = () => (
   <Heading level={1}>Something went wrong!</Heading>
 );
@@ -24,17 +25,19 @@ const ErrorFallback = () => (
 const App = (): React.JSX.Element => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <Provider theme={defaultTheme} colorScheme="light">
-        <Router>
-          <Routes>
-            <Route path="/" element={<ExtensionRegistration />} />
-            <Route path="/right-panel" element={<RightPanel />} />
-            <Route path="/additional-context-dialog" element={<AdditionalContextDialog />} />
-          </Routes>
-        </Router>
-      </Provider>
+      <CurrentExperienceContextProvider>
+        <Provider theme={defaultTheme} colorScheme="light">
+          <Router>
+            <Routes>
+              <Route path="/" element={<ExtensionRegistration />} />
+              <Route path="/right-panel" element={<RightPanel />} />
+              <Route path="/additional-context-dialog" element={<AdditionalContextDialog />} />
+            </Routes>
+          </Router>
+        </Provider>
+      </CurrentExperienceContextProvider>
     </ErrorBoundary>
   );
 };
 
-export default App; 
+export default App;

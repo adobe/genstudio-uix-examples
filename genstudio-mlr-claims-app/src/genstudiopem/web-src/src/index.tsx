@@ -16,11 +16,8 @@ import ReactDOM from "react-dom";
 
 import App from "./components/App";
 import "./index.css";
-import { CurrentExperienceContextProvider } from "./context";
 
 ReactDOM.render(
-  <CurrentExperienceContextProvider>
-    <App />
-  </CurrentExperienceContextProvider>,
+  <App />,
   document.getElementById("root")
 );
