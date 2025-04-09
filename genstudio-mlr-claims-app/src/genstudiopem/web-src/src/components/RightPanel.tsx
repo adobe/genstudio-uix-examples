@@ -30,6 +30,7 @@ import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
 import { useCurrentExperienceContext } from "../hooks/useCurrentExperienceContext";
+import { getStoredExperience } from "../utils/experienceBridge";
 
 export default function RightPanel(): JSX.Element {
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
@@ -45,6 +46,14 @@ export default function RightPanel(): JSX.Element {
 
   const guestConnection = useGuestConnection(extensionId);
 
+  useEffect(() => {
+    console.log("### RightPanel iframe check:", {
+      window: window.name,
+      location: window.location.href,
+      parent: window.parent !== window
+    });
+  }, []);
+
   const { currentExperience } = useCurrentExperienceContext();
 
   useEffect(() => {
@@ -54,11 +63,83 @@ export default function RightPanel(): JSX.Element {
   }, [guestConnection]);
 
   useEffect(() => {
-    console.log("right panel useEffect", currentExperience);
-    if (currentExperience) {
-      console.log("right panel currentExperience", currentExperience);
+    console.log("### current experience in right panel", currentExperience);
+    if (currentExperience && experiences?.length) {
+      const index = experiences.findIndex(exp => exp.id === currentExperience.id);
+      if (index !== -1) {
+        setSelectedExperienceIndex(index);
+      } else {
+        getExperience();
+      }
     }
-  }, [currentExperience]);
+  }, [currentExperience, experiences]);
+
+  useEffect(() => {
+    handleRunClaimsCheck();
+  }, [selectedExperienceIndex]);
+
+  useEffect(() => {
+    // Try to get experience from localStorage
+    const storedExperience = getStoredExperience();
+    if (storedExperience && experiences?.length) {
+      console.log("### RightPanel: Found stored experience:", storedExperience.id);
+      
+      // Find matching experience index
+      const index = experiences.findIndex(exp => exp.id === storedExperience.id);
+      if (index !== -1) {
+        console.log("### RightPanel: Setting index to", index);
+        setSelectedExperienceIndex(index);
+      }
+    }
+  }, [experiences]);
+
+  // Add listener for localStorage changes from other contexts
+  useEffect(() => {
+    // Function to handle storage changes
+    const handleStorageChange = (event: StorageEvent) => {
+      // Only respond to changes in our experience key
+      if (event.key === "current-experience" && event.newValue) {
+        try {
+          const newExperience = JSON.parse(event.newValue) as Experience;
+          console.log(`### Storage updated with experience: ${newExperience.id}`);
+          
+          // Find the corresponding experience in our list
+          if (experiences?.length) {
+            const index = experiences.findIndex(exp => exp.id === newExperience.id);
+            if (index !== -1) {
+              console.log(`### Found matching experience at index: ${index}`);
+              setSelectedExperienceIndex(index);
+              
+              // The useEffect that watches selectedExperienceIndex will trigger the claims check
+            } else {
+              console.log("### Experience not found in list, refreshing experiences");
+              getExperience();
+            }
+          } else {
+            console.log("### No experiences loaded yet, waiting for load");
+          }
+        } catch (error) {
+          console.error("Error processing storage update:", error);
+        }
+      }
+    };
+
+    // Add the event listener
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Clean up when component unmounts
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [experiences]); // Re-add listener when experiences list changes
+
+  // Check if we need a more explicit claims check trigger
+  useEffect(() => {
+    if (selectedExperienceIndex !== null) {
+      console.log(`### Selected experience changed to index: ${selectedExperienceIndex}, running claims check`);
+      handleRunClaimsCheck();
+    }
+  }, [selectedExperienceIndex]);
 
   const handleExperienceSelection = (key: Key | null) => {
     if (!key || !experiences?.length) return;
@@ -88,7 +169,18 @@ export default function RightPanel(): JSX.Element {
       );
       if (remoteExperiences && remoteExperiences.length > 0) {
         setExperiences(remoteExperiences);
-        setSelectedExperienceIndex(selectedExperienceIndex ?? 0);
+        
+        if (currentExperience) {
+          const index = remoteExperiences.findIndex(exp => exp.id === currentExperience.id);
+          if (index !== -1) {
+            setSelectedExperienceIndex(index);
+          } else {
+            setSelectedExperienceIndex(0);  
+          }
+        } else {
+          setSelectedExperienceIndex(selectedExperienceIndex ?? 0);
+        }
+        
         return remoteExperiences;
       }
       return null;
@@ -136,15 +228,20 @@ export default function RightPanel(): JSX.Element {
   const renderExperiencePicker = () => {
     if (!experiences) return null;
 
+    // Find the ID to set as selected
+    const selectedKey = currentExperience ? 
+      currentExperience.id : 
+      (experiences[selectedExperienceIndex || 0]?.id || undefined);
+    
+    console.log("### Rendering picker with selectedKey:", selectedKey);
+
     return (
       <Picker
         label="Select experience"
         align="start"
         isDisabled={isSyncing}
+        selectedKey={selectedKey}
         onSelectionChange={handleExperienceSelection}
-        defaultSelectedKey={
-          experiences?.length > 0 ? experiences[0].id : undefined
-        }
       >
         {experiences.map((experience, index) => (
           <Item key={experience.id}>{`Experience ${index + 1}`}</Item>

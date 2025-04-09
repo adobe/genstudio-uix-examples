@@ -18,8 +18,9 @@ import {
   Experience,
   ExtensionRegistrationService,
 } from "@adobe/genstudio-uix-sdk";
-import React from "react";
+import React, { useEffect } from "react";
 import { useCurrentExperienceContext } from "../hooks/useCurrentExperienceContext";
+import { saveExperience } from "../utils/experienceBridge";
 
 interface ToggleItem {
   appMetaData: AppMetaData;
@@ -54,6 +55,18 @@ const getAppMetadata = (appExtensionId: string): AppMetaData => ({
 const ExtensionRegistration = (): React.JSX.Element => {
   const { currentExperience, setCurrentExperience } = useCurrentExperienceContext();
 
+  useEffect(() => {
+    console.log("### ExtensionRegistration: current experience (updated)", currentExperience);
+  }, [currentExperience]);
+
+  useEffect(() => {
+    console.log("### ExtensionRegistration iframe check:", {
+      window: window.name,
+      location: window.location.href,
+      parent: window.parent !== window
+    });
+  }, []);
+
   const init = async (): Promise<void> => {
     const guestConnection = await register({
       id: extensionId,
@@ -84,8 +97,16 @@ const ExtensionRegistration = (): React.JSX.Element => {
             ];
           },
           handleExperienceChange: async (experience: Experience) => {
-            console.log("can call handle", experience);
-            setCurrentExperience(experience);
+            console.log("### Received new experience:", experience);
+            console.log("### Current state before update:", currentExperience);
+            
+            const experienceCopy = JSON.parse(JSON.stringify(experience));
+            
+            setCurrentExperience(() => experienceCopy);
+            
+            saveExperience(experienceCopy);
+            
+            console.log("### State update attempted");
           },
         },
         createContextAddOns: {
