@@ -30,7 +30,7 @@ export const ClaimsLibraryPicker: React.FC<ClaimsCheckerProps> = ({
   }
   return (
     <Picker
-      label="Select claim library"
+      placeholder="Select Claims Category..."
       width="100%"
       onSelectionChange={handleSelectionChange}
     >

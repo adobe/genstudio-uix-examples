@@ -112,7 +112,7 @@ export default function AdditionalContextDialog(): JSX.Element {
               await GenerationContextService.setAdditionalContext(guestConnection, claimsContext);
             }}
           >
-            Select
+            OK
           </Button>
         </Flex>
       </Flex>
