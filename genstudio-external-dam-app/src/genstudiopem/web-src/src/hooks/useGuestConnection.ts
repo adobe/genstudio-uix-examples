@@ -18,6 +18,7 @@ export const useGuestConnection = (extensionId: string) => {
 
   useEffect(() => {
     (async () => {
+      console.log("### attaching to extension", extensionId);
       const connection = await attach({ id: extensionId });
       setGuestConnection(connection);
     })();

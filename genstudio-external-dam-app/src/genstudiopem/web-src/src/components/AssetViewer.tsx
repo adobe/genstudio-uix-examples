@@ -72,18 +72,29 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
       console.log("### removing asset", asset.id);
       const newSelectedAssets = selectedAssets.filter(a => a.id !== asset.id);
       setSelectedAssets(newSelectedAssets);
-      if (guestConnection) {
-        await guestConnection.host.api?.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
+      // TODO: issue is guestConnection is not available here
+      console.log("### guest connection", guestConnection);
+      if (guestConnection && guestConnection.host?.api?.contentSelectContentDialog) {
+        try {
+          await guestConnection.host.api.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
+        } catch (error) {
+          console.error("Error sending selected assets to host:", error);
+        }
       }
     } else {
       // add asset to selected assets
       console.log("###adding asset", asset);
       const newSelectedAssets = [...selectedAssets, asset];
       setSelectedAssets(newSelectedAssets);
-      if (guestConnection) {
+      // TODO: issue is guestConnection is not available here
+      console.log("### guest connection", guestConnection);
+      if (guestConnection && guestConnection.host?.api?.contentSelectContentDialog) {
         // send selected assets to host
-        console.log('### guest connection', guestConnection);
-        await guestConnection.host.api?.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
+        try {
+          await guestConnection.host.api.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
+        } catch (error) {
+          console.error("Error sending selected assets to host:", error);
+        }
       }
     }
   };
