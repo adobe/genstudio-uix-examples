@@ -71,9 +71,11 @@ export default function AssetViewer(): JSX.Element {
       setSelectedAssets(newSelectedAssets);
       // TODO: issue is guestConnection is not available here
       console.log("### guest connection", guestConnection);
-      if (guestConnection && guestConnection.host?.api?.contentSelectContentDialog) {
+      if (guestConnection) {
         try {
+          // TODO: need to finalize api
           await guestConnection.host.api.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
+          // await guestConnection.host.api.content.setSelectedAssets(newSelectedAssets);
         } catch (error) {
           console.error("Error sending selected assets to host:", error);
         }
@@ -85,10 +87,12 @@ export default function AssetViewer(): JSX.Element {
       setSelectedAssets(newSelectedAssets);
       // TODO: issue is guestConnection is not available here
       console.log("### guest connection", guestConnection);
-      if (guestConnection && guestConnection.host?.api?.contentSelectContentDialog) {
+      if (guestConnection) {
         // send selected assets to host
         try {
+          // TODO: need to finalize api
           await guestConnection.host.api.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
+          // await guestConnection.host.api.content.setSelectedAssets(newSelectedAssets);
         } catch (error) {
           console.error("Error sending selected assets to host:", error);
         }

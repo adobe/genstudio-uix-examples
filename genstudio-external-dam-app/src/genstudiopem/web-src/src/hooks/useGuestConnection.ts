@@ -20,6 +20,7 @@ export const useGuestConnection = (extensionId: string) => {
     (async () => {
       console.log("### attaching to extension", extensionId);
       const connection = await attach({ id: extensionId });
+      console.log("### connection", connection);
       setGuestConnection(connection);
     })();
   }, [extensionId]);
