@@ -67,7 +67,7 @@ export default function RightPanel(): JSX.Element {
     }
   }, [experiences]);
 
-  // Add listener for localStorage changes from other contexts
+  // Add listener for sessionStorage changes from other contexts
   useEffect(() => {
     // Function to handle storage changes
     const handleStorageChange = (event: StorageEvent) => {

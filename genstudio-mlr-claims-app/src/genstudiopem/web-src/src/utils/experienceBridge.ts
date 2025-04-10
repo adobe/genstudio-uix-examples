@@ -14,25 +14,25 @@ import { Experience } from "@adobe/genstudio-uix-sdk";
 
 const EXPERIENCE_STORAGE_KEY = "current-experience";
 
-// Save experience to localStorage
+// Save experience to sessionStorage
 export const saveExperience = (experience: Experience): void => {
   try {
-    localStorage.setItem(EXPERIENCE_STORAGE_KEY, JSON.stringify(experience));
+    sessionStorage.setItem(EXPERIENCE_STORAGE_KEY, JSON.stringify(experience));
   } catch (error) {
-    console.error("Error saving experience to localStorage:", error);
+    console.error("Error saving experience to sessionStorage:", error);
   }
 };
 
-// Get experience from localStorage
+// Get experience from sessionStorage
 export const getStoredExperience = (): Experience | null => {
   try {
-    const stored = localStorage.getItem(EXPERIENCE_STORAGE_KEY);
+    const stored = sessionStorage.getItem(EXPERIENCE_STORAGE_KEY);
     if (!stored) return null;
     
     const experience = JSON.parse(stored);
     return experience;
   } catch (error) {
-    console.error("Error getting experience from localStorage:", error);
+    console.error("Error getting experience from sessionStorage:", error);
     return null;
   }
 }; 
