@@ -15,7 +15,6 @@ import { Provider, defaultTheme, Heading } from '@adobe/react-spectrum';
 import ErrorBoundary from 'react-error-boundary';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import ExtensionRegistration from './ExtensionRegistration';
-import RightPanel from './RightPanel';
 import AssetViewer from './AssetViewer';
 
 const ErrorFallback = () => (
@@ -29,7 +28,6 @@ const App = (): React.JSX.Element => {
         <Router>
           <Routes>
             <Route path="/" element={<ExtensionRegistration />} />
-            <Route path="/right-panel" element={<RightPanel />} />
             <Route path="/select-content-dialog" element={<AssetViewer onAssetSelect={(assets) => console.log('Selected assets:', assets)} onClose={() => console.log('Closed asset viewer')} />} />
           </Routes>
         </Router>

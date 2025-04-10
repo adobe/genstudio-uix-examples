@@ -13,19 +13,12 @@ governing permissions and limitations under the License.
 import { Text } from "@adobe/react-spectrum";
 import { register } from "@adobe/uix-guest";
 import { extensionId, ICON_DATA_URI, extensionLabel } from "../Constants";
-import { AppMetaData, Email, ExtensionRegistrationService, Meta } from "@adobe/genstudio-uix-sdk"
+import { AppMetaData,} from "@adobe/genstudio-uix-sdk"
 import React from 'react';
-import { ALL } from "node:dns";
 
 interface ToggleItem {
   appMetaData: AppMetaData;
   onClick: () => Promise<void>;
-}
-
-interface PanelItem {
-  id: string;
-  url: string;
-  extensionId: string;
 }
 
 interface DialogItem {
@@ -58,28 +51,6 @@ const ExtensionRegistration = (): React.JSX.Element => {
     const guestConnection = await register({
       id: extensionId,
       methods: {
-        // todo: remove createAddOnBar and createRightPanel
-        createAddOnBar: {
-          addToggle: async (appExtensionId: string): Promise<ToggleItem[]> => {
-            return [
-              {
-                appMetaData: getAppMetadata(appExtensionId),
-                onClick: async () => {
-                  await ExtensionRegistrationService.openCreateAddOnBar(guestConnection, appExtensionId);
-                },
-              }]
-          }
-        },
-        createRightPanel: {
-          addPanel(appExtensionId: string): PanelItem[] {
-            return [
-              {
-                id: `${appExtensionId}`,
-                url: '#/right-panel',
-                extensionId: appExtensionId
-              }];
-          }
-        },
         contentSelectContentDialog: {
           selectDialog(appExtensionId: string): DialogItem[] {
             return [
