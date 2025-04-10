@@ -1,13 +1,29 @@
-# GenStudio IO Runtime App
+# GenStudio External DAM App
 
-This is an App Builder application that creates an extension point in GenStudio to add context via claims and validate experiences with claims.
-It also calls a custom action to get the claims.
+This is an App Builder App that creates a GS Add-On to add an external DAM for selecting assets for experience creation in GenStudio.
+The external DAM is just an S3 bucket.
 
-Welcome to my Adobe I/O Application!
+To run this app, you need to have the following:
+- S3 bucket
+- S3 user with access to read, list, and get objects from the bucket
+
+Store the AWS user credentials in .env.dev and .env.prod
+```
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+AWS_BUCKET_NAME=
+```
+This need to be env variables available at deploy time.
 
 ## Setup
 
 - Populate the `.env` file in the project root and fill it as shown [below](#env)
+- Populate .env.dev and .env.prod with AWS user credentials
+- Run 
+```
+export $(grep -v '^#' .env.dev | xargs)
+```
 
 ## Local Dev
 
