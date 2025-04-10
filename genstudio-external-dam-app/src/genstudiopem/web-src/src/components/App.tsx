@@ -28,7 +28,7 @@ const App = (): React.JSX.Element => {
         <Router>
           <Routes>
             <Route path="/" element={<ExtensionRegistration />} />
-            <Route path="/select-content-dialog" element={<AssetViewer onAssetSelect={(assets) => console.log('Selected assets:', assets)} onClose={() => console.log('Closed asset viewer')} />} />
+            <Route path="/select-content-dialog" element={<AssetViewer />} />
           </Routes>
         </Router>
       </Provider>

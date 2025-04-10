@@ -32,12 +32,9 @@ import AssetCard from './AssetCard';
 import { useAssetActions } from '../hooks/useAssetActions';
 import { useGuestConnection } from '../hooks/useGuestConnection';
 import { extensionId } from '../Constants';
-interface AssetViewerProps {
-  onAssetSelect: (assets: Asset[]) => void;
-  onClose: () => void;
-}
 
-const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => {
+
+export default function AssetViewer(): JSX.Element {
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const { 
@@ -97,10 +94,6 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
         }
       }
     }
-  };
-
-  const handleUseSelected = () => {
-    onAssetSelect(selectedAssets);
   };
 
   const renderAssetContent = () => {
@@ -203,5 +196,3 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ onAssetSelect, onClose }) => 
     </View>
   );
 };
-
-export default AssetViewer; 
