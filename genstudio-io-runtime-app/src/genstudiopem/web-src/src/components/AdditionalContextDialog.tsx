@@ -167,7 +167,7 @@ export default function AdditionalContextDialog(): JSX.Element {
             Cancel
           </Button>
           <Button variant="primary" style="fill" onPress={handleClaimSelect}>
-            Select
+            OK
           </Button>
         </ButtonGroup>
       </Grid>
