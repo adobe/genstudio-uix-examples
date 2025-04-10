@@ -53,19 +53,6 @@ const getAppMetadata = (appExtensionId: string): AppMetaData => ({
 });
 
 const ExtensionRegistration = (): React.JSX.Element => {
-  const { currentExperience, setCurrentExperience } = useCurrentExperienceContext();
-
-  useEffect(() => {
-    console.log("### ExtensionRegistration: current experience (updated)", currentExperience);
-  }, [currentExperience]);
-
-  useEffect(() => {
-    console.log("### ExtensionRegistration iframe check:", {
-      window: window.name,
-      location: window.location.href,
-      parent: window.parent !== window
-    });
-  }, []);
 
   const init = async (): Promise<void> => {
     const guestConnection = await register({
@@ -97,16 +84,8 @@ const ExtensionRegistration = (): React.JSX.Element => {
             ];
           },
           handleExperienceChange: async (experience: Experience) => {
-            console.log("### Received new experience:", experience);
-            console.log("### Current state before update:", currentExperience);
-            
             const experienceCopy = JSON.parse(JSON.stringify(experience));
-            
-            setCurrentExperience(() => experienceCopy);
-            
             saveExperience(experienceCopy);
-            
-            console.log("### State update attempted");
           },
         },
         createContextAddOns: {

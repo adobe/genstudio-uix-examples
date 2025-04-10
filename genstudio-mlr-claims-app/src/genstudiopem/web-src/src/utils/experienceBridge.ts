@@ -18,7 +18,6 @@ const EXPERIENCE_STORAGE_KEY = "current-experience";
 export const saveExperience = (experience: Experience): void => {
   try {
     localStorage.setItem(EXPERIENCE_STORAGE_KEY, JSON.stringify(experience));
-    console.log(`### Bridge: Saved experience ${experience.id} to localStorage`);
   } catch (error) {
     console.error("Error saving experience to localStorage:", error);
   }
@@ -31,7 +30,6 @@ export const getStoredExperience = (): Experience | null => {
     if (!stored) return null;
     
     const experience = JSON.parse(stored);
-    console.log(`### Bridge: Retrieved experience ${experience.id} from localStorage`);
     return experience;
   } catch (error) {
     console.error("Error getting experience from localStorage:", error);
