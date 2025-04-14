@@ -29,15 +29,20 @@ import { useGuestConnection } from "../hooks";
 import { ClaimResults } from "../types";
 import { validateClaims } from "../utils/claimsValidation";
 import ClaimsChecker from "./ClaimsChecker";
-import { useCurrentExperienceContext } from "../hooks/useCurrentExperienceContext";
-import { getStoredExperience } from "../utils/experienceBridge";
+import {
+  getSelectedExperienceId,
+  setSelectedExperienceId,
+  SELECTED_EXPERIENCE_ID_STORAGE_KEY,
+} from "../utils/experienceBridge";
 
 export default function RightPanel(): JSX.Element {
   const [experiences, setExperiences] = useState<Experience[] | null>(null);
   const [selectedExperienceIndex, setSelectedExperienceIndex] = useState<
     number | null
   >(null);
-  const [currentExperience, setCurrentExperience] = useState<Experience | null>(null);
+  const [currentExperience, setCurrentExperience] = useState<Experience | null>(
+    null
+  );
   const [claimsResults, setClaimsResults] = useState<ClaimResults[] | null>(
     null
   );
@@ -48,83 +53,47 @@ export default function RightPanel(): JSX.Element {
   const guestConnection = useGuestConnection(extensionId);
 
   useEffect(() => {
-    if (guestConnection) {
-      pollForExperiences();
-    }
+    if (guestConnection) pollForExperiences();
   }, [guestConnection]);
-
-  useEffect(() => {
-    handleRunClaimsCheck();
-  }, [selectedExperienceIndex]);
-
-  useEffect(() => {
-    const storedExperience = getStoredExperience();
-    if (storedExperience && experiences?.length) {
-      const index = experiences.findIndex(exp => exp.id === storedExperience.id);
-      if (index !== -1) {
-        setSelectedExperienceIndex(index);
-      }
-    }
-  }, [experiences]);
-
-  // Add listener for sessionStorage changes from other contexts
-  useEffect(() => {
-    // Function to handle storage changes
-    const handleStorageChange = (event: StorageEvent) => {
-      // Only respond to changes in our experience key
-      if (event.key === "current-experience" && event.newValue) {
-        try {
-          const newExperience = JSON.parse(event.newValue) as Experience;
-          if (experiences?.length) {
-            const index = experiences.findIndex(exp => exp.id === newExperience.id);
-            if (index !== -1) {
-              setSelectedExperienceIndex(index);
-            } else {
-              getExperience();
-            }
-          } else {
-            console.log("### No experiences loaded yet, waiting for load");
-          }
-        } catch (error) {
-          console.error("Error processing storage update:", error);
-        }
-      }
-    };
-
-    // Add the event listener
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Clean up when component unmounts
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [experiences]); // Re-add listener when experiences list changes
 
   // Check if we need a more explicit claims check trigger
   useEffect(() => {
-    if (selectedExperienceIndex !== null) {
-      handleRunClaimsCheck();
-    }
+    if (selectedExperienceIndex !== null) handleRunClaimsCheck();
   }, [selectedExperienceIndex]);
 
-  const handleExperienceSelection = (key: Key | null) => {
-    if (!key || !experiences?.length) return;
-
-    const index = experiences.findIndex((exp) => exp.id === key);
-    if (index !== -1) {
+  // if experiences are loaded or changed, set the selected experience index
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === SELECTED_EXPERIENCE_ID_STORAGE_KEY && event.newValue) {
+        const index = getExperienceIndex(event.newValue);
+        setSelectedExperienceIndex(index);
+      }
+    };
+    const selectedExperienceId = getSelectedExperienceId();
+    if (selectedExperienceId && experiences?.length) {
+      const index = getExperienceIndex(selectedExperienceId);
       setSelectedExperienceIndex(index);
     }
-  };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [experiences]);
 
   const handleRunClaimsCheck = async () => {
     if (selectedExperienceIndex === null) return;
     // setState is async so we need the result from getExperience directly
-    const newExperiences = await getExperience();
+    const newExperiences = await syncExperiences();
     if (!newExperiences?.length) return;
     runClaimsCheck(newExperiences);
   };
 
-  const getExperience = async (): Promise<Experience[] | null> => {
+  const getExperienceIndex = (experienceId: string): number => {
+    if (!experiences?.length) return 0;
+    const index = experiences.findIndex((exp) => exp.id === experienceId);
+    return index !== -1 ? index : 0;
+  };
+
+  const syncExperiences = async (): Promise<Experience[] | null> => {
     if (!guestConnection) return null;
 
     setIsSyncing(true);
@@ -135,18 +104,6 @@ export default function RightPanel(): JSX.Element {
       );
       if (remoteExperiences && remoteExperiences.length > 0) {
         setExperiences(remoteExperiences);
-        
-        if (currentExperience) {
-          const index = remoteExperiences.findIndex(exp => exp.id === currentExperience.id);
-          if (index !== -1) {
-            setSelectedExperienceIndex(index);
-          } else {
-            setSelectedExperienceIndex(0);  
-          }
-        } else {
-          setSelectedExperienceIndex(selectedExperienceIndex ?? 0);
-        }
-        
         return remoteExperiences;
       }
       return null;
@@ -180,7 +137,7 @@ export default function RightPanel(): JSX.Element {
     const interval = 2000; // 2 seconds
 
     while (retries < maxRetries) {
-      const hasExperiences = await getExperience();
+      const hasExperiences = await syncExperiences();
       if (hasExperiences) {
         setIsPolling(false);
         return;
@@ -191,28 +148,31 @@ export default function RightPanel(): JSX.Element {
     setIsPolling(false);
   };
 
-  const renderExperiencePicker = () => {
-    if (!experiences) return null;
-
-    // Find the ID to set as selected
-    const selectedKey = currentExperience ? 
-      currentExperience.id : 
-      (experiences[selectedExperienceIndex || 0]?.id || undefined);
-    
-    return (
-      <Picker
-        label="Select experience"
-        align="start"
-        isDisabled={isSyncing}
-        selectedKey={selectedKey}
-        onSelectionChange={handleExperienceSelection}
-      >
-        {experiences.map((experience, index) => (
-          <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
-        ))}
-      </Picker>
-    );
-  };
+  // (Optional) If handleSelectedExperienceChange is provided in ExtensionRegistration
+  //            host app will render a experience selector at the top of the right panel
+  //            Note that this does not control the create canvas and so selection is not sync back to the host app
+  // const handleExperienceSelection = (key: Key | null) => {
+  //   if (!key) return;
+  //   setSelectedExperienceId(key as string);
+  //   // This is called because storage event is not designed to fired on same tab
+  //   setSelectedExperienceIndex(getExperienceIndex(key as string));
+  // };
+  // const renderExperiencePicker = () => {
+  //   if (!experiences) return null;
+  //   return (
+  //     <Picker
+  //       label="Select experience"
+  //       align="start"
+  //       isDisabled={isSyncing}
+  //       selectedKey={experiences[selectedExperienceIndex ?? 0].id}
+  //       onSelectionChange={handleExperienceSelection}
+  //     >
+  //       {experiences.map((experience, index) => (
+  //         <Item key={experience.id}>{`Experience ${index + 1}`}</Item>
+  //       ))}
+  //     </Picker>
+  //   );
+  // };
 
   const renderRunClaimsCheckButton = () => {
     if (selectedExperienceIndex === null) return null;
@@ -252,6 +212,9 @@ export default function RightPanel(): JSX.Element {
           Check Claims
         </Heading>
         <Flex direction="column" gap="size-300">
+          {/* (Optional) If handleSelectedExperienceChange is provided in ExtensionRegistration
+                         host app will render a experience selector at the top of the right panel
+          {renderExperiencePicker()} */}
           {renderRunClaimsCheckButton()}
         </Flex>
       </Flex>

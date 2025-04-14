@@ -18,9 +18,8 @@ import {
   Experience,
   ExtensionRegistrationService,
 } from "@adobe/genstudio-uix-sdk";
-import React, { useEffect } from "react";
-import { useCurrentExperienceContext } from "../hooks/useCurrentExperienceContext";
-import { saveExperience } from "../utils/experienceBridge";
+import React from "react";
+import { setSelectedExperienceId } from "../utils/experienceBridge";
 
 interface ToggleItem {
   appMetaData: AppMetaData;
@@ -53,7 +52,6 @@ const getAppMetadata = (appExtensionId: string): AppMetaData => ({
 });
 
 const ExtensionRegistration = (): React.JSX.Element => {
-
   const init = async (): Promise<void> => {
     const guestConnection = await register({
       id: extensionId,
@@ -83,9 +81,10 @@ const ExtensionRegistration = (): React.JSX.Element => {
               },
             ];
           },
-          handleExperienceChange: async (experience: Experience) => {
-            const experienceCopy = JSON.parse(JSON.stringify(experience));
-            saveExperience(experienceCopy);
+          // (Optional) If handleSelectedExperienceChange is provided in ExtensionRegistration
+          //            host app will render a experience selector at the top of the right panel
+          handleSelectedExperienceChange: async (experienceId: string) => {
+            setSelectedExperienceId(experienceId);
           },
         },
         createContextAddOns: {

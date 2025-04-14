@@ -10,29 +10,23 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import { Experience } from "@adobe/genstudio-uix-sdk";
-
-const EXPERIENCE_STORAGE_KEY = "current-experience";
+export const SELECTED_EXPERIENCE_ID_STORAGE_KEY = "selected-experience-id";
 
 // Save experience to sessionStorage
-export const saveExperience = (experience: Experience): void => {
+export const setSelectedExperienceId = (experienceId: string): void => {
   try {
-    sessionStorage.setItem(EXPERIENCE_STORAGE_KEY, JSON.stringify(experience));
+    sessionStorage.setItem(SELECTED_EXPERIENCE_ID_STORAGE_KEY, experienceId);
   } catch (error) {
     console.error("Error saving experience to sessionStorage:", error);
   }
 };
 
 // Get experience from sessionStorage
-export const getStoredExperience = (): Experience | null => {
+export const getSelectedExperienceId = (): string | null => {
   try {
-    const stored = sessionStorage.getItem(EXPERIENCE_STORAGE_KEY);
-    if (!stored) return null;
-    
-    const experience = JSON.parse(stored);
-    return experience;
+    return sessionStorage.getItem(SELECTED_EXPERIENCE_ID_STORAGE_KEY);
   } catch (error) {
     console.error("Error getting experience from sessionStorage:", error);
     return null;
   }
-}; 
+};
