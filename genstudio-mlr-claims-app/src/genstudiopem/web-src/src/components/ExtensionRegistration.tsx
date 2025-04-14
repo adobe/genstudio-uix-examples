@@ -13,8 +13,13 @@ governing permissions and limitations under the License.
 import { Text } from "@adobe/react-spectrum";
 import { register } from "@adobe/uix-guest";
 import { extensionId, ICON_DATA_URI, extensionLabel } from "../Constants";
-import { AppMetaData, ExtensionRegistrationService } from "@adobe/genstudio-uix-sdk"
-import React from 'react';
+import {
+  AppMetaData,
+  Experience,
+  ExtensionRegistrationService,
+} from "@adobe/genstudio-uix-sdk";
+import React from "react";
+import { setSelectedExperienceId } from "../utils/experienceBridge";
 
 interface ToggleItem {
   appMetaData: AppMetaData;
@@ -33,16 +38,17 @@ interface DialogItem {
   extensionId: string;
 }
 
-
 const getAppMetadata = (appExtensionId: string): AppMetaData => ({
   id: extensionId,
   label: extensionLabel,
   iconDataUri: ICON_DATA_URI,
-  supportedChannels: [{
-    id: "email",
-    name: "Email",
-  }],
-  extensionId: appExtensionId
+  supportedChannels: [
+    {
+      id: "email",
+      name: "Email",
+    },
+  ],
+  extensionId: appExtensionId,
 });
 
 const ExtensionRegistration = (): React.JSX.Element => {
@@ -56,49 +62,71 @@ const ExtensionRegistration = (): React.JSX.Element => {
               {
                 appMetaData: getAppMetadata(appExtensionId),
                 onClick: async () => {
-                  await ExtensionRegistrationService.openCreateAddOnBar(guestConnection, appExtensionId);
+                  await ExtensionRegistrationService.openCreateAddOnBar(
+                    guestConnection,
+                    appExtensionId
+                  );
                 },
-              }]
-          }
+              },
+            ];
+          },
         },
         createRightPanel: {
           addPanel(appExtensionId: string): PanelItem[] {
             return [
               {
                 id: `${appExtensionId}`,
-                url: '#/right-panel',
-                extensionId: appExtensionId
-              }];
-          }
+                url: "#/right-panel",
+                extensionId: appExtensionId,
+              },
+            ];
+          },
+          // (Optional) If handleSelectedExperienceChange is provided in ExtensionRegistration
+          //            host app will render a experience selector at the top of the right panel
+          handleSelectedExperienceChange: async (experienceId: string) => {
+            setSelectedExperienceId(experienceId);
+          },
         },
         createContextAddOns: {
-          addContextAddOn: async (appExtensionId: string): Promise<ToggleItem[]> => {
+          addContextAddOn: async (
+            appExtensionId: string
+          ): Promise<ToggleItem[]> => {
             return [
               {
                 appMetaData: getAppMetadata(appExtensionId),
                 onClick: async () => {
-                  await ExtensionRegistrationService.openAddContextAddOnBar(guestConnection, appExtensionId);
+                  await ExtensionRegistrationService.openAddContextAddOnBar(
+                    guestConnection,
+                    appExtensionId
+                  );
                 },
-              }]
-          }
+              },
+            ];
+          },
         },
         createCanvasDialog: {
           addDialog(appExtensionId: string): DialogItem[] {
             return [
               {
                 id: `${appExtensionId}`,
-                url: '#/additional-context-dialog',
-                extensionId: appExtensionId
-              }];
-          }
+                url: "#/additional-context-dialog",
+                extensionId: appExtensionId,
+              },
+            ];
+          },
         },
-      }
+      },
     });
   };
-  
+
   init().catch(console.error);
 
-  return <Text>IFrame for integration with Host (GenStudio for Performance Marketing App)...</Text>;
+  return (
+    <Text>
+      IFrame for integration with Host (GenStudio for Performance Marketing
+      App)...
+    </Text>
+  );
 };
 
-export default ExtensionRegistration; 
+export default ExtensionRegistration;
