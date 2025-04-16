@@ -13,31 +13,31 @@ governing permissions and limitations under the License.
 import { Text } from "@adobe/react-spectrum";
 import { register } from "@adobe/uix-guest";
 import { extensionId, ICON_DATA_URI, extensionLabel } from "../Constants";
-import { AppMetaData,} from "@adobe/genstudio-uix-sdk"
-import React from 'react';
+import { AppMetadata } from "@adobe/genstudio-uix-sdk";
+import React, { Key } from "react";
 
-interface ToggleItem {
-  appMetaData: AppMetaData;
+interface Toggle {
+  metadata: AppMetadata;
   onClick: () => Promise<void>;
 }
 
-interface DialogItem {
-  id: string;
+interface App {
+  id: Key;
   url: string;
-  extensionId: string;
-  appMetaData: AppMetaData;
+  metadata: AppMetadata;
 }
 
-
-const getAppMetadata = (appExtensionId: string): AppMetaData => ({
-  id: extensionId,
+const getAppMetadata = (id: Key): AppMetadata => ({
+  id: id.toString(),
   label: extensionLabel,
   iconDataUri: ICON_DATA_URI,
-  supportedChannels: [{
-    id: "email",
-    name: "Email",
-  }],
-  extensionId: appExtensionId,
+  supportedChannels: [
+    {
+      id: "email",
+      name: "Email",
+    },
+  ],
+  extensionId: "deprecated",
   // accounts: [
   //   {
   //     id: '12373425',
@@ -51,50 +51,35 @@ const ExtensionRegistration = (): React.JSX.Element => {
     const guestConnection = await register({
       id: extensionId,
       methods: {
-        contentSelectContentDialog: {
-          selectDialog(appExtensionId: string): DialogItem[] {
-            return [
-              {
-                id: `${appExtensionId}`,
-                url: '#/select-content-dialog',
-                extensionId: appExtensionId,
-                appMetaData: getAppMetadata(appExtensionId)
-              }];
-          }
+        contentSelectContentExtension: {
+          getToggles: async (id: string): Promise<Toggle[]> => [
+            {
+              metadata: getAppMetadata(id),
+              onClick: async () => {
+                // const hostInfo = await guestConnection.host.api.contentSelectContentAddOns.openDialog(`${dialogId}`);
+              },
+            },
+          ],
+          getApps: (id: string): App[] => [
+            {
+              id: id,
+              url: "#/select-content-dialog",
+              metadata: getAppMetadata(id),
+            },
+          ],
         },
-        contentSelectContentAddOns: {
-          selectContentAddOn: async (appExtensionId: string): Promise<ToggleItem[]> => {
-            return [
-              {
-                appMetaData: {
-                  id: "<appExtensionId>",
-                  label: "DAM Extension AddOn",
-                  iconDataUri: "datauri of icon SVG",
-                  supportedChannels: [{
-                    id: "email",
-                    name: "Email",
-                  }],
-                  extensionId: appExtensionId,
-                  // accounts: [
-                  //   {
-                  //       id: "324574674",
-                  //       name: "Assets DAM",
-                  //   }
-                  // ],
-                },
-                onClick: async () => {
-                  // const hostInfo = await guestConnection.host.api.contentSelectContentAddOns.openDialog(`${dialogId}`);
-                },
-              }]; 
-          }
-        }
-      }
+      },
     });
   };
-  
+
   init().catch(console.error);
 
-  return <Text>IFrame for integration with Host (GenStudio for Performance Marketing App)...</Text>;
+  return (
+    <Text>
+      IFrame for integration with Host (GenStudio for Performance Marketing
+      App)...
+    </Text>
+  );
 };
 
-export default ExtensionRegistration; 
+export default ExtensionRegistration;
