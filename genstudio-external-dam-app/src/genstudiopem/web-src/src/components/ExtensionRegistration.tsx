@@ -13,19 +13,8 @@ governing permissions and limitations under the License.
 import { Text } from "@adobe/react-spectrum";
 import { register } from "@adobe/uix-guest";
 import { extensionId, ICON_DATA_URI, extensionLabel } from "../Constants";
-import { AppMetadata } from "@adobe/genstudio-uix-sdk";
+import { AppMetadata, Toggle, App } from "@adobe/genstudio-uix-sdk";
 import React, { Key } from "react";
-
-interface Toggle {
-  metadata: AppMetadata;
-  onClick: () => Promise<void>;
-}
-
-interface App {
-  id: Key;
-  url: string;
-  metadata: AppMetadata;
-}
 
 const getAppMetadata = (id: Key): AppMetadata => ({
   id: id.toString(),
@@ -56,13 +45,15 @@ const ExtensionRegistration = (): React.JSX.Element => {
             {
               metadata: getAppMetadata(id),
               onClick: async () => {
-                // const hostInfo = await guestConnection.host.api.contentSelectContentAddOns.openDialog(`${dialogId}`);
+                const hostInfo =
+                  await guestConnection.host.api.contentSelectContentAddOns.openDialog(
+                    `${dialogId}`
+                  );
               },
             },
           ],
           getApps: (id: string): App[] => [
             {
-              id: id,
               url: "#/select-content-dialog",
               metadata: getAppMetadata(id),
             },
