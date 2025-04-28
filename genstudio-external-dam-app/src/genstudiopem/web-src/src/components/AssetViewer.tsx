@@ -10,46 +10,66 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import React, { useEffect, useState } from 'react';
-import { 
-  Flex, 
-  View, 
-  Text, 
-  Grid, 
-  SearchField, 
-  ButtonGroup, 
-  Button, 
-  ProgressCircle, 
-  Tabs, 
-  TabList, 
-  Item, 
-  Well, 
-} from '@adobe/react-spectrum';
-import Filter from '@spectrum-icons/workflow/Filter';
-import ChevronDown from '@spectrum-icons/workflow/ChevronDown';
-import { Asset } from '../types';
-import AssetCard from './AssetCard';
-import { useAssetActions } from '../hooks/useAssetActions';
-import { useGuestConnection } from '../hooks/useGuestConnection';
-import { extensionId } from '../Constants';
-
+import React, { useEffect, useState } from "react";
+import {
+  Flex,
+  View,
+  Text,
+  Grid,
+  SearchField,
+  ButtonGroup,
+  Button,
+  ProgressCircle,
+  Tabs,
+  TabList,
+  Item,
+  Well,
+} from "@adobe/react-spectrum";
+import Filter from "@spectrum-icons/workflow/Filter";
+import ChevronDown from "@spectrum-icons/workflow/ChevronDown";
+import AssetCard from "./AssetCard";
+import { useAssetActions } from "../hooks/useAssetActions";
+import { useGuestConnection } from "../hooks/useGuestConnection";
+import { extensionId } from "../Constants";
+import {
+  Asset,
+  ExtensionRegistrationService,
+  Auth,
+} from "@adobe/genstudio-uix-sdk";
+import { attach } from "@adobe/uix-guest";
 
 export default function AssetViewer(): JSX.Element {
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const { 
-    assets, 
-    isLoading, 
-    fetchAssets, 
-    searchAssets,
-    auth
-  } = useAssetActions();
-  const guestConnection = useGuestConnection(extensionId);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [auth, setAuth] = useState<Auth | null>(null);
+  const { assets, isLoading, fetchAssets, searchAssets } =
+    useAssetActions(auth);
+  // const guestConnection = useGuestConnection(extensionId);
+
+  const [guestConnection, setGuestConnection] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      console.log("===x attaching to extension", extensionId);
+      const connection = await attach({ id: extensionId });
+      console.log("===x connection", connection);
+      setGuestConnection(connection);
+    })();
+  }, [extensionId]);
+
+  useEffect(() => {
+    console.log("===x useGuestConnection guestConnection", guestConnection);
+    const sharedAuth = guestConnection?.sharedContext.get("auth");
+    if (sharedAuth) {
+      setAuth(sharedAuth as Auth);
+    }
+  }, [guestConnection]);
 
   useEffect(() => {
     // Load assets when component mounts
-    fetchAssets();
-  }, [auth, guestConnection]);
+    console.log("===x useEffect auth", auth);
+    if (auth) fetchAssets();
+  }, [auth]);
 
   useEffect(() => {
     // Search assets when search term changes
@@ -63,40 +83,44 @@ export default function AssetViewer(): JSX.Element {
     }
   }, [searchTerm, auth]);
 
-  const handleAssetSelect = async(asset: Asset) => {
-    if (selectedAssets.some(a => a.id === asset.id)) {
-      // remove asset from selected assets
-      console.log("### removing asset", asset.id);
-      const newSelectedAssets = selectedAssets.filter(a => a.id !== asset.id);
-      setSelectedAssets(newSelectedAssets);
-      // TODO: issue is guestConnection is not available here
-      console.log("### guest connection", guestConnection);
-      if (guestConnection) {
-        try {
-          // TODO: need to finalize api
-          await guestConnection.host.api.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
-          // await guestConnection.host.api.content.setSelectedAssets(newSelectedAssets);
-        } catch (error) {
-          console.error("Error sending selected assets to host:", error);
-        }
+  const handleAssetSelect = async (asset: Asset) => {
+    // Check if asset is already selected
+    const isSelected = selectedAssets.some((a) => a.id === asset.id);
+
+    // Create new array of selected assets based on selection state
+    const newSelectedAssets = isSelected
+      ? selectedAssets.filter((a) => a.id !== asset.id) // Remove asset
+      : [...selectedAssets, asset]; // Add asset
+
+    // Update local state
+    setSelectedAssets(newSelectedAssets);
+
+    // Log for debugging
+    console.log(
+      `===x ${isSelected ? "Removing" : "Adding"} asset: ${asset.id}`
+    );
+
+    // Update host application if connection is available
+
+    console.log("===x handleAssetSelect guestConnection", guestConnection);
+    if (guestConnection) {
+      try {
+        const { assets, extensionID } =
+          await ExtensionRegistrationService.setSelectContentSelectedAssets(
+            guestConnection,
+            newSelectedAssets,
+            extensionId // Using extensionId instead of hardcoded string
+          );
+        console.log(
+          "===x Successfully updated selected assets in host",
+          assets,
+          extensionID
+        );
+      } catch (error) {
+        console.error("===x Error sending selected assets to host:", error);
       }
     } else {
-      // add asset to selected assets
-      console.log("###adding asset", asset);
-      const newSelectedAssets = [...selectedAssets, asset];
-      setSelectedAssets(newSelectedAssets);
-      // TODO: issue is guestConnection is not available here
-      console.log("### guest connection", guestConnection);
-      if (guestConnection) {
-        // send selected assets to host
-        try {
-          // TODO: need to finalize api
-          await guestConnection.host.api.contentSelectContentDialog.setSelectedAssets(newSelectedAssets);
-          // await guestConnection.host.api.content.setSelectedAssets(newSelectedAssets);
-        } catch (error) {
-          console.error("Error sending selected assets to host:", error);
-        }
-      }
+      console.log("===x Guest connection not available");
     }
   };
 
@@ -107,24 +131,24 @@ export default function AssetViewer(): JSX.Element {
           <ProgressCircle aria-label="Loading assets" isIndeterminate />
         </Flex>
       );
-    } 
-    
+    }
+
     if (assets.length === 0) {
       return <Well>No assets found. Try a different search term.</Well>;
     }
-    
+
     return (
       <Grid
-        columns={['1fr', '1fr', '1fr', '1fr', '1fr']}
+        columns={["1fr", "1fr", "1fr", "1fr", "1fr"]}
         autoRows="auto"
         gap="size-200"
       >
         {assets.map((asset) => (
-          <AssetCard 
-            key={asset.id} 
-            asset={asset} 
-            isSelected={selectedAssets.some(a => a.id === asset.id)} 
-            onSelect={handleAssetSelect} 
+          <AssetCard
+            key={asset.id}
+            asset={asset}
+            isSelected={selectedAssets.some((a) => a.id === asset.id)}
+            onSelect={handleAssetSelect}
           />
         ))}
       </Grid>
@@ -136,7 +160,13 @@ export default function AssetViewer(): JSX.Element {
     <View height="100%" width="100%">
       <Flex direction="column" height="100%">
         {/* Tabs and Search */}
-        <Flex direction="column" UNSAFE_style={{padding: "var(--spectrum-global-dimension-size-200)"}} gap="size-200">
+        <Flex
+          direction="column"
+          UNSAFE_style={{
+            padding: "var(--spectrum-global-dimension-size-200)",
+          }}
+          gap="size-200"
+        >
           <Tabs>
             <TabList>
               <Item key="assets">Assets</Item>
@@ -144,7 +174,7 @@ export default function AssetViewer(): JSX.Element {
             </TabList>
           </Tabs>
 
-          <SearchField 
+          <SearchField
             value={searchTerm}
             onChange={setSearchTerm}
             width="100%"
@@ -199,4 +229,4 @@ export default function AssetViewer(): JSX.Element {
       </Flex>
     </View>
   );
-};
+}

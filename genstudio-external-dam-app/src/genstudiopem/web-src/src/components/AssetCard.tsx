@@ -10,14 +10,9 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import React from 'react';
-import { 
-  View, 
-  Image, 
-  Text,
-  Checkbox
-} from '@adobe/react-spectrum';
-import { Asset } from '../types';
+import React from "react";
+import { View, Image, Text, Checkbox } from "@adobe/react-spectrum";
+import { Asset } from "../types";
 
 interface AssetCardProps {
   asset: Asset;
@@ -25,10 +20,14 @@ interface AssetCardProps {
   onSelect: (asset: Asset) => void;
 }
 
-const AssetCard: React.FC<AssetCardProps> = ({ asset, isSelected, onSelect }) => {
+const AssetCard: React.FC<AssetCardProps> = ({
+  asset,
+  isSelected,
+  onSelect,
+}) => {
   // Format file size for display
   const formatFileSize = (bytes: number) => {
-    if (!bytes) return 'Unknown size';
+    if (!bytes) return "Unknown size";
     const kb = bytes / 1024;
     if (kb < 1024) {
       return `${Math.round(kb)}KB`;
@@ -40,39 +39,41 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, isSelected, onSelect }) =>
   return (
     <View
       borderWidth="thin"
-      borderColor={isSelected ? 'blue-400' : 'gray-200'}
+      borderColor={isSelected ? "blue-400" : "gray-200"}
       borderRadius="medium"
       overflow="hidden"
-      UNSAFE_style={{ cursor: 'pointer', position: 'relative' }}
+      UNSAFE_style={{ cursor: "pointer", position: "relative" }}
     >
       {/* Image container */}
-      <View height="size-3000" position="relative" onClick={() => onSelect(asset)}>
-        <Image 
-          src={asset.thumbnailUrl} 
+      <View
+        height="size-3000"
+        position="relative"
+        onClick={() => onSelect(asset)}
+      >
+        <Image
+          src={asset.thumbnailUrl}
           alt={asset.name}
-          objectFit="cover" 
-          width="100%" 
-          height="100%" 
+          objectFit="cover"
+          width="100%"
+          height="100%"
         />
-        
+
         {/* File type badge */}
-        <View 
-          position="absolute" 
-          bottom="size-50" 
-          right="size-50" 
-          backgroundColor="gray-700" 
-          padding="size-50" 
-          borderRadius="small"
-        >
-          <Text UNSAFE_style={{ color: 'white', fontSize: '12px' }}>{asset.fileType}</Text>
-        </View>
-        
-        {/* Selection checkbox - positioned at top-left */}
         <View
           position="absolute"
-          top="size-100"
-          left="size-100"
+          bottom="size-50"
+          right="size-50"
+          backgroundColor="gray-700"
+          padding="size-50"
+          borderRadius="small"
         >
+          <Text UNSAFE_style={{ color: "white", fontSize: "12px" }}>
+            {asset.fileType}
+          </Text>
+        </View>
+
+        {/* Selection checkbox - positioned at top-left */}
+        <View position="absolute" top="size-100" left="size-100">
           <Checkbox
             isSelected={isSelected}
             onChange={() => onSelect(asset)}
@@ -80,15 +81,27 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, isSelected, onSelect }) =>
           />
         </View>
       </View>
-      
+
       {/* Asset info section */}
       <View padding="size-150" backgroundColor="gray-50">
-        <Text UNSAFE_style={{ fontSize: '14px', lineHeight: '18px', display: 'block' }}>
+        <Text
+          UNSAFE_style={{
+            fontSize: "14px",
+            lineHeight: "18px",
+            display: "block",
+          }}
+        >
           {asset.name}
         </Text>
         <View marginTop="size-50">
-          <Text UNSAFE_style={{ fontSize: '12px', color: 'var(--spectrum-global-color-gray-700)' }}>
-           {asset.metadata.contentType} • {formatFileSize(asset.metadata?.size || 0)}
+          <Text
+            UNSAFE_style={{
+              fontSize: "12px",
+              color: "var(--spectrum-global-color-gray-700)",
+            }}
+          >
+            {asset.metadata?.contentType} •{" "}
+            {formatFileSize(asset.metadata?.size || 0)}
           </Text>
         </View>
       </View>
@@ -96,4 +109,4 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset, isSelected, onSelect }) =>
   );
 };
 
-export default AssetCard; 
+export default AssetCard;
