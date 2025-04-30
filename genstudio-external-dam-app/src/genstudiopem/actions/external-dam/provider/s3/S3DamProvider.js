@@ -18,8 +18,8 @@ const {
   HeadObjectCommand,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
-const DamProvider = require("./DamProvider");
-const { errorResponse } = require("../utils");
+const DamProvider = require("../DamProvider");
+const { errorResponse } = require("../../../utils");
 
 class S3DamProvider extends DamProvider {
   constructor(params) {
