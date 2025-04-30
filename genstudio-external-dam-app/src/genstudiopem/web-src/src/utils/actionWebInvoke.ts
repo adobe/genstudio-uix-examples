@@ -19,15 +19,15 @@ governing permissions and limitations under the License.
  * @returns {Promise<object>} The response from the web action
  */
 export const actionWebInvoke = async (
-  actionUrl: string, 
-  imsToken: string, 
-  imsOrg: string, 
+  actionUrl: string,
+  imsToken: string,
+  imsOrg: string,
   params: Record<string, any> = {}
 ): Promise<any> => {
   const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${imsToken}`,
-    'x-gw-ims-org-id': imsOrg
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${imsToken}`,
+    "x-gw-ims-org-id": imsOrg,
   };
 
   // Ensure params is an object
@@ -35,9 +35,9 @@ export const actionWebInvoke = async (
 
   try {
     const response = await fetch(actionUrl, {
-      method: 'POST',
+      method: "POST",
       headers,
-      body: JSON.stringify(requestParams)
+      body: JSON.stringify(requestParams),
     });
 
     if (!response.ok) {
@@ -47,7 +47,7 @@ export const actionWebInvoke = async (
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error invoking action:', error);
+    console.warn("Error invoking action:", error);
     throw error;
   }
 };
