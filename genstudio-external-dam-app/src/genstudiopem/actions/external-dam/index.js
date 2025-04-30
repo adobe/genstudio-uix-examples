@@ -11,7 +11,7 @@ governing permissions and limitations under the License.
 */
 
 const { Core } = require("@adobe/aio-sdk");
-const { checkMissingRequestInputs, errorResponse } = require("../utils");
+const { errorResponse } = require("../utils");
 const S3DamProvider = require("./provider/s3/S3DamProvider");
 
 // Main action handler
@@ -22,20 +22,6 @@ exports.main = async (params) => {
   try {
     // Initialize the DAM provider
     const damProvider = new S3DamProvider(params);
-
-    // Validate required parameters based on action type
-    if (actionType !== "search") {
-      const requiredParams = ["assetId"];
-      const requiredHeaders = ["Authorization"];
-      const errorMessage = checkMissingRequestInputs(
-        params,
-        requiredParams,
-        requiredHeaders
-      );
-      if (errorMessage) {
-        return errorResponse(400, errorMessage, logger);
-      }
-    }
 
     // Execute the requested action
     switch (actionType) {

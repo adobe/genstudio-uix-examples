@@ -10,15 +10,32 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
+const { checkMissingRequestInputs, errorResponse } = require("../../utils");
+
 /**
  * @typedef {Object} Asset - Asset object from @adobe/genstudio-uix-sdk
  */
 
 /**
- * Interface for Digital Asset Management providers
+ * Base class for Digital Asset Management providers
  * @interface
  */
 class DamProvider {
+  constructor(params, logger) {
+    this.logger = logger;
+  }
+
+  /**
+   * Validate common parameters for asset operations
+   * @param {Object} params - Parameters to validate
+   * @returns {string|null} Error message if validation fails, null if successful
+   */
+  validateAssetParams(params) {
+    const requiredParams = ["assetId"];
+    const requiredHeaders = ["Authorization"];
+    return checkMissingRequestInputs(params, requiredParams, requiredHeaders);
+  }
+
   /**
    * Search for assets in the DAM
    * @param {Object} params - Search parameters
@@ -37,6 +54,10 @@ class DamProvider {
    * @returns {Promise<{statusCode: number, body: {url: string}}>}
    */
   async getAssetUrl(params) {
+    const errorMessage = this.validateAssetParams(params);
+    if (errorMessage) {
+      return errorResponse(400, errorMessage, this.logger);
+    }
     throw new Error("Method not implemented");
   }
 
@@ -47,6 +68,10 @@ class DamProvider {
    * @returns {Promise<{statusCode: number, body: {metadata: Object}}>}
    */
   async getAssetMetadata(params) {
+    const errorMessage = this.validateAssetParams(params);
+    if (errorMessage) {
+      return errorResponse(400, errorMessage, this.logger);
+    }
     throw new Error("Method not implemented");
   }
 }

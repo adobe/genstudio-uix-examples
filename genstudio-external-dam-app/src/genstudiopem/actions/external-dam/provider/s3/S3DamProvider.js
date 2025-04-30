@@ -23,18 +23,17 @@ const { errorResponse } = require("../../../utils");
 
 class S3DamProvider extends DamProvider {
   constructor(params) {
-    super();
-    this.logger = Core.Logger("S3DamProvider", {
+    const logger = Core.Logger("S3DamProvider", {
       level: params.LOG_LEVEL || "info",
     });
-    // env variables are for local testing, aio runtime uses params
+    super(params, logger);
+
     this.client = new S3Client({
       credentials: {
-        accessKeyId: params.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey:
-          params.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: params.AWS_ACCESS_KEY_ID,
+        secretAccessKey: params.AWS_SECRET_ACCESS_KEY,
       },
-      region: params.AWS_REGION || process.env.AWS_REGION,
+      region: params.AWS_REGION,
     });
     this.bucketName = params.S3_BUCKET_NAME || process.env.S3_BUCKET_NAME;
   }
@@ -105,6 +104,9 @@ class S3DamProvider extends DamProvider {
 
   async getAssetUrl(params) {
     try {
+      const validationError = await super.getAssetUrl(params);
+      if (validationError) return validationError;
+
       this.logger.info("Getting presigned URL for asset");
       const url = await this.getS3PresignedUrl(params.assetId);
       return {
@@ -123,6 +125,9 @@ class S3DamProvider extends DamProvider {
 
   async getAssetMetadata(params) {
     try {
+      const validationError = await super.getAssetMetadata(params);
+      if (validationError) return validationError;
+
       this.logger.info("Getting metadata for asset");
       const headCmd = new HeadObjectCommand({
         Bucket: this.bucketName,
