@@ -38,6 +38,22 @@ import {
 } from "@adobe/genstudio-uix-sdk";
 import { attach } from "@adobe/uix-guest";
 
+// TODO move to SDK
+const assetToAssetICVItem = (asset: Asset): any => ({
+  id: asset.id,
+  name: asset.name,
+  mimeType: "jpeg", // TODO: get mime type from asset (add the field to the asset)
+  source: asset.url,
+  thumbSrc: {
+    src: asset.thumbnailUrl,
+    width: 100,
+    height: 100,
+  },
+  repository: {
+    environmentId: asset.id,
+  },
+});
+
 export default function AssetViewer(): JSX.Element {
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,7 +79,16 @@ export default function AssetViewer(): JSX.Element {
     if (sharedAuth) {
       setAuth(sharedAuth as Auth);
     }
+    syncState();
   }, [guestConnection]);
+
+  const syncState = async () => {
+    const result =
+      await guestConnection?.host.api.contentSelectContentExtension.sync();
+    console.log("===x syncState", result);
+    // setSelectedAssets(selectedAssetsFromHost);
+    // return { selectionLimit, assetIds, selectedAssetsFromHost, allSelections };
+  };
 
   useEffect(() => {
     // Load assets when component mounts
@@ -84,13 +109,16 @@ export default function AssetViewer(): JSX.Element {
   }, [searchTerm, auth]);
 
   const handleAssetSelect = async (asset: Asset) => {
+    // const { selectionLimit, assetIds, selectedAssets, allSelections } =
+    await syncState();
+
     // Check if asset is already selected
     const isSelected = selectedAssets.some((a) => a.id === asset.id);
 
     // Create new array of selected assets based on selection state
     const newSelectedAssets = isSelected
       ? selectedAssets.filter((a) => a.id !== asset.id) // Remove asset
-      : [...selectedAssets, asset]; // Add asset
+      : [...selectedAssets, assetToAssetICVItem(asset)]; // Add asset
 
     // Update local state
     setSelectedAssets(newSelectedAssets);
@@ -106,8 +134,7 @@ export default function AssetViewer(): JSX.Element {
     if (guestConnection) {
       try {
         const { assets, extensionID } =
-          await ExtensionRegistrationService.setSelectContentSelectedAssets(
-            guestConnection,
+          await guestConnection?.host.api.contentSelectContentExtension.setSelectedAssets(
             newSelectedAssets,
             extensionId // Using extensionId instead of hardcoded string
           );
@@ -117,7 +144,7 @@ export default function AssetViewer(): JSX.Element {
           extensionID
         );
       } catch (error) {
-        console.error("===x Error sending selected assets to host:", error);
+        console.warn("===x Error sending selected assets to host:", error);
       }
     } else {
       console.log("===x Guest connection not available");
