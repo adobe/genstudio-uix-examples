@@ -76,7 +76,7 @@ class S3DamProvider extends DamProvider {
             fileType: item.Key.split(".").pop().toUpperCase(),
             size: item.Size,
             thumbnailUrl: originalUrl,
-            originalUrl,
+            url: originalUrl,
             dateCreated: item.LastModified,
             dateModified: item.LastModified,
             metadata: {

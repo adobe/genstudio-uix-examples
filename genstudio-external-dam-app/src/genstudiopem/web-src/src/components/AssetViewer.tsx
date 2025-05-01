@@ -29,7 +29,6 @@ import Filter from "@spectrum-icons/workflow/Filter";
 import ChevronDown from "@spectrum-icons/workflow/ChevronDown";
 import AssetCard from "./AssetCard";
 import { useAssetActions } from "../hooks/useAssetActions";
-import { useGuestConnection } from "../hooks/useGuestConnection";
 import { extensionId } from "../Constants";
 import {
   Asset,
@@ -44,13 +43,9 @@ const assetToAssetICVItem = (asset: Asset): any => ({
   name: asset.name,
   mimeType: "jpeg", // TODO: get mime type from asset (add the field to the asset)
   source: asset.url,
-  thumbSrc: {
-    src: asset.thumbnailUrl,
-    width: 100,
-    height: 100,
-  },
+  thumbSrc: asset.thumbnailUrl,
   repository: {
-    environmentId: asset.id,
+    environmentId: extensionId,
   },
 });
 
@@ -66,15 +61,12 @@ export default function AssetViewer(): JSX.Element {
 
   useEffect(() => {
     (async () => {
-      console.log("===x attaching to extension", extensionId);
       const connection = await attach({ id: extensionId });
-      console.log("===x connection", connection);
       setGuestConnection(connection);
     })();
   }, [extensionId]);
 
   useEffect(() => {
-    console.log("===x useGuestConnection guestConnection", guestConnection);
     const sharedAuth = guestConnection?.sharedContext.get("auth");
     if (sharedAuth) {
       setAuth(sharedAuth as Auth);
@@ -92,7 +84,6 @@ export default function AssetViewer(): JSX.Element {
 
   useEffect(() => {
     // Load assets when component mounts
-    console.log("===x useEffect auth", auth);
     if (auth) fetchAssets();
   }, [auth]);
 

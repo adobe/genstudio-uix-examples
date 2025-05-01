@@ -17,6 +17,7 @@ import { AppMetadata, Toggle, App } from "@adobe/genstudio-uix-sdk";
 import React, { Key } from "react";
 
 const getAppMetadata = (id: Key): AppMetadata => ({
+  // id: id.toString().includes("localhost") ? extensionId : id.toString(),
   id: id.toString(),
   label: extensionLabel,
   iconDataUri: ICON_DATA_URI,
@@ -45,10 +46,9 @@ const ExtensionRegistration = (): React.JSX.Element => {
             {
               metadata: getAppMetadata(id),
               onClick: async () => {
-                const hostInfo =
-                  await guestConnection.host.api.contentSelectContentAddOns.openDialog(
-                    `${dialogId}`
-                  );
+                await guestConnection.host.api.contentSelectContentExtension.openDialog(
+                  "todo"
+                );
               },
             },
           ],
