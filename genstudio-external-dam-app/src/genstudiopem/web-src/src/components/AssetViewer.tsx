@@ -47,7 +47,10 @@ const assetToAssetICVItem = (asset: Asset): any => ({
   repository: {
     environmentId: extensionId,
   },
+  rawAsset: asset,
 });
+
+const assetICVItemToAsset = (asset: any): Asset => asset.rawAsset;
 
 export default function AssetViewer(): JSX.Element {
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
@@ -75,10 +78,17 @@ export default function AssetViewer(): JSX.Element {
   }, [guestConnection]);
 
   const syncState = async () => {
-    const result =
+    const { selectedAssets } =
       await guestConnection?.host.api.contentSelectContentExtension.sync();
-    console.log("===x syncState", result);
-    // setSelectedAssets(selectedAssetsFromHost);
+
+    console.log("===x syncState selectedAssets", selectedAssets);
+
+    setSelectedAssets(
+      selectedAssets
+        ? selectedAssets?.map((asset: any) => assetICVItemToAsset(asset))
+        : []
+    );
+
     // return { selectionLimit, assetIds, selectedAssetsFromHost, allSelections };
   };
 
@@ -101,7 +111,9 @@ export default function AssetViewer(): JSX.Element {
 
   const handleAssetSelect = async (asset: Asset) => {
     // const { selectionLimit, assetIds, selectedAssets, allSelections } =
-    await syncState();
+
+    const { selectionLimit, allSelections } =
+      await guestConnection?.host.api.contentSelectContentExtension.sync();
 
     // Check if asset is already selected
     const isSelected = selectedAssets.some((a) => a.id === asset.id);
@@ -161,15 +173,21 @@ export default function AssetViewer(): JSX.Element {
         autoRows="auto"
         gap="size-200"
       >
-        {assets.map((asset) => (
-          <AssetCard
-            key={asset.id}
-            asset={asset}
-            isSelected={selectedAssets.some((a) => a.id === asset.id)}
-            onSelect={handleAssetSelect}
-          />
-        ))}
+        {assets.map((asset) => renderAsset(asset))}
       </Grid>
+    );
+  };
+
+  const renderAsset = (asset: Asset) => {
+    console.log("renderAsset asset", asset);
+
+    return (
+      <AssetCard
+        key={asset.id}
+        asset={asset}
+        isSelected={selectedAssets?.some((a) => a.id === asset.id)}
+        onSelect={handleAssetSelect}
+      />
     );
   };
 
