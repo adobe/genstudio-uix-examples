@@ -10,16 +10,14 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import React from 'react';
-import { Provider, defaultTheme, Heading } from '@adobe/react-spectrum';
-import ErrorBoundary from 'react-error-boundary';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import ExtensionRegistration from './ExtensionRegistration';
-import AssetViewer from './AssetViewer';
+import React from "react";
+import { Provider, defaultTheme, Heading } from "@adobe/react-spectrum";
+import ErrorBoundary from "react-error-boundary";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import ExtensionRegistration from "./ExtensionRegistration";
+import AssetViewer from "./AssetViewer";
 
-const ErrorFallback = () => (
-  <Heading level={1}>Something went wrong!</Heading>
-);
+const ErrorFallback = () => <Heading level={1}>Something went wrong!</Heading>;
 
 const App = (): React.JSX.Element => {
   return (
@@ -36,4 +34,4 @@ const App = (): React.JSX.Element => {
   );
 };
 
-export default App; 
+export default App;

@@ -30,11 +30,7 @@ import ChevronDown from "@spectrum-icons/workflow/ChevronDown";
 import AssetCard from "./AssetCard";
 import { useAssetActions } from "../hooks/useAssetActions";
 import { extensionId } from "../Constants";
-import {
-  Asset,
-  ExtensionRegistrationService,
-  Auth,
-} from "@adobe/genstudio-uix-sdk";
+import { Asset, Auth } from "@adobe/genstudio-uix-sdk";
 import { attach } from "@adobe/uix-guest";
 
 // TODO move to SDK
