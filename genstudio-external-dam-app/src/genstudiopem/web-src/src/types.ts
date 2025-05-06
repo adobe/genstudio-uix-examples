@@ -10,20 +10,6 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import { VIOLATION_STATUS } from "./Constants";
-
-export type Violation = {
-  status: ViolationStatus;
-  violation?: string;
-};
-
-export type ClaimResults = {
-  [key: string]: Violation[];
-};
-
-export type ViolationStatus =
-  (typeof VIOLATION_STATUS)[keyof typeof VIOLATION_STATUS];
-
 // // New types for DAM
 // export interface Asset {
 //   id: string;

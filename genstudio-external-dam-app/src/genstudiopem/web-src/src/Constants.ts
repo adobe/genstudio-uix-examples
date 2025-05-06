@@ -9,103 +9,16 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 */
-import { Claim } from '@adobe/genstudio-uix-sdk'
-export const extensionId: string = 'genstudio-external-dam-app';
-export const extensionLabel: string = 'JDAM App';
-export const ICON_DATA_URI: string = "data:image/png;base64,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";
-export const IO_RUNTIME_ACTION_URL = 'https://development-257324-gsioruntimeapp.dev.runtime.adobe.io/api/v1/web/genstudio-io-runtime-app/claims-finder';
-interface ClaimsLibrary {
-  id: string;
-  name: string;
-  claims: Claim[];
-}
-  
-export const TEST_CLAIMS: ClaimsLibrary[] = [
-    {
-      id: "efficacy-claims",
-      name: "Efficacy Claims",
-      claims: [
-        {
-          id: "claim1",
-          description: "Clinically proven to reduce joint inflammation by up to 50%."
-        },
-        {
-          id: "claim2",
-          description: "Alleviates chronic pain associated with Chronexa within 2 weeks."
-        },
-        {
-          id: "claim3",
-          description: "Demonstrates a 60% improvement in joint mobility over 6 months."
-        }
-      ]
-    },
-    {
-      id: "safety-claims",
-      name: "Safety and Tolerability Claims",
-      claims: [
-        {
-          id: "claim4",
-          description: "Demonstrated a favorable safety profile with over 95% adherence in trials."
-        },
-        {
-          id: "claim5",
-          description: "No significant interactions with common NSAIDs and corticosteroids."
-        },
-        {
-          id: "claim6",
-          description: "Approved for patients aged 16 to 80 years."
-        }
-      ]
-    },
-    {
-      id: "dosage-claims",
-      name: "Dosage and Administration Claims",
-      claims: [
-        {
-          id: "claim7",
-          description: "Taken once daily for consistent symptom control."
-        },
-        {
-          id: "claim8",
-          description: "Available in 100 mg and 200 mg tablet forms."
-        },
-        {
-          id: "claim9",
-          description: "Can be taken with or without food for patient convenience."
-        }
-      ]
-    },
-    {
-      id: "side-effects-claims",
-      name: "Side Effects Claims",
-      claims: [
-        {
-          id: "claim10",
-          description: "Most common side effect is mild fatigue, reported in fewer than 8% of patients."
-        },
-        {
-          id: "claim11",
-          description: "No significant impact on cardiovascular health."
-        },
-        {
-          id: "claim12",
-          description: "Mild headaches reported in less than 3% of patients, typically resolving within a week."
-        }
-      ]
-    }
-  ];
 
-export const VIOLATION_STATUS = {
-  Valid: 'valid',
-  Violated: 'violated',
-  N_A: 'n/a'
-} as const;
-
-export const VIOLATION_PREFIX = 'Violated: ';
-export const CLAIM_VIOLATION_PREFIX = 'Violated claim: ';
-export const POD_PREFIX = 'pod';
+export const extensionId: string = "genstudio-external-dam-app";
+export const extensionLabel: string = "JDAM App";
+export const ICON_DATA_URI: string =
+  "data:image/png;base64,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";
 
 // S3 Asset Manager endpoints
-export const SEARCH_ASSETS_ACTION = 'https://development-257324-gsioruntimeapp.dev.runtime.adobe.io/api/v1/web/genstudio-io-runtime-app/search-assets';
-export const GET_ASSET_URL_ACTION = 'https://development-257324-gsioruntimeapp.dev.runtime.adobe.io/api/v1/web/genstudio-io-runtime-app/get-asset-url';
-export const GET_ASSET_METADATA_ACTION = 'https://development-257324-gsioruntimeapp.dev.runtime.adobe.io/api/v1/web/genstudio-io-runtime-app/get-asset-metadata';
+export const SEARCH_ASSETS_ACTION =
+  "https://development-257324-gsioruntimeapp.dev.runtime.adobe.io/api/v1/web/genstudio-io-runtime-app/search-assets";
+export const GET_ASSET_URL_ACTION =
+  "https://development-257324-gsioruntimeapp.dev.runtime.adobe.io/api/v1/web/genstudio-io-runtime-app/get-asset-url";
+export const GET_ASSET_METADATA_ACTION =
+  "https://development-257324-gsioruntimeapp.dev.runtime.adobe.io/api/v1/web/genstudio-io-runtime-app/get-asset-metadata";
