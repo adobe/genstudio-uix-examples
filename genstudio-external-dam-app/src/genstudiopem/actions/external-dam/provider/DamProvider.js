@@ -52,10 +52,9 @@ class DamProvider {
    * @returns {Promise<{statusCode: number, body: {assets: Asset[]}}>}
    * @throws {ValidationError}
    */
-  async searchAssets(params) {
-    const err = this.validateAssetParams(params);
-    if (err) throw new ValidationError(err);
-    return this.doSearchAssets(params);
+  // eslint-disable-next-line no-unused-vars
+  async searchAssets(_params) {
+    throw new Error("searchAssets() not implemented");
   }
 
   /**
@@ -90,17 +89,6 @@ class DamProvider {
     const err = this.validateAssetParams(params);
     if (err) throw new ValidationError(err);
     return this.doGetAssetMetadata(params);
-  }
-
-  /**
-   * @abstract
-   * @protected
-   * @param {Object} params
-   * @returns {Promise<{statusCode:number, body:any}>}
-   */
-  // eslint-disable-next-line no-unused-vars
-  async doSearchAssets(_params) {
-    throw new Error("doSearchAssets() not implemented");
   }
 
   /**

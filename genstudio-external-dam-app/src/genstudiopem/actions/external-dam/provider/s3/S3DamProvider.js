@@ -40,7 +40,7 @@ class S3DamProvider extends DamProvider {
     return await getSignedUrl(this.client, getObjCmd, { expiresIn: 3600 });
   }
 
-  async doSearchAssets(params) {
+  async searchAssets(params) {
     this.logger.info("Searching assets in S3");
     const listObjectsCmd = new ListObjectsV2Command({
       Bucket: this.bucketName,
