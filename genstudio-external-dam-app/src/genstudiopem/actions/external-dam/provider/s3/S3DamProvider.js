@@ -10,7 +10,6 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-const { Core } = require("@adobe/aio-sdk");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const {
   S3Client,
@@ -19,15 +18,10 @@ const {
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
 const DamProvider = require("../DamProvider");
-const { errorResponse } = require("../../../utils");
 
 class S3DamProvider extends DamProvider {
-  constructor(params) {
-    const logger = Core.Logger("S3DamProvider", {
-      level: params.LOG_LEVEL || "info",
-    });
+  constructor(params, logger) {
     super(params, logger);
-
     this.client = new S3Client({
       credentials: {
         accessKeyId: params.AWS_ACCESS_KEY_ID,
@@ -46,114 +40,74 @@ class S3DamProvider extends DamProvider {
     return await getSignedUrl(this.client, getObjCmd, { expiresIn: 3600 });
   }
 
-  async searchAssets(params) {
-    try {
-      this.logger.info("Searching assets in S3");
+  async doSearchAssets(params) {
+    this.logger.info("Searching assets in S3");
+    const listObjectsCmd = new ListObjectsV2Command({
+      Bucket: this.bucketName,
+      Prefix: params.prefix || "",
+      MaxKeys: parseInt(params.limit) || 100,
+    });
+    const listResult = await this.client.send(listObjectsCmd);
+    this.logger.info(`Found ${listResult?.Contents?.length || 0} assets in S3`);
 
-      const listObjectsCmd = new ListObjectsV2Command({
-        Bucket: this.bucketName,
-        Prefix: params.prefix || "",
-        MaxKeys: parseInt(params.limit) || 100,
-      });
+    const assets = await Promise.all(
+      listResult?.Contents.map(async (item) => {
+        const headObjCmd = new HeadObjectCommand({
+          Bucket: this.bucketName,
+          Key: item.Key,
+        });
+        const metadata = await this.client.send(headObjCmd);
+        const originalUrl = await this.getS3PresignedUrl(item.Key);
 
-      const listResult = await this.client.send(listObjectsCmd);
-      this.logger.info(
-        `Found ${listResult?.Contents?.length || 0} assets in S3`
-      );
-
-      const assets = await Promise.all(
-        listResult?.Contents.map(async (item) => {
-          const headCmd = new HeadObjectCommand({
-            Bucket: this.bucketName,
-            Key: item.Key,
-          });
-          const metadata = await this.client.send(headCmd);
-          const originalUrl = await this.getS3PresignedUrl(item.Key);
-
-          return {
-            id: item.Key,
-            name: item.Key.split("/").pop(),
-            fileType: item.Key.split(".").pop().toUpperCase(),
-            size: item.Size,
-            thumbnailUrl: originalUrl,
-            url: originalUrl,
-            dateCreated: item.LastModified,
-            dateModified: item.LastModified,
-            metadata: {
-              contentType: metadata.ContentType,
-              size: item.Size,
-              ...metadata.Metadata,
-            },
-          };
-        })
-      );
-
-      return {
-        statusCode: 200,
-        body: { assets },
-      };
-    } catch (error) {
-      this.logger.error(error);
-      return errorResponse(
-        500,
-        "Error searching assets: " + error.message,
-        this.logger
-      );
-    }
-  }
-
-  async getAssetUrl(params) {
-    try {
-      const validationError = await super.getAssetUrl(params);
-      if (validationError) return validationError;
-
-      this.logger.info("Getting presigned URL for asset");
-      const url = await this.getS3PresignedUrl(params.assetId);
-      return {
-        statusCode: 200,
-        body: { url },
-      };
-    } catch (error) {
-      this.logger.error(error);
-      return errorResponse(
-        500,
-        "Error getting asset URL: " + error.message,
-        this.logger
-      );
-    }
-  }
-
-  async getAssetMetadata(params) {
-    try {
-      const validationError = await super.getAssetMetadata(params);
-      if (validationError) return validationError;
-
-      this.logger.info("Getting metadata for asset");
-      const headCmd = new HeadObjectCommand({
-        Bucket: this.bucketName,
-        Key: params.assetId,
-      });
-      const metadata = await this.client.send(headCmd);
-
-      return {
-        statusCode: 200,
-        body: {
+        return {
+          id: item.Key,
+          name: item.Key.split("/").pop(),
+          fileType: item.Key.split(".").pop().toUpperCase(),
+          size: item.Size,
+          thumbnailUrl: originalUrl,
+          url: originalUrl,
+          dateCreated: item.LastModified,
+          dateModified: item.LastModified,
           metadata: {
             contentType: metadata.ContentType,
-            contentLength: metadata.ContentLength,
-            lastModified: metadata.LastModified,
+            size: item.Size,
             ...metadata.Metadata,
           },
+        };
+      })
+    );
+
+    return {
+      statusCode: 200,
+      body: { assets },
+    };
+  }
+
+  async doGetAssetUrl(params) {
+    this.logger.info("Getting presigned URL for asset", params.assetId);
+    const url = await this.getS3PresignedUrl(params.assetId);
+    return { statusCode: 200, body: { url } };
+  }
+
+  async doGetAssetMetadata(params) {
+    this.logger.info("Getting metadata for asset", params.assetId);
+    const headObjCmd = new HeadObjectCommand({
+      Bucket: this.bucketName,
+      Key: params.assetId,
+    });
+    const metadata = await this.client.send(headObjCmd);
+
+    return {
+      statusCode: 200,
+      body: {
+        metadata: {
+          contentType: metadata.ContentType,
+          contentLength: metadata.ContentLength,
+          lastModified: metadata.LastModified,
+          ...metadata.Metadata,
         },
-      };
-    } catch (error) {
-      this.logger.error(error);
-      return errorResponse(
-        500,
-        "Error getting asset metadata: " + error.message,
-        this.logger
-      );
-    }
+      },
+    };
   }
 }
 

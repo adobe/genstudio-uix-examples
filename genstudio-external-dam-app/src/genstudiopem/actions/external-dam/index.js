@@ -11,19 +11,15 @@ governing permissions and limitations under the License.
 */
 
 const { Core } = require("@adobe/aio-sdk");
-const { errorResponse } = require("../utils");
+const { errorResponse, ValidationError } = require("../utils");
 const S3DamProvider = require("./provider/s3/S3DamProvider");
 
-// Main action handler
 exports.main = async (params) => {
   const logger = Core.Logger("main", { level: params.LOG_LEVEL || "info" });
   const actionType = params.actionType || "search";
+  const damProvider = new S3DamProvider(params, logger);
 
   try {
-    // Initialize the DAM provider
-    const damProvider = new S3DamProvider(params);
-
-    // Execute the requested action
     switch (actionType) {
       case "search":
         return await damProvider.searchAssets(params);
@@ -38,12 +34,12 @@ exports.main = async (params) => {
           logger
         );
     }
-  } catch (error) {
-    logger.error(error);
-    return errorResponse(
-      500,
-      "Internal server error: " + error.message,
-      logger
-    );
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      // parameter validation failed
+      return errorResponse(400, err.message, logger);
+    }
+    logger.error(err);
+    return errorResponse(500, "Internal server error: " + err.message, logger);
   }
 };

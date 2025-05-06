@@ -10,15 +10,19 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-const { checkMissingRequestInputs, errorResponse } = require("../../utils");
+const { checkMissingRequestInputs, ValidationError } = require("../../utils");
 
 /**
  * @typedef {Object} Asset - Asset object from @adobe/genstudio-uix-sdk
  */
 
 /**
- * Base class for Digital Asset Management providers
- * @interface
+ * @class DamProvider
+ * @description
+ *   Base class for Digital Asset Management providers.
+ *   Uses the Template Method design pattern:
+ *   - Public methods handle validation, then delegate to `do` methods.
+ *   - Subclasses must override the `do` methods.
  */
 class DamProvider {
   constructor(params, logger) {
@@ -26,9 +30,9 @@ class DamProvider {
   }
 
   /**
-   * Validate common parameters for asset operations
-   * @param {Object} params - Parameters to validate
-   * @returns {string|null} Error message if validation fails, null if successful
+   * Validate common parameters for asset operations.
+   * @param {Object} params
+   * @returns {string|null} error message if validation fails, otherwise null
    */
   validateAssetParams(params) {
     const requiredParams = ["assetId"];
@@ -37,42 +41,88 @@ class DamProvider {
   }
 
   /**
-   * Search for assets in the DAM
-   * @param {Object} params - Search parameters
-   * @param {string} [params.prefix] - Prefix to search for
-   * @param {number} [params.limit] - Maximum number of results to return
+   * Template Method for searching assets in the DAM.
+   * 1. Validates params via `validateAssetParams`
+   * 2. On validation error, throws `ValidationError`
+   * 3. Otherwise calls subclass's `doSearchAssets`
+   *
+   * @param {Object} params
+   * @param {string} [params.prefix] prefix to search for
+   * @param {number} [params.limit] max number of results
    * @returns {Promise<{statusCode: number, body: {assets: Asset[]}}>}
+   * @throws {ValidationError}
    */
   async searchAssets(params) {
-    throw new Error("Method not implemented");
+    const err = this.validateAssetParams(params);
+    if (err) throw new ValidationError(err);
+    return this.doSearchAssets(params);
   }
 
   /**
-   * Get a presigned URL for an asset
-   * @param {Object} params - URL parameters
-   * @param {string} params.assetId - ID of the asset
-   * @returns {Promise<{statusCode: number, body: {url: string}}>}
+   * Template Method for retrieving a presigned URL.
+   * 1. Validates params via `validateAssetParams`
+   * 2. On validation error, throws `ValidationError`
+   * 3. Otherwise calls subclass's `doGetAssetUrl`
+   *
+   * @param {Object} params
+   * @param {string} params.assetId
+   * @returns {Promise<{statusCode:number, body:{url:string}}>}
+   * @throws {ValidationError}
    */
   async getAssetUrl(params) {
-    const errorMessage = this.validateAssetParams(params);
-    if (errorMessage) {
-      return errorResponse(400, errorMessage, this.logger);
-    }
-    throw new Error("Method not implemented");
+    const err = this.validateAssetParams(params);
+    if (err) throw new ValidationError(err);
+    return this.doGetAssetUrl(params);
   }
 
   /**
-   * Get metadata for an asset
-   * @param {Object} params - Metadata parameters
-   * @param {string} params.assetId - ID of the asset
-   * @returns {Promise<{statusCode: number, body: {metadata: Object}}>}
+   * Template Method for fetching asset metadata.
+   * 1. Validates params via `validateAssetParams`
+   * 2. On validation error, throws `ValidationError`
+   * 3. Otherwise calls subclass's `doGetAssetMetadata`
+   *
+   * @param {Object} params
+   * @param {string} params.assetId
+   * @returns {Promise<{statusCode:number, body:{metadata:Object}}>}
+   * @throws {ValidationError}
    */
   async getAssetMetadata(params) {
-    const errorMessage = this.validateAssetParams(params);
-    if (errorMessage) {
-      return errorResponse(400, errorMessage, this.logger);
-    }
-    throw new Error("Method not implemented");
+    const err = this.validateAssetParams(params);
+    if (err) throw new ValidationError(err);
+    return this.doGetAssetMetadata(params);
+  }
+
+  /**
+   * @abstract
+   * @protected
+   * @param {Object} params
+   * @returns {Promise<{statusCode:number, body:any}>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async doSearchAssets(_params) {
+    throw new Error("doSearchAssets() not implemented");
+  }
+
+  /**
+   * @abstract
+   * @protected
+   * @param {Object} params
+   * @returns {Promise<{statusCode:number, body:any}>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async doGetAssetUrl(_params) {
+    throw new Error("doGetAssetUrl() not implemented");
+  }
+
+  /**
+   * @abstract
+   * @protected
+   * @param {Object} params
+   * @returns {Promise<{statusCode:number, body:any}>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  async doGetAssetMetadata(_params) {
+    throw new Error("doGetAssetMetadata() not implemented");
   }
 }
 
