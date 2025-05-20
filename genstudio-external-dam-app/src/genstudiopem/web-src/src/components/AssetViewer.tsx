@@ -14,19 +14,11 @@ import React, { useEffect, useState } from "react";
 import {
   Flex,
   View,
-  Text,
   Grid,
   SearchField,
-  ButtonGroup,
-  Button,
   ProgressCircle,
-  Tabs,
-  TabList,
-  Item,
   Well,
 } from "@adobe/react-spectrum";
-import Filter from "@spectrum-icons/workflow/Filter";
-import ChevronDown from "@spectrum-icons/workflow/ChevronDown";
 import AssetCard from "./AssetCard";
 import { useAssetActions } from "../hooks/useAssetActions";
 import { extensionId } from "../Constants";

@@ -45,11 +45,7 @@ const ExtensionRegistration = (): React.JSX.Element => {
           getToggles: async (id: string): Promise<Toggle[]> => [
             {
               metadata: getAppMetadata(id),
-              onClick: async () => {
-                await guestConnection.host.api.selectContentExtension.openDialog(
-                  "todo"
-                );
-              },
+              onClick: async () => {},
             },
           ],
           getApps: (id: string): App[] => [
