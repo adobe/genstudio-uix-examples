@@ -30,33 +30,27 @@ import ChevronDown from "@spectrum-icons/workflow/ChevronDown";
 import AssetCard from "./AssetCard";
 import { useAssetActions } from "../hooks/useAssetActions";
 import { extensionId } from "../Constants";
-import { Asset, Auth } from "@adobe/genstudio-uix-sdk";
+import { Asset, ExtensionRegistrationService } from "@adobe/genstudio-uix-sdk";
 import { attach } from "@adobe/uix-guest";
-
-// TODO move to SDK
-const assetToAssetICVItem = (asset: Asset): any => ({
-  id: asset.id,
-  name: asset.name,
-  mimeType: "jpeg", // TODO: get mime type from asset (add the field to the asset)
-  source: asset.url,
-  thumbSrc: asset.thumbnailUrl,
-  repository: {
-    environmentId: extensionId,
-  },
-  rawAsset: asset,
-});
-
-const assetICVItemToAsset = (asset: any): Asset => asset.rawAsset;
+import { DamAsset } from "../types";
 
 export default function AssetViewer(): JSX.Element {
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [auth, setAuth] = useState<Auth | null>(null);
-  const { assets, isLoading, fetchAssets, searchAssets } =
-    useAssetActions(auth);
-  // const guestConnection = useGuestConnection(extensionId);
+  const [auth, setAuth] = useState<any>(null);
+  const { assets, isLoading, fetchAssets, searchAssets } = useAssetActions(auth);
 
   const [guestConnection, setGuestConnection] = useState<any>(null);
+
+  const convertToGenStudioAsset = (asset: DamAsset): Asset => {
+    return {
+      id: asset.id,
+      name: asset.name,
+      signedUrl: asset.url,
+      source: "S3",
+      sourceUrl: asset.url,
+    };
+  };
 
   useEffect(() => {
     (async () => {
@@ -68,24 +62,19 @@ export default function AssetViewer(): JSX.Element {
   useEffect(() => {
     const sharedAuth = guestConnection?.sharedContext.get("auth");
     if (sharedAuth) {
-      setAuth(sharedAuth as Auth);
+      setAuth(sharedAuth);
     }
     syncState();
   }, [guestConnection]);
 
   const syncState = async () => {
-    const { selectedAssets } =
-      await guestConnection?.host.api.contentSelectContentExtension.sync();
-
-    console.log("===x syncState selectedAssets", selectedAssets);
-
+    if (!guestConnection) return;
+    const { selectedAssets } = await ExtensionRegistrationService.selectContentExtensionSync(guestConnection);
     setSelectedAssets(
       selectedAssets
-        ? selectedAssets?.map((asset: any) => assetICVItemToAsset(asset))
+        ? selectedAssets?.map((asset: any) => convertToGenStudioAsset(asset))
         : []
     );
-
-    // return { selectionLimit, assetIds, selectedAssetsFromHost, allSelections };
   };
 
   useEffect(() => {
@@ -105,43 +94,17 @@ export default function AssetViewer(): JSX.Element {
     }
   }, [searchTerm, auth]);
 
-  const handleAssetSelect = async (asset: Asset) => {
-    // const { selectionLimit, assetIds, selectedAssets, allSelections } =
-
-    const { selectionLimit, allSelections } =
-      await guestConnection?.host.api.contentSelectContentExtension.sync();
-
-    // Check if asset is already selected
+  const handleAssetSelect = async (asset: DamAsset) => {
     const isSelected = selectedAssets.some((a) => a.id === asset.id);
-
-    // Create new array of selected assets based on selection state
     const newSelectedAssets = isSelected
       ? selectedAssets.filter((a) => a.id !== asset.id) // Remove asset
-      : [...selectedAssets, assetToAssetICVItem(asset)]; // Add asset
+      : [...selectedAssets, convertToGenStudioAsset(asset)]; // Add asset
 
-    // Update local state
     setSelectedAssets(newSelectedAssets);
 
-    // Log for debugging
-    console.log(
-      `===x ${isSelected ? "Removing" : "Adding"} asset: ${asset.id}`
-    );
-
-    // Update host application if connection is available
-
-    console.log("===x handleAssetSelect guestConnection", guestConnection);
     if (guestConnection) {
       try {
-        const { assets, extensionID } =
-          await guestConnection?.host.api.contentSelectContentExtension.setSelectedAssets(
-            newSelectedAssets,
-            extensionId // Using extensionId instead of hardcoded string
-          );
-        console.log(
-          "===x Successfully updated selected assets in host",
-          assets,
-          extensionID
-        );
+        await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(guestConnection, extensionId, newSelectedAssets);
       } catch (error) {
         console.warn("===x Error sending selected assets to host:", error);
       }
@@ -174,9 +137,7 @@ export default function AssetViewer(): JSX.Element {
     );
   };
 
-  const renderAsset = (asset: Asset) => {
-    console.log("renderAsset asset", asset);
-
+  const renderAsset = (asset: DamAsset) => {
     return (
       <AssetCard
         key={asset.id}
@@ -188,10 +149,8 @@ export default function AssetViewer(): JSX.Element {
   };
 
   return (
-    // backgroundColor="gray-100"
     <View height="100%" width="100%">
       <Flex direction="column" height="100%">
-        {/* Tabs and Search */}
         <Flex
           direction="column"
           UNSAFE_style={{
@@ -199,65 +158,15 @@ export default function AssetViewer(): JSX.Element {
           }}
           gap="size-200"
         >
-          <Tabs>
-            <TabList>
-              <Item key="assets">Assets</Item>
-              <Item key="collections">Collections</Item>
-            </TabList>
-          </Tabs>
-
           <SearchField
             value={searchTerm}
             onChange={setSearchTerm}
             width="100%"
           />
-
-          {/* Filter buttons */}
-          <Flex direction="row" gap="size-100">
-            <ButtonGroup>
-              <Button variant="secondary" alignSelf="start">
-                <Flex alignItems="center" gap="size-100">
-                  <Filter />
-                  <Text>Assets</Text>
-                  <ChevronDown />
-                </Flex>
-              </Button>
-              <Button variant="secondary">
-                <Flex alignItems="center" gap="size-100">
-                  <Text>Asset type</Text>
-                  <ChevronDown />
-                </Flex>
-              </Button>
-              <Button variant="secondary">
-                <Flex alignItems="center" gap="size-100">
-                  <Text>Tags</Text>
-                  <ChevronDown />
-                </Flex>
-              </Button>
-            </ButtonGroup>
-          </Flex>
         </Flex>
-
-        {/* Assets Grid */}
         <View flex={1} padding="size-200" overflow="auto">
           {renderAssetContent()}
         </View>
-
-        {/* Footer */}
-        {/* this all exists in ContentSelector */}
-        {/* <Flex direction="row" justifyContent="space-between" alignItems="center" UNSAFE_style={{padding: "var(--spectrum-global-dimension-size-200)"}}>
-          <Text>{selectedAssets.length} of {selectedAssets.length} selected</Text>
-          <ButtonGroup>
-            <Button variant="secondary" onPress={onClose}>Cancel</Button>
-            <Button 
-              variant="cta" 
-              onPress={handleUseSelected} 
-              isDisabled={selectedAssets.length === 0}
-            >
-              Use
-            </Button>
-          </ButtonGroup>
-        </Flex> */}
       </Flex>
     </View>
   );

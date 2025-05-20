@@ -11,16 +11,16 @@ governing permissions and limitations under the License.
 */
 
 // // New types for DAM
-// export interface Asset {
-//   id: string;
-//   name: string;
-//   fileType: string;
-//   thumbnailUrl: string;
-//   originalUrl: string;
-//   metadata: AssetMetadata;
-//   dateCreated: string;
-//   dateModified: string;
-// }
+export type DamAsset = {
+  id: string;
+  name: string;
+  fileType: string;
+  thumbnailUrl: string;
+  url: string;
+  metadata: any;
+  dateCreated: string;
+  dateModified: string;
+};
 
 // export interface AssetMetadata {
 //   size: number;

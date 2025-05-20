@@ -12,12 +12,12 @@ governing permissions and limitations under the License.
 
 import React from "react";
 import { View, Image, Text, Checkbox } from "@adobe/react-spectrum";
-import { Asset } from "../types";
+import { DamAsset } from "../types";
 
 interface AssetCardProps {
-  asset: Asset;
+  asset: DamAsset;
   isSelected: boolean;
-  onSelect: (asset: Asset) => void;
+  onSelect: (asset: DamAsset) => void;
 }
 
 const AssetCard: React.FC<AssetCardProps> = ({
@@ -45,7 +45,6 @@ const AssetCard: React.FC<AssetCardProps> = ({
         overflow="hidden"
         UNSAFE_style={{ cursor: "pointer", position: "relative" }}
       >
-        {/* Image container */}
         <View height="size-3000" position="relative">
           <Image
             src={asset.thumbnailUrl}
@@ -55,7 +54,6 @@ const AssetCard: React.FC<AssetCardProps> = ({
             height="100%"
           />
 
-          {/* File type badge */}
           <View
             position="absolute"
             bottom="size-50"
@@ -69,7 +67,6 @@ const AssetCard: React.FC<AssetCardProps> = ({
             </Text>
           </View>
 
-          {/* Selection checkbox - positioned at top-left */}
           <View position="absolute" top="size-100" left="size-100">
             <Checkbox
               isSelected={isSelected}
@@ -79,7 +76,6 @@ const AssetCard: React.FC<AssetCardProps> = ({
           </View>
         </View>
 
-        {/* Asset info section */}
         <View padding="size-150" backgroundColor="gray-50">
           <Text
             UNSAFE_style={{

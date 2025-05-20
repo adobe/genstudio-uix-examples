@@ -11,10 +11,9 @@ governing permissions and limitations under the License.
 */
 
 import { useState } from "react";
-import { AssetSearchParams } from "../types";
+import { AssetSearchParams, DamAsset } from "../types";
 import { actionWebInvoke } from "../utils/actionWebInvoke";
 import actions from "../config.json";
-import { Asset } from "@adobe/genstudio-uix-sdk";
 
 interface Auth {
   imsToken: string;
@@ -28,7 +27,7 @@ const GET_ASSET_METADATA_ACTION =
   "genstudio-external-dam-app/get-asset-metadata";
 
 export const useAssetActions = (auth: Auth) => {
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const [assets, setAssets] = useState<DamAsset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,9 +52,8 @@ export const useAssetActions = (auth: Auth) => {
       );
 
       if (response && typeof response === "object" && "assets" in response) {
-        setAssets(response.assets as Asset[]);
+        setAssets(response.assets as DamAsset[]);
       } else {
-        // If we don't have a real backend yet, use mock data
         setAssets(getMockAssets());
       }
     } catch (err) {
@@ -88,13 +86,13 @@ export const useAssetActions = (auth: Auth) => {
       );
 
       if (response && typeof response === "object" && "assets" in response) {
-        setAssets(response.assets as Asset[]);
+        setAssets(response.assets as DamAsset[]);
       } else {
         // Filter mock data if no real backend
         const filteredMockAssets = getMockAssets().filter(
           (asset) =>
             asset.name.toLowerCase().includes(query.toLowerCase()) ||
-            asset.metadata.keywords?.some((keyword) =>
+            asset.metadata.keywords?.some((keyword: string) =>
               keyword.toLowerCase().includes(query.toLowerCase())
             )
         );
@@ -164,7 +162,7 @@ export const useAssetActions = (auth: Auth) => {
   };
 
   // Helper function to generate mock assets for development
-  const getMockAssets = (): Asset[] => {
+  const getMockAssets = (): DamAsset[] => {
     const urls = [
       "https://thumbnails.findmy.media/09bb4a3c-99f8-4009-a319-e905f3303b7a/binaries/94f02dafcd309234d22f29ee9beb5d6d206736c4ba9af6cc9df9094d14a0d505/rendition-hq.webp",
       "https://thumbnails.findmy.media/09bb4a3c-99f8-4009-a319-e905f3303b7a/binaries/950697e8a1ee984434ee252b8fc462dd0769b054f403d5794ae6c39b19ebf322/rendition-hq.webp",
@@ -177,25 +175,18 @@ export const useAssetActions = (auth: Auth) => {
         return {
           id: `asset-${index + 1}`,
           name: `skier.jpeg`,
-          // fileType: "JPEG",
+          fileType: "JPEG",
           thumbnailUrl: urls[index],
           url: urls[index],
-          location: "US",
-          source: "S3",
-          // metadata: {
-          //   channels: ["email"],
-          //   // size: 1024 * 1024 * Math.floor(Math.random() * 10 + 1), // 1-10 MB
-          //   // width: 1200,
-          //   // height: 800,
-          //   // description: `An image`,
-          //   keywords: ["outdoors", "nature", "activity"],
-          // },
-          // dateCreated: new Date(
-          //   Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000
-          // ).toISOString(),
-          // dateModified: new Date(
-          //   Date.now() - Math.floor(Math.random() * 10) * 24 * 60 * 60 * 1000
-          // ).toISOString(),
+          metadata: {
+            size: 1024 * 1024 * Math.floor(Math.random() * 10 + 1),
+          },
+          dateCreated: new Date(
+            Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000
+          ).toISOString(),
+          dateModified: new Date(
+            Date.now() - Math.floor(Math.random() * 10) * 24 * 60 * 60 * 1000
+          ).toISOString(),
         };
       });
   };
