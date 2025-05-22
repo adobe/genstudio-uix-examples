@@ -31,7 +31,6 @@ export const useAssetActions = (auth: Auth) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch all assets (or with pagination)
   const fetchAssets = async (
     params: AssetSearchParams = { limit: 20, offset: 0 }
   ) => {

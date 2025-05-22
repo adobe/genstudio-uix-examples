@@ -40,6 +40,15 @@ class S3DamProvider extends DamProvider {
     return await getSignedUrl(this.client, getObjCmd, { expiresIn: 3600 });
   }
 
+  async getThumbnailUrl(key) {
+    const thumbnailKey = "thumbnails/" + key.replace(/\.[^/.]+$/, ".jpg");
+    const getObjCmd = new GetObjectCommand({
+      Bucket: this.bucketName,
+      Key: thumbnailKey,
+    });
+    return await getSignedUrl(this.client, getObjCmd, { expiresIn: 3600 });
+  }
+
   async searchAssets(params) {
     this.logger.info("Searching assets in S3");
     const listObjectsCmd = new ListObjectsV2Command({
@@ -58,13 +67,14 @@ class S3DamProvider extends DamProvider {
         });
         const metadata = await this.client.send(headObjCmd);
         const originalUrl = await this.getS3PresignedUrl(item.Key);
+        const thumbnailUrl = await this.getThumbnailUrl(item.Key);
 
         return {
           id: item.Key,
           name: item.Key.split("/").pop(),
           fileType: item.Key.split(".").pop().toUpperCase(),
           size: item.Size,
-          thumbnailUrl: originalUrl,
+          thumbnailUrl: thumbnailUrl,
           url: originalUrl,
           dateCreated: item.LastModified,
           dateModified: item.LastModified,
