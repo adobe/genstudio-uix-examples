@@ -74,6 +74,8 @@ export default function AssetViewer(): JSX.Element {
     if (auth) fetchAssets();
   }, [auth]);
 
+
+
   useEffect(() => {
     // Search assets when search term changes
     if (searchTerm) {
@@ -120,9 +122,14 @@ export default function AssetViewer(): JSX.Element {
 
     return (
       <Grid
-        columns={["1fr", "1fr", "1fr", "1fr", "1fr"]}
+        columns="repeat(auto-fill, 230px)"
         autoRows="auto"
-        gap="size-200"
+        justifyContent="start"
+        gap="size-300"
+        UNSAFE_style={{ 
+          width: "100%",
+          gap: "24px"
+        }}
       >
         {assets.map((asset) => renderAsset(asset))}
       </Grid>
@@ -140,23 +147,47 @@ export default function AssetViewer(): JSX.Element {
     );
   };
 
+  // Clean search field styles based on Figma design
+  const searchFieldStyles: React.CSSProperties = {
+    borderRadius: "16px"
+  } as React.CSSProperties;
+
   return (
     <View height="100%" width="100%">
       <Flex direction="column" height="100%">
-        <Flex
-          direction="column"
+        {/* Simple, clean header with centered search */}
+        <View
           UNSAFE_style={{
-            padding: "var(--spectrum-global-dimension-size-200)",
+            padding: "20px 24px",
+            borderBottom: "1px solid var(--spectrum-global-color-gray-200)",
+            backgroundColor: "#FFFFFF"
           }}
-          gap="size-200"
         >
-          <SearchField
-            value={searchTerm}
-            onChange={setSearchTerm}
-            width="100%"
-          />
-        </Flex>
-        <View flex={1} padding="size-200" overflow="auto">
+          <Flex
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <SearchField
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search for assets"
+              width="400px"
+              maxWidth="90%"
+              UNSAFE_style={searchFieldStyles}
+            />
+          </Flex>
+        </View>
+
+        {/* Main content area */}
+        <View 
+          flex={1} 
+          UNSAFE_style={{
+            padding: "20px",
+            overflow: "auto",
+            backgroundColor: "#FFFFFF"
+          }}
+        >
           {renderAssetContent()}
         </View>
       </Flex>
