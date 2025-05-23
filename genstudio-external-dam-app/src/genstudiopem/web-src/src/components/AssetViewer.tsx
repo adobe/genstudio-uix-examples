@@ -124,7 +124,7 @@ export default function AssetViewer(): JSX.Element {
       <Grid
         columns="repeat(auto-fill, 230px)"
         autoRows="auto"
-        justifyContent="start"
+        justifyContent="center"
         gap="size-300"
         UNSAFE_style={{ 
           width: "100%",

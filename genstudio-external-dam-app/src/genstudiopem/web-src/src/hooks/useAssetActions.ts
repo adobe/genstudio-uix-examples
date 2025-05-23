@@ -169,15 +169,37 @@ export const useAssetActions = (auth: Auth) => {
       "https://thumbnails.findmy.media/09bb4a3c-99f8-4009-a319-e905f3303b7a/binaries/750ac90bf833b71b5c1db89123cb95e3881c1cd0baabadbf0491996acc4744b0/rendition-hq.webp",
     ];
 
-    return Array(3)
+    const assetNames = [
+      "mountain-skier.jpeg",
+      "winter-landscape.png", 
+      "snowy-peaks.webp",
+      "alpine-resort.jpg",
+      "ski-equipment.png",
+      "frozen-lake.jpeg",
+      "winter-sports.webp",
+      "snow-covered-trees.jpg",
+      "mountain-cabin.png",
+      "aurora-borealis.jpeg",
+      "ice-crystals.webp",
+      "winter-wildlife.jpg",
+      "snowboard-action.png",
+      "glacier-view.jpeg",
+      "winter-sunset.webp"
+    ];
+
+    const fileTypes = ["JPEG", "PNG", "WEBP", "JPG"];
+
+    return Array(15)
       .fill(null)
       .map((_, index) => {
+        const urlIndex = index % urls.length;
+        const fileType = fileTypes[index % fileTypes.length];
         return {
           id: `asset-${index + 1}`,
-          name: `skier.jpeg`,
-          fileType: "JPEG",
-          thumbnailUrl: urls[index],
-          url: urls[index],
+          name: assetNames[index],
+          fileType: fileType,
+          thumbnailUrl: urls[urlIndex],
+          url: urls[urlIndex],
           metadata: {
             size: 1024 * 1024 * Math.floor(Math.random() * 10 + 1),
           },
