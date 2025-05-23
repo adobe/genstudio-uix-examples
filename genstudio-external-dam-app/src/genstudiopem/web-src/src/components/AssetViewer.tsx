@@ -30,7 +30,8 @@ export default function AssetViewer(): JSX.Element {
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [auth, setAuth] = useState<any>(null);
-  const { assets, isLoading, fetchAssets, searchAssets } = useAssetActions(auth);
+  const { assets, isLoading, fetchAssets, searchAssets } =
+    useAssetActions(auth);
 
   const [guestConnection, setGuestConnection] = useState<any>(null);
 
@@ -61,7 +62,10 @@ export default function AssetViewer(): JSX.Element {
 
   const syncState = async () => {
     if (!guestConnection) return;
-    const { selectedAssets } = await ExtensionRegistrationService.selectContentExtensionSync(guestConnection);
+    const { selectedAssets } =
+      await ExtensionRegistrationService.selectContentExtensionSync(
+        guestConnection
+      );
     setSelectedAssets(
       selectedAssets
         ? selectedAssets?.map((asset: any) => convertToGenStudioAsset(asset))
@@ -87,16 +91,30 @@ export default function AssetViewer(): JSX.Element {
   }, [searchTerm, auth]);
 
   const handleAssetSelect = async (asset: DamAsset) => {
+    const { selectionLimit } =
+      await ExtensionRegistrationService.selectContentExtensionSync(
+        guestConnection
+      );
+
     const isSelected = selectedAssets.some((a) => a.id === asset.id);
-    const newSelectedAssets = isSelected
-      ? selectedAssets.filter((a) => a.id !== asset.id) // Remove asset
-      : [...selectedAssets, convertToGenStudioAsset(asset)]; // Add asset
+
+    let newSelectedAssets: Asset[] = [...selectedAssets];
+
+    if (isSelected) {
+      newSelectedAssets = selectedAssets.filter((a) => a.id !== asset.id);
+    } else if (selectedAssets.length < selectionLimit) {
+      newSelectedAssets = [...selectedAssets, convertToGenStudioAsset(asset)];
+    }
 
     setSelectedAssets(newSelectedAssets);
 
     if (guestConnection) {
       try {
-        await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(guestConnection, extensionId, newSelectedAssets);
+        await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(
+          guestConnection,
+          extensionId,
+          newSelectedAssets
+        );
       } catch (error) {
         console.warn("===x Error sending selected assets to host:", error);
       }
