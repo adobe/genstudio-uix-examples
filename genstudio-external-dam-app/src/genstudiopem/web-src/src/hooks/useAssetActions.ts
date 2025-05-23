@@ -86,7 +86,6 @@ export const useAssetActions = (auth: Auth) => {
         const filteredMockAssets = getMockAssets().filter((asset) =>
           asset.name.toLowerCase().includes(query.toLowerCase()) ||
           asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
-          // Safe check for keywords - works with real DAM data that has keywords
           (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
            asset.metadata.keywords.some((keyword: string) =>
              keyword.toLowerCase().includes(query.toLowerCase())
@@ -112,7 +111,6 @@ export const useAssetActions = (auth: Auth) => {
           (asset) =>
             asset.name.toLowerCase().includes(query.toLowerCase()) ||
             asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
-            // Safe check for keywords - works with real DAM data that has keywords
             (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
              asset.metadata.keywords.some((keyword: string) =>
                keyword.toLowerCase().includes(query.toLowerCase())
@@ -122,11 +120,9 @@ export const useAssetActions = (auth: Auth) => {
       }
     } catch (err) {
       console.warn("Search failed, using filtered mock data:", err);
-      // Don't set error state for search - just filter mock data gracefully
       const filteredMockAssets = getMockAssets().filter((asset) =>
         asset.name.toLowerCase().includes(query.toLowerCase()) ||
         asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
-        // Safe check for keywords - works with real DAM data that has keywords
         (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
          asset.metadata.keywords.some((keyword: string) =>
            keyword.toLowerCase().includes(query.toLowerCase())
@@ -216,7 +212,6 @@ export const useAssetActions = (auth: Auth) => {
 
     const fileTypes = ["JPEG", "PNG", "WEBP", "JPG"];
 
-    // Simple keywords for testing search functionality
     const assetKeywords = [
       ["mountain", "skiing", "winter", "sport"],
       ["landscape", "winter", "nature", "scenic"], 

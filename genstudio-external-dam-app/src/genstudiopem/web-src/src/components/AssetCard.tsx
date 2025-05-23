@@ -38,22 +38,19 @@ const AssetCard: React.FC<AssetCardProps> = ({
     return `${mb.toFixed(1)}MB`;
   };
 
-  // Card styles matching GenStudio interaction states exactly
   const cardStyles: React.CSSProperties = {
     cursor: "pointer",
     position: "relative",
     width: "230px",
     height: "241px",
-    borderRadius: "var(--spectrum-global-dimension-size-50)", // Using Spectrum token
+    borderRadius: "var(--spectrum-global-dimension-size-50)", 
     backgroundColor: "var(--spectrum-global-color-gray-50)",
     overflow: "hidden",
-    transition: "box-shadow 0.2s ease-out", // Simplified transition - only shadow, longer duration for stability
-    transform: "translateZ(0)", // Force GPU acceleration to prevent flickering
-    willChange: "box-shadow", // Hint to browser about what will change
-    // Always use 2px border - just change transparency to avoid layout shifts
+    transition: "box-shadow 0.2s ease-out", 
+    transform: "translateZ(0)", 
+    willChange: "box-shadow", 
     border: isSelected ? "2px solid var(--spectrum-global-color-gray-900)" : "2px solid transparent",
-    margin: "0px", // Keep consistent margin always
-    // Shadow matching GenStudio cards - now reactive to both hover and selection state
+    margin: "0px", 
     boxShadow: isSelected 
       ? "0px 4px 12px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.1)"
       : isHovered
@@ -61,7 +58,6 @@ const AssetCard: React.FC<AssetCardProps> = ({
         : "0px 1px 3px rgba(0, 0, 0, 0.1)",
   };
 
-  // Hover handlers - simplified to only manage state
   const handleMouseEnter = () => {
     setIsHovered(true);
   };
@@ -87,12 +83,11 @@ const AssetCard: React.FC<AssetCardProps> = ({
         <Image
           src={asset.thumbnailUrl}
           alt={asset.name}
-          objectFit="contain" // Reference image shows full image contained, not cropped
+          objectFit="contain" 
           width="100%"
           height="100%"
           UNSAFE_style={{ 
-            // Image edge-to-edge with no border radius
-            backgroundColor: "#F2F4F5" // Figma spec: background color
+            backgroundColor: "#F2F4F5" 
           }}
         />
 
@@ -103,7 +98,7 @@ const AssetCard: React.FC<AssetCardProps> = ({
           padding="size-50"
           borderRadius="small"
           UNSAFE_style={{
-            backgroundColor: "rgba(0, 0, 0, 0.40)", // Correct transparency value
+            backgroundColor: "rgba(0, 0, 0, 0.40)", 
             display: "flex",
             alignItems: "center",
             justifyContent: "center"
@@ -111,13 +106,12 @@ const AssetCard: React.FC<AssetCardProps> = ({
         >
           <Text 
             UNSAFE_style={{ 
-              // Badge text styling - using more Spectrum tokens
-              color: "var(--spectrum-global-color-gray-50)", // Spectrum white token
+              color: "var(--spectrum-global-color-gray-50)", 
               textAlign: "center",
-              fontFamily: "var(--spectrum-global-font-family-base)", // Spectrum font family
-              fontSize: "var(--spectrum-global-dimension-font-size-75)", // Spectrum font size
+              fontFamily: "var(--spectrum-global-font-family-base)", 
+              fontSize: "var(--spectrum-global-dimension-font-size-75)", 
               fontStyle: "normal",
-              fontWeight: "400", // Changed from 700 to normal weight for lighter appearance
+              fontWeight: "400", 
               lineHeight: "130%",
               textTransform: "uppercase"
             }}>
@@ -125,7 +119,7 @@ const AssetCard: React.FC<AssetCardProps> = ({
           </Text>
         </View>
 
-        {/* Custom checkbox - using Spectrum design tokens */}
+        {}
         {(isHovered || isSelected) && (
           <div 
             style={{
@@ -146,7 +140,7 @@ const AssetCard: React.FC<AssetCardProps> = ({
               borderRadius="medium"
               backgroundColor="static-white"
               UNSAFE_style={{
-                backgroundColor: "rgba(255, 255, 255, 0.51)", // Keep transparency
+                backgroundColor: "rgba(255, 255, 255, 0.51)", 
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -203,24 +197,23 @@ const AssetCard: React.FC<AssetCardProps> = ({
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "flex-start",
-          height: "49px", // Keep specific height for layout
+          height: "49px", 
           borderRadius: "0px 0px var(--spectrum-global-dimension-size-50) var(--spectrum-global-dimension-size-50)"
         }}
       >
         <Text
           UNSAFE_style={{
-            // Asset title styling - using more Spectrum tokens
             overflow: "hidden",
-            color: "var(--spectrum-global-color-gray-900)", // Spectrum color token
+            color: "var(--spectrum-global-color-gray-900)", 
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            fontFamily: "var(--spectrum-global-font-family-base)", // Spectrum font family
-            fontSize: "var(--spectrum-global-dimension-font-size-100)", // Spectrum font size
+            fontFamily: "var(--spectrum-global-font-family-base)", 
+            fontSize: "var(--spectrum-global-dimension-font-size-100)", 
             fontStyle: "normal",
             fontWeight: "700",
             lineHeight: "130%",
             textAlign: "left",
-            marginBottom: "var(--spectrum-global-dimension-size-25)", // Spectrum spacing
+            marginBottom: "var(--spectrum-global-dimension-size-25)", 
             width: "100%"
           }}
         >
@@ -228,13 +221,12 @@ const AssetCard: React.FC<AssetCardProps> = ({
         </Text>
         <Text
           UNSAFE_style={{
-            // Asset metadata styling - using Spectrum tokens
-            fontFamily: "var(--spectrum-global-font-family-base)", // Spectrum font family
-            fontSize: "var(--spectrum-global-dimension-font-size-75)", // Spectrum font size
+            fontFamily: "var(--spectrum-global-font-family-base)", 
+            fontSize: "var(--spectrum-global-dimension-font-size-75)", 
             fontStyle: "normal",
             fontWeight: "400",
             lineHeight: "130%",
-            color: "var(--spectrum-global-color-gray-700)", // Spectrum color token
+            color: "var(--spectrum-global-color-gray-700)", 
             textAlign: "left"
           }}
         >

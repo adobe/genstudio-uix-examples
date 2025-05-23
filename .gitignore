@@ -40,5 +40,5 @@ coverage
 # logs folder for aio-run-detached
 logs
 
-# Cursor AI Rules (keep local for now)
+# Cursor configuration
 .cursor/

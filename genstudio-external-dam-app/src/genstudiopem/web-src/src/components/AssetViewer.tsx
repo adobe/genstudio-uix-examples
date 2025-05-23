@@ -144,7 +144,6 @@ export default function AssetViewer(): JSX.Element {
 
   return (
     <View height="100%" width="100%">
-      {/* Search field styling - targeting nested elements */}
       <style>
         {`
           .search-field-custom input[type="search"] {
@@ -155,7 +154,6 @@ export default function AssetViewer(): JSX.Element {
         `}
       </style>
       <Flex direction="column" height="100%">
-        {/* Simple, clean header with centered search */}
         <View
           backgroundColor="gray-50"
           padding="size-300"
@@ -176,7 +174,6 @@ export default function AssetViewer(): JSX.Element {
           </Flex>
         </View>
 
-        {/* Main content area */}
         <View 
           flex={1} 
           backgroundColor="gray-50"
