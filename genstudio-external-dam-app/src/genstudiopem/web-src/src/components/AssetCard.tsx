@@ -44,35 +44,30 @@ const AssetCard: React.FC<AssetCardProps> = ({
     position: "relative",
     width: "230px",
     height: "241px",
-    borderRadius: "5px", // Figma spec: 5px border radius
-    backgroundColor: "#FFFFFF",
+    borderRadius: "var(--spectrum-global-dimension-size-50)", // Using Spectrum token
+    backgroundColor: "var(--spectrum-global-color-gray-50)",
     overflow: "hidden",
-    transition: "box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out", // Only animate shadow and border color
-    transform: "none", // Explicitly ensure no transform effects
+    transition: "box-shadow 0.2s ease-out", // Simplified transition - only shadow, longer duration for stability
+    transform: "translateZ(0)", // Force GPU acceleration to prevent flickering
+    willChange: "box-shadow", // Hint to browser about what will change
     // Always use 2px border - just change transparency to avoid layout shifts
-    border: isSelected ? "2px solid #2C2C2C" : "2px solid transparent",
+    border: isSelected ? "2px solid var(--spectrum-global-color-gray-900)" : "2px solid transparent",
     margin: "0px", // Keep consistent margin always
-    // Shadow matching GenStudio cards
+    // Shadow matching GenStudio cards - now reactive to both hover and selection state
     boxShadow: isSelected 
       ? "0px 4px 12px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.1)"
-      : "0px 1px 3px rgba(0, 0, 0, 0.1)",
+      : isHovered
+        ? "0px 4px 12px rgba(0, 0, 0, 0.15), 0px 2px 6px rgba(0, 0, 0, 0.1)"
+        : "0px 1px 3px rgba(0, 0, 0, 0.1)",
   };
 
-  // Hover styles - using CSS properties that can be applied inline
-  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+  // Hover handlers - simplified to only manage state
+  const handleMouseEnter = () => {
     setIsHovered(true);
-    if (!isSelected) {
-      // Only change shadow on hover - keep same margin/border structure
-      (e.currentTarget as HTMLDivElement).style.boxShadow = "0px 4px 12px rgba(0, 0, 0, 0.15), 0px 2px 6px rgba(0, 0, 0, 0.1)";
-    }
   };
 
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseLeave = () => {
     setIsHovered(false);
-    if (!isSelected) {
-      // Only restore shadow on mouse leave - keep same margin/border structure
-      (e.currentTarget as HTMLDivElement).style.boxShadow = "0px 1px 3px rgba(0, 0, 0, 0.1)";
-    }
   };
 
   return (
@@ -83,15 +78,11 @@ const AssetCard: React.FC<AssetCardProps> = ({
       style={cardStyles}
     >
       <View 
-        UNSAFE_style={{ 
-          // Image container dimensions - edge-to-edge preview
-          position: "relative",
-          height: "192px", // Figma spec: 192px image container height
-          width: "100%",
-          overflow: "hidden",
-          backgroundColor: "#F2F4F5", // Figma spec: container background
-          // No border radius here - let image go edge-to-edge
-        }}
+        position="relative"
+        height="192px"
+        width="100%"
+        overflow="hidden"
+        backgroundColor="gray-100"
       >
         <Image
           src={asset.thumbnailUrl}
@@ -106,14 +97,13 @@ const AssetCard: React.FC<AssetCardProps> = ({
         />
 
         <View
+          position="absolute"
+          right="size-100"
+          bottom="size-100"
+          padding="size-50"
+          borderRadius="small"
           UNSAFE_style={{
-            // File type badge overlay - positioned in bottom-right of image area
-            position: "absolute",
-            right: "8px",
-            bottom: "8px", // Position relative to image container bottom
-            padding: "3px 5px", // Figma positioning: better padding for text
-            backgroundColor: "rgba(0, 0, 0, 0.4)", // Figma spec: rgba(0, 0, 0, 0.4)
-            borderRadius: "2px", // Figma spec: 2px border radius
+            backgroundColor: "rgba(0, 0, 0, 0.40)", // Correct transparency value
             display: "flex",
             alignItems: "center",
             justifyContent: "center"
@@ -121,14 +111,14 @@ const AssetCard: React.FC<AssetCardProps> = ({
         >
           <Text 
             UNSAFE_style={{ 
-              // Badge text styling - exact specifications provided
-              color: "var(--Palette-white, #FFF)", // Exact color specification
+              // Badge text styling - using more Spectrum tokens
+              color: "var(--spectrum-global-color-gray-50)", // Spectrum white token
               textAlign: "center",
-              fontFamily: "Adobe Clean, sans-serif", // Sans serif version
-              fontSize: "14px", // Exact font size
-              fontStyle: "normal", // Exact font style  
-              fontWeight: "700", // Exact font weight
-              lineHeight: "130%", // Exact line height (18.2px)
+              fontFamily: "var(--spectrum-global-font-family-base)", // Spectrum font family
+              fontSize: "var(--spectrum-global-dimension-font-size-75)", // Spectrum font size
+              fontStyle: "normal",
+              fontWeight: "400", // Changed from 700 to normal weight for lighter appearance
+              lineHeight: "130%",
               textTransform: "uppercase"
             }}>
             {asset.fileType}
@@ -140,91 +130,97 @@ const AssetCard: React.FC<AssetCardProps> = ({
           <div 
             style={{
               position: "absolute",
-              top: "8px",
-              left: "8px",
+              top: "var(--spectrum-global-dimension-size-100)",
+              left: "var(--spectrum-global-dimension-size-100)",
               zIndex: 10,
-              width: "16px", // Container size --spectrum-global-dimension-size-200
-              height: "16px", // Container size --spectrum-global-dimension-size-200
-              borderRadius: "8px", // Container corner radius --spectrum-global-dimension-size-100
-              backgroundColor: "rgba(255, 255, 255, 0.51)", // Container background
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              backdropFilter: "blur(4px)",
-              padding: "4px", // Padding --spectrum-global-dimension-size-50
+              cursor: "pointer"
             }}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onSelect(asset);
             }}
           >
-            <div
-              style={{
-                width: "12px", // Actual checkbox size
-                height: "12px", // Actual checkbox size
-                borderRadius: "4px", // Checkbox corner radius --spectrum-global-dimension-size-50
-                backgroundColor: isSelected ? "#2C2C2C" : "#FFFFFF",
-                border: isSelected ? "2px solid #2C2C2C" : "2px solid rgb(41, 41, 41)",
+            <View
+              width="size-200"
+              height="size-200"
+              borderRadius="medium"
+              backgroundColor="static-white"
+              UNSAFE_style={{
+                backgroundColor: "rgba(255, 255, 255, 0.51)", // Keep transparency
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                transition: "all 0.15s ease-in-out",
+                backdropFilter: "blur(4px)",
+                padding: "var(--spectrum-global-dimension-size-50)"
               }}
             >
-              {isSelected && (
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{
-                    color: "#FFFFFF"
-                  }}
-                >
-                  <path
-                    d="M11.5 3.5L5.5 9.5L2.5 6.5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+              <View
+                width="size-150"
+                height="size-150"
+                borderRadius="small"
+                backgroundColor={isSelected ? "gray-900" : "gray-50"}
+                borderWidth="thin"
+                borderColor="gray-900"
+                UNSAFE_style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.15s ease-in-out"
+                }}
+              >
+                {isSelected && (
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 14 14"
                     fill="none"
-                  />
-                </svg>
-              )}
-            </div>
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{
+                      color: "#FFFFFF"
+                    }}
+                  >
+                    <path
+                      d="M11.5 3.5L5.5 9.5L2.5 6.5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                    />
+                  </svg>
+                )}
+              </View>
+            </View>
           </div>
         )}
       </View>
 
       <View 
+        backgroundColor="gray-50"
+        padding="size-100"
         UNSAFE_style={{
-          // Card details section - with design-spec spacing (7px top padding)
-          backgroundColor: "#FFFFFF",
-          padding: "7px 12px 8px 12px", // Design spec: ~7px top, maintain sides, less bottom
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "flex-start",
-          height: "49px", // Keep same total height 
-          borderRadius: "0px 0px 5px 5px" // Bottom corners match card border radius
+          height: "49px", // Keep specific height for layout
+          borderRadius: "0px 0px var(--spectrum-global-dimension-size-50) var(--spectrum-global-dimension-size-50)"
         }}
       >
         <Text
           UNSAFE_style={{
-            // Asset title styling - exact specifications provided
+            // Asset title styling - using more Spectrum tokens
             overflow: "hidden",
-            color: "var(--Alias-content-neutral-default, #222)", // Exact color specification
+            color: "var(--spectrum-global-color-gray-900)", // Spectrum color token
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            fontFamily: "Adobe Clean, sans-serif", // Sans serif version
-            fontSize: "14px", // Exact font size
-            fontStyle: "normal", // Exact font style
-            fontWeight: "700", // Exact font weight (was 600)
-            lineHeight: "130%", // Exact line height (18.2px)
+            fontFamily: "var(--spectrum-global-font-family-base)", // Spectrum font family
+            fontSize: "var(--spectrum-global-dimension-font-size-100)", // Spectrum font size
+            fontStyle: "normal",
+            fontWeight: "700",
+            lineHeight: "130%",
             textAlign: "left",
-            marginBottom: "2px", // Reduced margin for better fit
+            marginBottom: "var(--spectrum-global-dimension-size-25)", // Spectrum spacing
             width: "100%"
           }}
         >
@@ -232,13 +228,13 @@ const AssetCard: React.FC<AssetCardProps> = ({
         </Text>
         <Text
           UNSAFE_style={{
-            // Asset metadata styling - similar to title but lighter weight
-            fontFamily: "Adobe Clean, sans-serif", // Sans serif version
-            fontSize: "12px", // Slightly smaller than title
-            fontStyle: "normal", // Same font style as title
-            fontWeight: "400", // Lighter than title (not bolded)
-            lineHeight: "130%", // Same line height as title
-            color: "#6B6B6B", // Keep existing metadata color
+            // Asset metadata styling - using Spectrum tokens
+            fontFamily: "var(--spectrum-global-font-family-base)", // Spectrum font family
+            fontSize: "var(--spectrum-global-dimension-font-size-75)", // Spectrum font size
+            fontStyle: "normal",
+            fontWeight: "400",
+            lineHeight: "130%",
+            color: "var(--spectrum-global-color-gray-700)", // Spectrum color token
             textAlign: "left"
           }}
         >

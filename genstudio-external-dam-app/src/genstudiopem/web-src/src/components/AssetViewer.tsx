@@ -74,8 +74,6 @@ export default function AssetViewer(): JSX.Element {
     if (auth) fetchAssets();
   }, [auth]);
 
-
-
   useEffect(() => {
     // Search assets when search term changes
     if (searchTerm) {
@@ -126,10 +124,7 @@ export default function AssetViewer(): JSX.Element {
         autoRows="auto"
         justifyContent="center"
         gap="size-300"
-        UNSAFE_style={{ 
-          width: "100%",
-          gap: "24px"
-        }}
+        width="100%"
       >
         {assets.map((asset) => renderAsset(asset))}
       </Grid>
@@ -147,21 +142,23 @@ export default function AssetViewer(): JSX.Element {
     );
   };
 
-  // Clean search field styles based on Figma design
-  const searchFieldStyles: React.CSSProperties = {
-    borderRadius: "16px"
-  } as React.CSSProperties;
-
   return (
     <View height="100%" width="100%">
+      {/* Search field styling - targeting nested elements */}
+      <style>
+        {`
+          .search-field-custom input[type="search"] {
+            border-radius: 16px !important;
+            border: 2px solid var(--Palette-gray-300, #DADADA) !important;
+            background: var(--Palette-gray-25, #FFF) !important;
+          }
+        `}
+      </style>
       <Flex direction="column" height="100%">
         {/* Simple, clean header with centered search */}
         <View
-          UNSAFE_style={{
-            padding: "20px 24px",
-            borderBottom: "1px solid var(--spectrum-global-color-gray-200)",
-            backgroundColor: "#FFFFFF"
-          }}
+          backgroundColor="gray-50"
+          padding="size-300"
         >
           <Flex
             direction="row"
@@ -174,7 +171,7 @@ export default function AssetViewer(): JSX.Element {
               placeholder="Search for assets"
               width="400px"
               maxWidth="90%"
-              UNSAFE_style={searchFieldStyles}
+              UNSAFE_className="search-field-custom"
             />
           </Flex>
         </View>
@@ -182,11 +179,9 @@ export default function AssetViewer(): JSX.Element {
         {/* Main content area */}
         <View 
           flex={1} 
-          UNSAFE_style={{
-            padding: "20px",
-            overflow: "auto",
-            backgroundColor: "#FFFFFF"
-          }}
+          backgroundColor="gray-50"
+          padding="size-300"
+          overflow="auto"
         >
           {renderAssetContent()}
         </View>
