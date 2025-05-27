@@ -40,42 +40,53 @@ class S3DamProvider extends DamProvider {
     return await getSignedUrl(this.client, getObjCmd, { expiresIn: 3600 });
   }
 
+  async getThumbnailUrl(key) {
+    const thumbnailKey = "thumbnails/" + key.replace('assets/', '').replace(/\.[^/.]+$/, ".jpg");
+    return await this.getS3PresignedUrl(thumbnailKey);
+  }
+
   async searchAssets(params) {
     this.logger.info("Searching assets in S3");
     const listObjectsCmd = new ListObjectsV2Command({
       Bucket: this.bucketName,
-      Prefix: params.prefix || "",
+      Prefix: 'assets/',
       MaxKeys: parseInt(params.limit) || 100,
     });
     const listResult = await this.client.send(listObjectsCmd);
     this.logger.info(`Found ${listResult?.Contents?.length || 0} assets in S3`);
 
-    const assets = await Promise.all(
-      listResult?.Contents.map(async (item) => {
+    const assets = (await Promise.all(
+      listResult?.Contents?.map(async (item) => {
+        if (item.Key.endsWith('/')) return null;
         const headObjCmd = new HeadObjectCommand({
           Bucket: this.bucketName,
           Key: item.Key,
         });
-        const metadata = await this.client.send(headObjCmd);
-        const originalUrl = await this.getS3PresignedUrl(item.Key);
-
-        return {
-          id: item.Key,
-          name: item.Key.split("/").pop(),
-          fileType: item.Key.split(".").pop().toUpperCase(),
-          size: item.Size,
-          thumbnailUrl: originalUrl,
-          url: originalUrl,
-          dateCreated: item.LastModified,
-          dateModified: item.LastModified,
-          metadata: {
-            contentType: metadata.ContentType,
+        try {
+          const metadata = await this.client.send(headObjCmd);
+          const originalUrl = await this.getS3PresignedUrl(item.Key);
+          const thumbnailUrl = await this.getThumbnailUrl(item.Key);
+          return {
+            id: item.Key,
+            name: item.Key.split("/").pop(),
+            fileType: item.Key.split(".").pop().toUpperCase(),
             size: item.Size,
-            ...metadata.Metadata,
-          },
-        };
+            thumbnailUrl: thumbnailUrl,
+            url: originalUrl,
+            dateCreated: item.LastModified,
+            dateModified: item.LastModified,
+            metadata: {
+              contentType: metadata.ContentType,
+              size: item.Size,
+              ...metadata.Metadata,
+            },
+          };
+        } catch (error) {
+          this.logger.error(`Error getting metadata for asset ${item.Key}: ${error}`);
+          return null;
+        }
       })
-    );
+    )).filter(asset => asset !== null);
 
     return {
       statusCode: 200,
