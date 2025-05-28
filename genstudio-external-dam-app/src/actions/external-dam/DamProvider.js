@@ -10,7 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-const { checkMissingRequestInputs, ValidationError } = require("../../utils");
+const { checkMissingRequestInputs, ValidationError } = require("../utils");
 
 /**
  * @typedef {Object} Asset - Asset object from @adobe/genstudio-uix-sdk
