@@ -70,13 +70,31 @@ export const useAssetActions = (auth: Auth) => {
     query: string,
     params: Omit<AssetSearchParams, "query"> = {}
   ) => {
+    if (!query.trim()) {
+      // If empty query, just fetch all assets
+      return fetchAssets();
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      if (!auth) {
-        throw new Error("Authentication not found");
+      if (!auth?.imsToken || !auth?.imsOrg) {
+        console.warn("Authentication not available, using mock data for search");
+        // Filter mock data if no auth
+        const filteredMockAssets = getMockAssets().filter((asset) =>
+          asset.name.toLowerCase().includes(query.toLowerCase()) ||
+          asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
+          (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
+           asset.metadata.keywords.some((keyword: string) =>
+             keyword.toLowerCase().includes(query.toLowerCase())
+           ))
+        );
+        setAssets(filteredMockAssets);
+        setIsLoading(false);
+        return;
       }
+
       const response = await actionWebInvoke(
         actions[SEARCH_ASSETS_ACTION],
         auth.imsToken,
@@ -87,22 +105,27 @@ export const useAssetActions = (auth: Auth) => {
       if (response && typeof response === "object" && "assets" in response) {
         setAssets(response.assets as DamAsset[]);
       } else {
-        // Filter mock data if no real backend
+        // Filter mock data if no real backend response
         const filteredMockAssets = getMockAssets().filter(
           (asset) =>
             asset.name.toLowerCase().includes(query.toLowerCase()) ||
-            asset.metadata.keywords?.some((keyword: string) =>
-              keyword.toLowerCase().includes(query.toLowerCase())
-            )
+            asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
+            (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
+             asset.metadata.keywords.some((keyword: string) =>
+               keyword.toLowerCase().includes(query.toLowerCase())
+             ))
         );
         setAssets(filteredMockAssets);
       }
     } catch (err) {
-      console.error("Error searching assets:", err);
-      setError("Failed to search assets. Please try again.");
-      // Filter mock data in case of error
+      console.warn("Search failed, using filtered mock data:", err);
       const filteredMockAssets = getMockAssets().filter((asset) =>
-        asset.name.toLowerCase().includes(query.toLowerCase())
+        asset.name.toLowerCase().includes(query.toLowerCase()) ||
+        asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
+        (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
+         asset.metadata.keywords.some((keyword: string) =>
+           keyword.toLowerCase().includes(query.toLowerCase())
+         ))
       );
       setAssets(filteredMockAssets);
     } finally {
@@ -168,17 +191,58 @@ export const useAssetActions = (auth: Auth) => {
       "https://thumbnails.findmy.media/09bb4a3c-99f8-4009-a319-e905f3303b7a/binaries/750ac90bf833b71b5c1db89123cb95e3881c1cd0baabadbf0491996acc4744b0/rendition-hq.webp",
     ];
 
-    return Array(3)
+    const assetNames = [
+      "mountain-skier.jpeg",
+      "winter-landscape.png", 
+      "snowy-peaks.webp",
+      "alpine-resort.jpg",
+      "ski-equipment.png",
+      "frozen-lake.jpeg",
+      "winter-sports.webp",
+      "snow-covered-trees.jpg",
+      "mountain-cabin.png",
+      "aurora-borealis.jpeg",
+      "ice-crystals.webp",
+      "winter-wildlife.jpg",
+      "snowboard-action.png",
+      "glacier-view.jpeg",
+      "winter-sunset.webp"
+    ];
+
+    const fileTypes = ["JPEG", "PNG", "WEBP", "JPG"];
+
+    const assetKeywords = [
+      ["mountain", "skiing", "winter", "sport"],
+      ["landscape", "winter", "nature", "scenic"], 
+      ["peaks", "mountain", "snow", "alpine"],
+      ["resort", "skiing", "vacation", "alpine"],
+      ["equipment", "skiing", "gear", "sport"],
+      ["lake", "frozen", "ice", "winter"],
+      ["sports", "winter", "action", "recreation"],
+      ["trees", "snow", "forest", "nature"],
+      ["cabin", "mountain", "cozy", "retreat"],
+      ["aurora", "northern lights", "sky", "nature"],
+      ["ice", "crystals", "macro", "detail"],
+      ["wildlife", "winter", "animals", "nature"],
+      ["snowboard", "action", "sport", "extreme"],
+      ["glacier", "ice", "mountain", "climate"],
+      ["sunset", "winter", "sky", "evening"]
+    ];
+
+    return Array(15)
       .fill(null)
       .map((_, index) => {
+        const urlIndex = index % urls.length;
+        const fileType = fileTypes[index % fileTypes.length];
         return {
           id: `asset-${index + 1}`,
-          name: `skier.jpeg`,
-          fileType: "JPEG",
-          thumbnailUrl: urls[index],
-          url: urls[index],
+          name: assetNames[index],
+          fileType: fileType,
+          thumbnailUrl: urls[urlIndex],
+          url: urls[urlIndex],
           metadata: {
             size: 1024 * 1024 * Math.floor(Math.random() * 10 + 1),
+            keywords: assetKeywords[index] || []
           },
           dateCreated: new Date(
             Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000
