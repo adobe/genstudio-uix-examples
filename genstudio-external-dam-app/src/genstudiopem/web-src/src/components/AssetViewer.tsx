@@ -47,8 +47,13 @@ export default function AssetViewer(): JSX.Element {
 
   useEffect(() => {
     (async () => {
-      const connection = await attach({ id: extensionId });
-      setGuestConnection(connection);
+      try {
+        const connection = await attach({ id: extensionId });
+        setGuestConnection(connection);
+      } catch (error) {
+        console.warn("Failed to attach to GenStudio host (likely running in standalone mode):", error);
+        setGuestConnection(null);
+      }
     })();
   }, [extensionId]);
 
@@ -62,15 +67,17 @@ export default function AssetViewer(): JSX.Element {
 
   const syncState = async () => {
     if (!guestConnection) return;
-    const { selectedAssets } =
-      await ExtensionRegistrationService.selectContentExtensionSync(
-        guestConnection
+    
+    try {
+      const { selectedAssets } = await ExtensionRegistrationService.selectContentExtensionSync(guestConnection);
+      setSelectedAssets(
+        selectedAssets
+          ? selectedAssets?.map((asset: any) => convertToGenStudioAsset(asset))
+          : []
       );
-    setSelectedAssets(
-      selectedAssets
-        ? selectedAssets?.map((asset: any) => convertToGenStudioAsset(asset))
-        : []
-    );
+    } catch (error) {
+      console.warn("Failed to sync state with GenStudio host:", error);
+    }
   };
 
   useEffect(() => {
@@ -108,18 +115,12 @@ export default function AssetViewer(): JSX.Element {
 
     setSelectedAssets(newSelectedAssets);
 
-    if (guestConnection) {
-      try {
-        await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(
-          guestConnection,
-          extensionId,
-          newSelectedAssets
-        );
-      } catch (error) {
-        console.warn("===x Error sending selected assets to host:", error);
-      }
-    } else {
-      console.log("===x Guest connection not available");
+    if (!guestConnection) return;
+
+    try {
+      await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(guestConnection, extensionId, newSelectedAssets);
+    } catch (error) {
+      console.warn("===x Error sending selected assets to host:", error);
     }
   };
 
@@ -138,9 +139,11 @@ export default function AssetViewer(): JSX.Element {
 
     return (
       <Grid
-        columns={["1fr", "1fr", "1fr", "1fr", "1fr"]}
+        columns="repeat(auto-fill, 230px)"
         autoRows="auto"
-        gap="size-200"
+        justifyContent="center"
+        gap="size-300"
+        width="100%"
       >
         {assets.map((asset) => renderAsset(asset))}
       </Grid>
@@ -160,21 +163,42 @@ export default function AssetViewer(): JSX.Element {
 
   return (
     <View height="100%" width="100%">
+      <style>
+        {`
+          .search-field-custom input[type="search"] {
+            border-radius: 16px !important;
+            border: 2px solid var(--Palette-gray-300, #DADADA) !important;
+            background: var(--Palette-gray-25, #FFF) !important;
+          }
+        `}
+      </style>
       <Flex direction="column" height="100%">
-        <Flex
-          direction="column"
-          UNSAFE_style={{
-            padding: "var(--spectrum-global-dimension-size-200)",
-          }}
-          gap="size-200"
+        <View
+          UNSAFE_style={{ backgroundColor: "var(--spectrum-gray-100)" }}
+          padding="size-300"
         >
-          <SearchField
-            value={searchTerm}
-            onChange={setSearchTerm}
-            width="100%"
-          />
-        </Flex>
-        <View flex={1} padding="size-200" overflow="auto">
+          <Flex
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <SearchField
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search for assets"
+              width="400px"
+              maxWidth="90%"
+              UNSAFE_className="search-field-custom"
+            />
+          </Flex>
+        </View>
+
+        <View 
+          flex={1} 
+          UNSAFE_style={{ backgroundColor: "var(--spectrum-gray-100)" }}
+          padding="size-300"
+          overflow="auto"
+        >
           {renderAssetContent()}
         </View>
       </Flex>
