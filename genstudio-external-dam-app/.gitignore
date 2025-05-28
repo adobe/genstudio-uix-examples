@@ -39,6 +39,7 @@ coverage
 
 # logs folder for aio-run-detached
 logs
-
-# Cursor configuration
-.cursor/
+# AppBuilder config
+appbuilderconfig
+GSCreateCloneRefApp-257324-Production.json
+GSCreateUIXApp-257324-Production.json
