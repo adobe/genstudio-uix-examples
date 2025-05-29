@@ -12,7 +12,7 @@ governing permissions and limitations under the License.
 
 const { Core } = require("@adobe/aio-sdk");
 const { errorResponse, ValidationError } = require("../utils");
-const S3DamProvider = require("./s3/S3DamProvider");
+const S3DamProvider = require("./provider/s3/S3DamProvider");
 
 exports.main = async (params) => {
   const logger = Core.Logger("main", { level: params.LOG_LEVEL || "info" });

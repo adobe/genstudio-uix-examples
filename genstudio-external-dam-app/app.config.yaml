@@ -1,13 +1,13 @@
 extensions:
   dx_genstudio/genstudiopem/1:
-    $include: src/ext.config.yaml
+    $include: src/genstudiopem/ext.config.yaml
     runtimeManifest:
       packages:
         genstudio-external-dam-app:
           license: Apache-2.0
           actions:
             search:
-              function: src/actions/external-dam/index.js
+              function: src/genstudiopem/actions/external-dam/index.js
               web: "yes"
               runtime: nodejs:22
               inputs:
@@ -21,7 +21,7 @@ extensions:
                 require-adobe-auth: true
                 final: false
             get-asset-url:
-              function: src/actions/external-dam/index.js
+              function: src/genstudiopem/actions/external-dam/index.js
               web: "yes"
               runtime: nodejs:22
               inputs:
@@ -35,7 +35,7 @@ extensions:
                 require-adobe-auth: true
                 final: false
             get-asset-metadata:
-              function: src/actions/external-dam/index.js
+              function: src/genstudiopem/actions/external-dam/index.js
               web: "yes"
               runtime: nodejs:22
               inputs:
