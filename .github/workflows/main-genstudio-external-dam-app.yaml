@@ -1,0 +1,17 @@
+name: External DAM Main
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "genstudio-external-dam-app/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/aio-app-template.yml
+    with:
+      app: genstudio-external-dam-app
+      environment: '["Genstudio Engineering 01 - genstudio-external-dam-app - workspace Production", "GenStudio GA PAT04 - genstudio-external-dam-app - workspace Production"]'
+    secrets: inherit

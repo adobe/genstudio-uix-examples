@@ -1,0 +1,15 @@
+name: External DAM PR
+
+on:
+  pull_request:
+    paths:
+      - "genstudio-external-dam-app/**"
+  workflow_dispatch:
+
+jobs:
+  pr:
+    uses: ./.github/workflows/aio-app-template.yml
+    with:
+      app: genstudio-external-dam-app
+      environment: '["Genstudio Engineering 01 - genstudio-external-dam-app - workspace Stage", "GenStudio GA PAT04 - genstudio-external-dam-app - workspace Stage"]'
+    secrets: inherit
