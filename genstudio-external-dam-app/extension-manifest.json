@@ -1,6 +1,6 @@
 {
-  "name": "GS-External-Dam-App",
-  "id": "gs-external-dam-app",
-  "description": "JDAM App",
+  "name": "GenStudio External S3 DAM",
+  "id": "genstudio-external-s3-dam",
+  "description": "External S3 DAM",
   "version": "0.0.1"
 }
