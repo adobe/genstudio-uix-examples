@@ -1,0 +1,17 @@
+extensions:
+  dx_genstudio/genstudiopem/1:
+    $include: src/genstudiopem/ext.config.yaml
+    runtimeManifest:
+      packages:
+        genstudio-io-runtime-app:
+          license: Apache-2.0
+          actions:
+            claims-finder:
+              function: src/genstudiopem/actions/claims-finder/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+              annotations:
+                require-adobe-auth: true
+                final: true
