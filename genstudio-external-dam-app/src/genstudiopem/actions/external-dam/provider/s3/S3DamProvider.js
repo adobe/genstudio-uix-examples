@@ -68,13 +68,13 @@ class S3DamProvider extends DamProvider {
           const thumbnailUrl = await this.getThumbnailUrl(item.Key);
           return {
             id: item.Key,
-            name: item.Key.split("/").pop(),
-            fileType: item.Key.split(".").pop().toUpperCase(),
+            name: item.Key.split("/").pop() || "Unknown",
+            fileType: item.Key.split(".").pop()?.toUpperCase() || "UNKNOWN",
             size: item.Size,
             thumbnailUrl: thumbnailUrl,
             url: originalUrl,
-            dateCreated: item.LastModified,
-            dateModified: item.LastModified,
+            dateCreated: item.LastModified?.toISOString() || new Date().toISOString(),
+            dateModified: item.LastModified?.toISOString() || new Date().toISOString(),
             metadata: {
               contentType: metadata.ContentType,
               size: item.Size,
@@ -90,7 +90,10 @@ class S3DamProvider extends DamProvider {
 
     return {
       statusCode: 200,
-      body: { assets },
+      body: { 
+        assets: assets,
+        availableFileTypes: [...new Set(assets.map(asset => asset.fileType).filter(type => type && type !== 'UNKNOWN'))].sort()
+      },
     };
   }
 

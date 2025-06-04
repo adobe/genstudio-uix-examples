@@ -10,7 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { AssetSearchParams, DamAsset } from "../types";
 import { actionWebInvoke } from "../utils/actionWebInvoke";
 import actions from "../config.json";
@@ -27,21 +27,48 @@ const GET_ASSET_METADATA_ACTION =
   "genstudio-external-dam-app/get-asset-metadata";
 
 export const useAssetActions = (auth: Auth) => {
-  const [assets, setAssets] = useState<DamAsset[]>([]);
+  const [baseAssets, setBaseAssets] = useState<DamAsset[]>([]);
+  const [displayedAssets, setDisplayedAssets] = useState<DamAsset[]>([]);
+  const [availableFileTypes, setAvailableFileTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAssets = async (
-    params: AssetSearchParams = { limit: 20, offset: 0 }
+  const extractFileTypes = (assetList: DamAsset[]): string[] => {
+    const fileTypes = assetList
+      .map(asset => (asset.fileType || '').toUpperCase())
+      .filter(type => type && type !== 'UNKNOWN')
+      .filter((type, index, array) => array.indexOf(type) === index)
+      .sort();
+    
+    return fileTypes;
+  };
+
+  const updateAvailableFileTypes = (assetList: DamAsset[]) => {
+    const fileTypes = extractFileTypes(assetList);
+    setAvailableFileTypes(fileTypes);
+  };
+
+  const fetchAssets = useCallback(async (
+    params: AssetSearchParams = { limit: 100, offset: 0 }
   ) => {
     setIsLoading(true);
     setError(null);
 
-    try {
-      if (!auth) {
-        throw new Error("Authentication not found");
-      }
+    if (!auth) {
+      console.warn("No authentication available, using mock assets for development");
+      const mockAssets = getMockAssets();
+      
+      setBaseAssets(() => mockAssets);
+      setDisplayedAssets(() => mockAssets);
+      
+      const fileTypes = extractFileTypes(mockAssets);
+      setAvailableFileTypes(() => fileTypes);
+      
+      setIsLoading(false);
+      return;
+    }
 
+    try {
       const url = actions[SEARCH_ASSETS_ACTION];
       const response = await actionWebInvoke(
         url,
@@ -51,86 +78,80 @@ export const useAssetActions = (auth: Auth) => {
       );
 
       if (response && typeof response === "object" && "assets" in response) {
-        setAssets(response.assets as DamAsset[]);
+        const validatedAssets = (response.assets as any[]).map(asset => ({
+          id: asset.id || '',
+          name: asset.name || 'Unknown',
+          fileType: asset.fileType || 'UNKNOWN',
+          thumbnailUrl: asset.thumbnailUrl || asset.url || '',
+          url: asset.url || '',
+          metadata: asset.metadata || {},
+          dateCreated: asset.dateCreated || new Date().toISOString(),
+          dateModified: asset.dateModified || new Date().toISOString(),
+        }));
+        setBaseAssets(validatedAssets);
+        setDisplayedAssets(validatedAssets);
+        
+        if (response.availableFileTypes && Array.isArray(response.availableFileTypes)) {
+          setAvailableFileTypes(response.availableFileTypes);
+        } else {
+          updateAvailableFileTypes(validatedAssets);
+        }
       } else {
-        setAssets(getMockAssets());
+        const mockAssets = getMockAssets();
+        setBaseAssets(mockAssets);
+        setDisplayedAssets(mockAssets);
+        updateAvailableFileTypes(mockAssets);
       }
     } catch (err) {
       console.warn("Error fetching assets:", err);
       setError("Failed to fetch assets. Please try again.");
-      // Use mock data in case of error
-      setAssets(getMockAssets());
+      const mockAssets = getMockAssets();
+      setBaseAssets(mockAssets);
+      setDisplayedAssets(mockAssets);
+      updateAvailableFileTypes(mockAssets);
     } finally {
       setIsLoading(false);
     }
+  }, [auth]);
+
+  const applySearchAndFilter = (searchTerm: string = "", fileTypes: string[] = []) => {
+    let filteredAssets = baseAssets;
+
+    if (searchTerm.trim()) {
+      filteredAssets = baseAssets.filter((asset) => {
+        const name = asset.name || '';
+        const assetFileType = asset.fileType || '';
+        const keywords = asset.metadata?.keywords || [];
+        
+        return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          assetFileType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (Array.isArray(keywords) && 
+           keywords.some((keyword: string) =>
+             typeof keyword === 'string' && keyword.toLowerCase().includes(searchTerm.toLowerCase())
+           ));
+      });
+    }
+
+    if (fileTypes.length > 0) {
+      filteredAssets = filteredAssets.filter((asset) => {
+        const assetFileType = (asset.fileType || '').toUpperCase();
+        return fileTypes.some(type => type.toUpperCase() === assetFileType);
+      });
+    }
+
+    setDisplayedAssets(filteredAssets);
   };
 
-  // Search assets by query
-  const searchAssets = async (
-    query: string,
-    params: Omit<AssetSearchParams, "query"> = {}
-  ) => {
-    if (!query.trim()) {
-      // If empty query, just fetch all assets
-      return fetchAssets();
-    }
+  const searchAssets = (query: string) => {
+    applySearchAndFilter(query, []);
+  };
 
-    setIsLoading(true);
-    setError(null);
+  const filterAssets = (fileTypes: string[] = [], currentSearchTerm: string = "") => {
+    applySearchAndFilter(currentSearchTerm, fileTypes);
+  };
 
-    try {
-      if (!auth?.imsToken || !auth?.imsOrg) {
-        console.warn("Authentication not available, using mock data for search");
-        // Filter mock data if no auth
-        const filteredMockAssets = getMockAssets().filter((asset) =>
-          asset.name.toLowerCase().includes(query.toLowerCase()) ||
-          asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
-          (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
-           asset.metadata.keywords.some((keyword: string) =>
-             keyword.toLowerCase().includes(query.toLowerCase())
-           ))
-        );
-        setAssets(filteredMockAssets);
-        setIsLoading(false);
-        return;
-      }
-
-      const response = await actionWebInvoke(
-        actions[SEARCH_ASSETS_ACTION],
-        auth.imsToken,
-        auth.imsOrg,
-        { query, ...params }
-      );
-
-      if (response && typeof response === "object" && "assets" in response) {
-        setAssets(response.assets as DamAsset[]);
-      } else {
-        // Filter mock data if no real backend response
-        const filteredMockAssets = getMockAssets().filter(
-          (asset) =>
-            asset.name.toLowerCase().includes(query.toLowerCase()) ||
-            asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
-            (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
-             asset.metadata.keywords.some((keyword: string) =>
-               keyword.toLowerCase().includes(query.toLowerCase())
-             ))
-        );
-        setAssets(filteredMockAssets);
-      }
-    } catch (err) {
-      console.warn("Search failed, using filtered mock data:", err);
-      const filteredMockAssets = getMockAssets().filter((asset) =>
-        asset.name.toLowerCase().includes(query.toLowerCase()) ||
-        asset.fileType.toLowerCase().includes(query.toLowerCase()) ||
-        (asset.metadata?.keywords && Array.isArray(asset.metadata.keywords) && 
-         asset.metadata.keywords.some((keyword: string) =>
-           keyword.toLowerCase().includes(query.toLowerCase())
-         ))
-      );
-      setAssets(filteredMockAssets);
-    } finally {
-      setIsLoading(false);
-    }
+  const resetToBaseAssets = () => {
+    setDisplayedAssets(baseAssets);
   };
 
   // Get a presigned URL for an asset
@@ -229,7 +250,7 @@ export const useAssetActions = (auth: Auth) => {
       ["sunset", "winter", "sky", "evening"]
     ];
 
-    return Array(15)
+    const mockAssets = Array(15)
       .fill(null)
       .map((_, index) => {
         const urlIndex = index % urls.length;
@@ -252,15 +273,20 @@ export const useAssetActions = (auth: Auth) => {
           ).toISOString(),
         };
       });
+
+    return mockAssets;
   };
 
   return {
-    assets,
+    assets: displayedAssets,
+    availableFileTypes,
     isLoading,
     error,
     fetchAssets,
     searchAssets,
+    filterAssets,
     getAssetPresignedUrl,
     getAssetMetadata,
+    resetToBaseAssets,
   };
 };
