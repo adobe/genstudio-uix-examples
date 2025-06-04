@@ -220,7 +220,8 @@ export default function AssetViewer(): JSX.Element {
         <View
           UNSAFE_style={{ backgroundColor: "var(--spectrum-gray-100)" }}
           paddingX="size-300"
-          paddingBottom="size-200"
+          paddingTop="size-100"
+          paddingBottom="size-150"
         >
           <Flex
             direction="row"
