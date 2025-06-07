@@ -51,7 +51,10 @@ export default function AssetViewer(): JSX.Element {
         const connection = await attach({ id: extensionId });
         setGuestConnection(connection);
       } catch (error) {
-        console.warn("Failed to attach to GenStudio host (likely running in standalone mode):", error);
+        console.warn(
+          "Failed to attach to GenStudio host (likely running in standalone mode):",
+          error
+        );
         setGuestConnection(null);
       }
     })();
@@ -67,9 +70,12 @@ export default function AssetViewer(): JSX.Element {
 
   const syncState = async () => {
     if (!guestConnection) return;
-    
+
     try {
-      const { selectedAssets } = await ExtensionRegistrationService.selectContentExtensionSync(guestConnection);
+      const { selectedAssets } =
+        await ExtensionRegistrationService.selectContentExtensionSync(
+          guestConnection
+        );
       setSelectedAssets(
         selectedAssets
           ? selectedAssets?.map((asset: any) => convertToGenStudioAsset(asset))
@@ -118,7 +124,11 @@ export default function AssetViewer(): JSX.Element {
     if (!guestConnection) return;
 
     try {
-      await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(guestConnection, extensionId, newSelectedAssets);
+      await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(
+        guestConnection,
+        extensionId,
+        newSelectedAssets
+      );
     } catch (error) {
       console.warn("===x Error sending selected assets to host:", error);
     }
@@ -150,12 +160,41 @@ export default function AssetViewer(): JSX.Element {
     );
   };
 
+  useEffect(() => {
+    const getExternalAssets = async () => {
+      const { selectedExternalAssets } =
+        await ExtensionRegistrationService.selectContentExtensionSync(
+          guestConnection
+        );
+
+      if (selectedExternalAssets && selectedExternalAssets.assets) {
+        const externalAssets = selectedExternalAssets.assets.map((asset: any) =>
+          convertToGenStudioAsset(asset)
+        );
+        setSelectedAssets((prevAssets) => {
+          const localAssets = prevAssets.filter(
+            (asset) =>
+              !externalAssets.some(
+                (extAsset: Asset) => extAsset.id === asset.id
+              )
+          );
+          return [...localAssets, ...externalAssets];
+        });
+      }
+    };
+    if (guestConnection) {
+      getExternalAssets();
+    }
+  }, [guestConnection]);
+
   const renderAsset = (asset: DamAsset) => {
+    const isSelected = selectedAssets?.some((a) => a.id === asset.id);
+
     return (
       <AssetCard
         key={asset.id}
         asset={asset}
-        isSelected={selectedAssets?.some((a) => a.id === asset.id)}
+        isSelected={isSelected}
         onSelect={handleAssetSelect}
       />
     );
@@ -177,11 +216,7 @@ export default function AssetViewer(): JSX.Element {
           UNSAFE_style={{ backgroundColor: "var(--spectrum-gray-100)" }}
           padding="size-300"
         >
-          <Flex
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-          >
+          <Flex direction="row" justifyContent="center" alignItems="center">
             <SearchField
               value={searchTerm}
               onChange={setSearchTerm}
@@ -193,8 +228,8 @@ export default function AssetViewer(): JSX.Element {
           </Flex>
         </View>
 
-        <View 
-          flex={1} 
+        <View
+          flex={1}
           UNSAFE_style={{ backgroundColor: "var(--spectrum-gray-100)" }}
           padding="size-300"
           overflow="auto"
