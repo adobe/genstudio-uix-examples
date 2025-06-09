@@ -65,26 +65,7 @@ export default function AssetViewer(): JSX.Element {
     if (sharedAuth) {
       setAuth(sharedAuth);
     }
-    syncState();
   }, [guestConnection]);
-
-  const syncState = async () => {
-    if (!guestConnection) return;
-
-    try {
-      const { selectedAssets } =
-        await ExtensionRegistrationService.selectContentExtensionSync(
-          guestConnection
-        );
-      setSelectedAssets(
-        selectedAssets
-          ? selectedAssets?.map((asset: any) => convertToGenStudioAsset(asset))
-          : []
-      );
-    } catch (error) {
-      console.warn("Failed to sync state with GenStudio host:", error);
-    }
-  };
 
   useEffect(() => {
     // Load assets when component mounts
