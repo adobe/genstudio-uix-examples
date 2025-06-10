@@ -41,7 +41,15 @@ on:
         required: true
       AIO_PROJECT_WORKSPACE_DETAILS_SERVICES:
         required: true
-
+      # External DAM only
+      GS_S3_BUCKET_NAME:
+        required: false
+      GS_AWS_REGION:
+        required: false
+      GS_AWS_ACCESS_KEY_ID:
+        required: false
+      GS_AWS_SECRET_ACCESS_KEY:
+        required: false
 jobs:
   deploy:
     name: Deploy
@@ -97,6 +105,11 @@ jobs:
           AIO_PROJECT_WORKSPACE_ID: ${{ secrets.AIO_PROJECT_WORKSPACE_ID }}
           AIO_PROJECT_WORKSPACE_NAME: ${{ secrets.AIO_PROJECT_WORKSPACE_NAME }}
           AIO_PROJECT_WORKSPACE_DETAILS_SERVICES: ${{ secrets.AIO_PROJECT_WORKSPACE_DETAILS_SERVICES }}
+          # External DAM only
+          GS_S3_BUCKET_NAME: ${{ secrets.GS_S3_BUCKET_NAME }}
+          GS_AWS_REGION: ${{ secrets.GS_AWS_REGION }}
+          GS_AWS_ACCESS_KEY_ID: ${{ secrets.GS_AWS_ACCESS_KEY_ID }}
+          GS_AWS_SECRET_ACCESS_KEY: ${{ secrets.GS_AWS_SECRET_ACCESS_KEY }}
         id: deploy
         run: |
           output=$(aio app deploy --no-build --force-deploy)
