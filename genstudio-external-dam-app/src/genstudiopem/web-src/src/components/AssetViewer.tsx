@@ -10,7 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Flex,
   View,
@@ -20,6 +20,7 @@ import {
   Well,
 } from "@adobe/react-spectrum";
 import AssetCard from "./AssetCard";
+import AssetTypeFilter from "./AssetTypeFilter";
 import { useAssetActions } from "../hooks/useAssetActions";
 import { extensionId } from "../Constants";
 import { Asset, ExtensionRegistrationService } from "@adobe/genstudio-uix-sdk";
@@ -29,11 +30,25 @@ import { DamAsset } from "../types";
 export default function AssetViewer(): JSX.Element {
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentFilter, setCurrentFilter] = useState<string[]>([]);
+  const [filterResetTrigger, setFilterResetTrigger] = useState(0);
   const [auth, setAuth] = useState<any>(null);
-  const { assets, isLoading, fetchAssets, searchAssets } =
+  const hasInitialLoad = useRef(false);
+  
+  const { assets, availableFileTypes, isLoading, fetchAssets, searchAssets, filterAssets, resetToBaseAssets, error } =
     useAssetActions(auth);
 
   const [guestConnection, setGuestConnection] = useState<any>(null);
+
+  useEffect(() => {
+    fetchAssets();
+  }, [fetchAssets]);
+
+  useEffect(() => {
+    if (assets.length > 0 && !hasInitialLoad.current) {
+      hasInitialLoad.current = true;
+    }
+  }, [assets.length]);
 
   const convertToGenStudioAsset = (asset: DamAsset): Asset => {
     return {
@@ -81,21 +96,29 @@ export default function AssetViewer(): JSX.Element {
   };
 
   useEffect(() => {
-    // Load assets when component mounts
-    if (auth) fetchAssets();
-  }, [auth]);
-
-  useEffect(() => {
+    if (!hasInitialLoad.current) {
+      return;
+    }
+    
     // Search assets when search term changes
-    if (searchTerm) {
+    if (searchTerm.trim()) {
       const delaySearch = setTimeout(() => {
         searchAssets(searchTerm);
+        setCurrentFilter([]);
+        setFilterResetTrigger(prev => prev + 1);
       }, 500);
       return () => clearTimeout(delaySearch);
-    } else {
-      fetchAssets();
+    } else if (searchTerm === "") {
+      resetToBaseAssets();
+      setCurrentFilter([]);
+      setFilterResetTrigger(prev => prev + 1);
     }
-  }, [searchTerm, auth]);
+  }, [searchTerm]);
+
+  const handleFilterChange = (fileTypes: string[]) => {
+    setCurrentFilter(fileTypes);
+    filterAssets(fileTypes, searchTerm);
+  };
 
   const handleAssetSelect = async (asset: DamAsset) => {
     const { selectionLimit } =
@@ -181,6 +204,7 @@ export default function AssetViewer(): JSX.Element {
             direction="row"
             justifyContent="center"
             alignItems="center"
+            gap="size-200"
           >
             <SearchField
               value={searchTerm}
@@ -189,6 +213,26 @@ export default function AssetViewer(): JSX.Element {
               width="400px"
               maxWidth="90%"
               UNSAFE_className="search-field-custom"
+            />
+          </Flex>
+        </View>
+
+        <View
+          UNSAFE_style={{ backgroundColor: "var(--spectrum-gray-100)" }}
+          paddingX="size-300"
+          paddingTop="size-100"
+          paddingBottom="size-150"
+        >
+          <Flex
+            direction="row"
+            justifyContent="start"
+            alignItems="center"
+            gap="size-200"
+          >
+            <AssetTypeFilter 
+              availableFileTypes={availableFileTypes}
+              onFilterChange={handleFilterChange}
+              resetTrigger={filterResetTrigger}
             />
           </Flex>
         </View>
