@@ -7,7 +7,7 @@
     "@adobe/aio-lib-files": "^4.1.0",
     "@adobe/aio-sdk": "^6",
     "@adobe/generator-add-action-generic": "^1.0.1",
-    "@adobe/genstudio-uix-sdk": "^1.8.1",
+    "@adobe/genstudio-uix-sdk": "^1.8.3",
     "@adobe/react-spectrum": "^3.4.0",
     "@adobe/uix-guest": "^1.0.0",
     "@aws-sdk/client-s3": "^3.777.0",

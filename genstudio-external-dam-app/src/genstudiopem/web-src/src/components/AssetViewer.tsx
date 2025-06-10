@@ -66,7 +66,10 @@ export default function AssetViewer(): JSX.Element {
         const connection = await attach({ id: extensionId });
         setGuestConnection(connection);
       } catch (error) {
-        console.warn("Failed to attach to GenStudio host (likely running in standalone mode):", error);
+        console.warn(
+          "Failed to attach to GenStudio host (likely running in standalone mode):",
+          error
+        );
         setGuestConnection(null);
       }
     })();
@@ -77,23 +80,7 @@ export default function AssetViewer(): JSX.Element {
     if (sharedAuth) {
       setAuth(sharedAuth);
     }
-    syncState();
   }, [guestConnection]);
-
-  const syncState = async () => {
-    if (!guestConnection) return;
-    
-    try {
-      const { selectedAssets } = await ExtensionRegistrationService.selectContentExtensionSync(guestConnection);
-      setSelectedAssets(
-        selectedAssets
-          ? selectedAssets?.map((asset: any) => convertToGenStudioAsset(asset))
-          : []
-      );
-    } catch (error) {
-      console.warn("Failed to sync state with GenStudio host:", error);
-    }
-  };
 
   useEffect(() => {
     if (!hasInitialLoad.current) {
@@ -141,7 +128,11 @@ export default function AssetViewer(): JSX.Element {
     if (!guestConnection) return;
 
     try {
-      await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(guestConnection, extensionId, newSelectedAssets);
+      await ExtensionRegistrationService.selectContentExtensionSetSelectedAssets(
+        guestConnection,
+        extensionId,
+        newSelectedAssets
+      );
     } catch (error) {
       console.warn("===x Error sending selected assets to host:", error);
     }
@@ -173,12 +164,41 @@ export default function AssetViewer(): JSX.Element {
     );
   };
 
+  useEffect(() => {
+    const getExternalAssets = async () => {
+      const { selectedExternalAssets } =
+        await ExtensionRegistrationService.selectContentExtensionSync(
+          guestConnection
+        );
+
+      if (selectedExternalAssets && selectedExternalAssets.assets) {
+        const externalAssets = selectedExternalAssets.assets.map((asset: any) =>
+          convertToGenStudioAsset(asset)
+        );
+        setSelectedAssets((prevAssets) => {
+          const localAssets = prevAssets.filter(
+            (asset) =>
+              !externalAssets.some(
+                (extAsset: Asset) => extAsset.id === asset.id
+              )
+          );
+          return [...localAssets, ...externalAssets];
+        });
+      }
+    };
+    if (guestConnection) {
+      getExternalAssets();
+    }
+  }, [guestConnection]);
+
   const renderAsset = (asset: DamAsset) => {
+    const isSelected = selectedAssets?.some((a) => a.id === asset.id);
+
     return (
       <AssetCard
         key={asset.id}
         asset={asset}
-        isSelected={selectedAssets?.some((a) => a.id === asset.id)}
+        isSelected={isSelected}
         onSelect={handleAssetSelect}
       />
     );
