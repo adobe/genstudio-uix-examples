@@ -1,13 +1,13 @@
 extensions:
-  dx_genstudio/genstudiopem/1:
-    $include: src/genstudiopem/ext.config.yaml
+  dx_genstudio/translation/1:
+    $include: src/ext.config.yaml
     runtimeManifest:
       packages:
-        genstudio-io-runtime-app:
+        translation:
           license: Apache-2.0
           actions:
-            claims-finder:
-              function: src/genstudiopem/actions/claims-finder/index.js
+            getSupportedLocales:
+              function: src/actions/getSupportedLocales.js
               web: 'yes'
               runtime: nodejs:22
               inputs:
